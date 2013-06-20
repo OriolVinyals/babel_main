@@ -4,7 +4,7 @@ Created on Jun 18, 2013
 @author: vinyals
 '''
 #from iceberk import classifier  
-import htkmfc
+from external import htkmfc
 import numpy as np
 import gflags
 gflags.DEFINE_string("root", "mujamuja",
