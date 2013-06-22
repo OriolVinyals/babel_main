@@ -17,7 +17,7 @@ class PostingParser:
         self.dictReader = csv.DictReader(open(csvfile, 'rb'),delimiter = ',', quotechar = '"')
         self.data = []
         for row in self.dictReader:
-            print row
+            #print row
             self.data.append(row)
     
     def GetFields(self):
