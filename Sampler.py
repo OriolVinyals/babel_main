@@ -51,3 +51,5 @@ if __name__ == '__main__':
     print len(sampler.positive_data)
     print len(sampler.negative_data)
     sampler.SampleData(0.2)
+    print len(sampler.negative_data)
+
