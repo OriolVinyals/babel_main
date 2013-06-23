@@ -4,13 +4,8 @@ Created on Jun 18, 2013
 @author: vinyals
 '''
 
-from external import htkmfc
 import random
-import gflags
-import csv
 import PostingParser
-
-FLAGS = gflags.FLAGS
 
 class Sampler:
     def __init__(self,posting_parser):
