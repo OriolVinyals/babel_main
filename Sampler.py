@@ -5,7 +5,7 @@ Created on Jun 18, 2013
 '''
 
 from external import htkmfc
-import numpy as np
+import random
 import gflags
 import csv
 import PostingParser
@@ -16,44 +16,43 @@ class Sampler:
     def __init__(self,posting_parser):
         self.posting_parser = posting_parser
         
-    def SamplePositive(self):
+    def GetPositive(self):
         self.positive_data = []
         self.positive_labels = []
-        num_words = 0
+        self.num_positive = 0
         for i in range(self.posting_parser.num_total()):
             if self.posting_parser.data[i]['alignment']=='CORR' or testParser.data[i]['alignment']=='MISS':
                 self.positive_data.append(self.posting_parser.data[i])
                 self.positive_labels.append(self.posting_parser.data[i]['termid'])
-                num_words += 1
+                self.num_positive += 1
                 
-    def SampleNegative(self):
+    def GetNegative(self):
         self.negative_data = []
         self.negative_labels = []
-        num_words = 0
+        self.num_negative = 0
         for i in range(self.posting_parser.num_total()):
             if self.posting_parser.data[i]['alignment']=='CORR!DET' or testParser.data[i]['alignment']=='FA':
                 self.negative_data.append(self.posting_parser.data[i])
                 self.negative_labels.append(self.posting_parser.data[i]['termid'])
-                num_words += 1
+                self.num_negative += 1
+                
+    def SampleData(self,percpos):
+        if self.num_positive/(self.num_positive + self.num_negative) >= percpos:
+            print 'We already have lots of positive examples'
+            return
+        else:
+            '''Need to find how many negative examples to keep and just random subsample for now'''
+            target_negative = int(self.num_positive/percpos - self.num_positive)
+            inds = random.sample(range(self.num_negative),target_negative)
+            self.negative_data = [self.negative_data[i] for i in inds]
+            self.negative_labels = [self.negative_labels[i] for i in inds]
+            self.num_negative = len(self.negative_data)
                 
 if __name__ == '__main__':
     testParser = PostingParser.PostingParser("./data/word.kwlist.alignment.csv")
-    print testParser.GetFields()
-    print testParser.num_total()
-    lol = {}
-    for i in range(testParser.num_total()):
-        lol[testParser.data[i]['file']]=1
-    print len(lol)
-    num_words = 0
-    words_gt = {}
-    for i in range(testParser.num_total()):
-        if testParser.data[i]['alignment']=='CORR' or testParser.data[i]['alignment']=='MISS':
-            num_words += 1
-            words_gt[testParser.data[i]['termid']]=1
-    print num_words
-    print len(words_gt)
     sampler = Sampler(testParser)
-    sampler.SamplePositive()
-    sampler.SampleNegative()
+    sampler.GetPositive()
+    sampler.GetNegative()
     print len(sampler.positive_data)
     print len(sampler.negative_data)
+    sampler.SampleData(0.2)
