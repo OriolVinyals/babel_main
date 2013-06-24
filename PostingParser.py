@@ -20,7 +20,7 @@ class PostingParser:
         return len(self.data)
 
 if __name__ == '__main__':
-    testParser = PostingParser("./data/word.kwlist.alignment.csv")
+    testParser = PostingParser('./data/word.kwlist.alignment.csv')
     print testParser.GetFields()
     print testParser.num_total()
     lol = {}

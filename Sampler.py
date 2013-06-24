@@ -44,7 +44,7 @@ class Sampler:
             self.num_negative = len(self.negative_data)
                 
 if __name__ == '__main__':
-    testParser = PostingParser.PostingParser("./data/word.kwlist.alignment.csv")
+    testParser = PostingParser.PostingParser('./data/word.kwlist.alignment.csv')
     sampler = Sampler(testParser)
     sampler.GetPositive()
     sampler.GetNegative()
