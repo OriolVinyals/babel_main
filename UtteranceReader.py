@@ -34,4 +34,6 @@ if __name__ == '__main__':
     print utt_reader.GetHTKSize()
     utt_reader.ReadAllUtterances(feat_range)
     print utt_reader.utt_data
+    utt_reader.ReadAllUtterances()
+    print utt_reader.utt_data
         
