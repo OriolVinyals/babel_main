@@ -20,6 +20,7 @@ class UtteranceReader:
         if feat_range == None:
             feat_range = range(self.feat_size)
         self.feat_range = feat_range
+        self.feat_size = len(feat_range)
         
         for i in range(len(self.list_files)):
             file_htk = htkmfc.HTKFeat_read(self.list_files[i])

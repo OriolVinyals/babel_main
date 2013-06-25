@@ -5,4 +5,7 @@
 <pydev_pathproperty name="org.python.pydev.PROJECT_SOURCE_PATH">
 <path>/babel_main/external/python_gflags-2.0-py2.6.egg</path>
 </pydev_pathproperty>
+<pydev_pathproperty name="org.python.pydev.PROJECT_EXTERNAL_SOURCE_PATH">
+<path>C:\Users\vinyals\git</path>
+</pydev_pathproperty>
 </pydev_project>
