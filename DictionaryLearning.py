@@ -11,6 +11,7 @@ import UtteranceReader
 
 
 if __name__ == '__main__':
+    mpi.log_level(logging.DEBUG)
     logging.info('Loading Babel data...')
     list_files = ['./data/BABEL_BP_104_85455_20120310_210107_outLine','./data/BABEL_BP_104_85455_20120310_210107_outLine','./data/BABEL_BP_104_85455_20120310_210107_outLine']
     feat_range = [0,1,2,5,6,7,69,74]
@@ -22,8 +23,11 @@ if __name__ == '__main__':
                 pipeline.PatchExtractor([6,6], 1), # extracts patches
                 pipeline.MeanvarNormalizer({'reg': 10}), # normalizes the patches
                 pipeline.LinearEncoder({},
-                trainer = pipeline.ZcaTrainer({'reg': 0.1})) # Does whitening
+                trainer = pipeline.ZcaTrainer({'reg': 0.1})), # Does whitening
+                pipeline.ThresholdEncoder({'alpha': 0.25, 'twoside': True},
+                    trainer = pipeline.OMPTrainer(
+                            {'k': 10, 'max_iter':100})), # does encoding
                 ])
     logging.info('Training the pipeline...')
     conv.train(babel, 1000)
-
+    print 'muja'
