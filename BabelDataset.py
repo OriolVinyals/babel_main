@@ -18,11 +18,30 @@ class BabelDataset(datasets.ImageSet):
         super(BabelDataset, self).__init__()
         self._data = utt_reader.utt_data
         self._data = []
+        self._label = []
         self._dim = False
         self._channels = 1
         for i in range(len(posting_sampler.negative_data)):
             if utt_reader.map_utt_idx.has_key(posting_sampler.negative_data[i]['file']):
-                self._data.append(utt_reader.GetUtterance(posting_sampler.negative_data[i]['file'],0,1))
+                if posting_sampler.negative_data[i]['sys_bt'] == None:
+                    print 'mujamuja'
+                    pass
+                self._data.append(utt_reader.GetUtterance(posting_sampler.negative_data[i]['file'],
+                                                          float(posting_sampler.negative_data[i]['sys_bt']),
+                                                          float(posting_sampler.negative_data[i]['sys_et'])))
+                self._label.append(0)
             else:
                 pass
-        print 'muja'
+        for i in range(len(posting_sampler.positive_data)):
+            if utt_reader.map_utt_idx.has_key(posting_sampler.positive_data[i]['file']):
+                if posting_sampler.positive_data[i]['sys_bt'] == '':
+                    sys_bt = 0
+                    sys_et = None
+                else:
+                    sys_bt = float(posting_sampler.positive_data[i]['sys_bt'])
+                    sys_et = float(posting_sampler.positive_data[i]['sys_et'])
+                self._data.append(utt_reader.GetUtterance(posting_sampler.positive_data[i]['file'],
+                                                          sys_bt, sys_et))
+                self._label.append(0)
+            else:
+                pass
