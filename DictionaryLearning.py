@@ -27,13 +27,13 @@ if __name__ == '__main__':
     babel = BabelDataset.BabelDataset(utt_reader,sampler)
     
     conv = pipeline.ConvLayer([
-                pipeline.PatchExtractor([6,6], 1), # extracts patches
+                pipeline.PatchExtractor([10,8], 1), # extracts patches
                 pipeline.MeanvarNormalizer({'reg': 10}), # normalizes the patches
                 pipeline.LinearEncoder({},
                 trainer = pipeline.ZcaTrainer({'reg': 0.1})), # Does whitening
                 pipeline.ThresholdEncoder({'alpha': 0.25, 'twoside': True},
                     trainer = pipeline.OMPTrainer(
-                            {'k': 10, 'max_iter':100})), # does encoding
+                            {'k': 50, 'max_iter':100})), # does encoding
                 pipeline.SpatialPooler({'grid': (1,1), 'method': 'ave'})
                 ])
     logging.info('Training the pipeline...')
@@ -42,9 +42,11 @@ if __name__ == '__main__':
     logging.info('Extracting features...')
     Xtrain = conv.process_dataset(babel, as_2d = True)
     Ytrain = babel.labels().astype(np.int)
+    Xtrain = np.hstack((Xtrain,np.asmatrix(Ytrain).T))
+
     
-    w, b = classifier.l2svm_onevsall(Xtrain, Ytrain, 0.01)
-    accu = np.sum(Ytrain == (np.dot(Xtrain,w)+b).argmax(axis=1)) \
+    w, b = classifier.l2svm_onevsall(Xtrain, Ytrain, 0.0)
+    accu = np.sum(Ytrain == (np.dot(Xtrain,w)+b).argmax(axis=1).squeeze()) \
             / float(len(Ytrain))
             
     print 'Accuracy is ',accu
