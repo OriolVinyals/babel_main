@@ -2,7 +2,7 @@ import cPickle as pickle
 import cProfile
 import gflags
 import logging
-from iceberk import mpi, pipeline
+from iceberk import mpi, pipeline, classifier
 import numpy as np
 import os
 import sys
@@ -42,3 +42,5 @@ if __name__ == '__main__':
     logging.info('Extracting features...')
     Xtrain = conv.process_dataset(babel, as_2d = True)
     Ytrain = babel.labels().astype(np.int)
+    
+    w, b = classifier.l2svm_onevsall(Xtrain, Ytrain, 0.01)
