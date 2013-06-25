@@ -45,7 +45,7 @@ if __name__ == '__main__':
     #Xtrain = np.hstack((Xtrain,np.asmatrix(Ytrain).T))
 
     
-    w, b = classifier.l2svm_onevsall(Xtrain, Ytrain, 0.1)
+    w, b = classifier.l2svm_onevsall(Xtrain, Ytrain, 0.0)
     accu = np.sum(Ytrain == (np.dot(Xtrain,w)+b).argmax(axis=1).squeeze()) \
             / float(len(Ytrain))
             
