@@ -25,7 +25,7 @@ class BabelDataset(datasets.ImageSet):
             if utt_reader.map_utt_idx.has_key(posting_sampler.negative_data[i]['file']):
                 if posting_sampler.negative_data[i]['sys_bt'] == None:
                     print 'mujamuja'
-                    pass
+                    exit(0)
                 self._data.append(utt_reader.GetUtterance(posting_sampler.negative_data[i]['file'],
                                                           float(posting_sampler.negative_data[i]['sys_bt']),
                                                           float(posting_sampler.negative_data[i]['sys_et'])))
@@ -37,11 +37,12 @@ class BabelDataset(datasets.ImageSet):
                 if posting_sampler.positive_data[i]['sys_bt'] == '':
                     sys_bt = 0
                     sys_et = None
+                    print posting_sampler.positive_data[i]['alignment']
                 else:
                     sys_bt = float(posting_sampler.positive_data[i]['sys_bt'])
                     sys_et = float(posting_sampler.positive_data[i]['sys_et'])
                 self._data.append(utt_reader.GetUtterance(posting_sampler.positive_data[i]['file'],
                                                           sys_bt, sys_et))
-                self._label.append(0)
+                self._label.append(1)
             else:
                 pass

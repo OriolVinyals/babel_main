@@ -11,7 +11,6 @@ import UtteranceReader
 import PostingParser
 import Sampler
 
-
 if __name__ == '__main__':
     mpi.log_level(logging.DEBUG)
     logging.info('Loading Babel data...')
