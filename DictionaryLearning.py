@@ -42,11 +42,12 @@ if __name__ == '__main__':
     logging.info('Extracting features...')
     Xtrain = conv.process_dataset(babel, as_2d = True)
     Ytrain = babel.labels().astype(np.int)
-    Xtrain = np.hstack((Xtrain,np.asmatrix(Ytrain).T))
+    #Xtrain = np.hstack((Xtrain,np.asmatrix(Ytrain).T))
 
     
-    w, b = classifier.l2svm_onevsall(Xtrain, Ytrain, 0.0)
+    w, b = classifier.l2svm_onevsall(Xtrain, Ytrain, 0.1)
     accu = np.sum(Ytrain == (np.dot(Xtrain,w)+b).argmax(axis=1).squeeze()) \
             / float(len(Ytrain))
             
     print 'Accuracy is ',accu
+    print 'Prior is ',np.sum(Ytrain==0)/float(len(Ytrain))
