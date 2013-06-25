@@ -16,7 +16,7 @@ class Sampler:
         self.positive_labels = []
         self.num_positive = 0
         for i in range(self.posting_parser.num_total()):
-            if self.posting_parser.data[i]['alignment']=='CORR' or testParser.data[i]['alignment']=='MISS':
+            if self.posting_parser.data[i]['alignment']=='CORR' or self.posting_parser.data[i]['alignment']=='MISS':
                 self.positive_data.append(self.posting_parser.data[i])
                 self.positive_labels.append(self.posting_parser.data[i]['termid'])
                 self.num_positive += 1
@@ -26,7 +26,7 @@ class Sampler:
         self.negative_labels = []
         self.num_negative = 0
         for i in range(self.posting_parser.num_total()):
-            if self.posting_parser.data[i]['alignment']=='CORR!DET' or testParser.data[i]['alignment']=='FA':
+            if self.posting_parser.data[i]['alignment']=='CORR!DET' or self.posting_parser.data[i]['alignment']=='FA':
                 self.negative_data.append(self.posting_parser.data[i])
                 self.negative_labels.append(self.posting_parser.data[i]['termid'])
                 self.num_negative += 1

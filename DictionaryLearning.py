@@ -8,6 +8,8 @@ import os
 import sys
 import BabelDataset
 import UtteranceReader
+import PostingParser
+import Sampler
 
 
 if __name__ == '__main__':
@@ -17,7 +19,13 @@ if __name__ == '__main__':
     feat_range = [0,1,2,5,6,7,69,74]
     utt_reader = UtteranceReader.UtteranceReader(list_files)
     utt_reader.ReadAllUtterances(feat_range)
-    babel = BabelDataset.BabelDataset(utt_reader)
+    testParser = PostingParser.PostingParser('./data/word.kwlist.alignment.csv')
+    sampler = Sampler.Sampler(testParser)
+    sampler.GetPositive()
+    sampler.GetNegative()
+    sampler.SampleData(0.2)
+    
+    babel = BabelDataset.BabelDataset(utt_reader,sampler)
     
     conv = pipeline.ConvLayer([
                 pipeline.PatchExtractor([6,6], 1), # extracts patches
