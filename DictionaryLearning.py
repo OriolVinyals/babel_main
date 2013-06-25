@@ -44,3 +44,7 @@ if __name__ == '__main__':
     Ytrain = babel.labels().astype(np.int)
     
     w, b = classifier.l2svm_onevsall(Xtrain, Ytrain, 0.01)
+    accu = np.sum(Ytrain == (np.dot(Xtrain,w)+b).argmax(axis=1)) \
+            / float(len(Ytrain))
+            
+    print 'Accuracy is ',accu
