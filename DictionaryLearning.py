@@ -34,7 +34,11 @@ if __name__ == '__main__':
                 pipeline.ThresholdEncoder({'alpha': 0.25, 'twoside': True},
                     trainer = pipeline.OMPTrainer(
                             {'k': 10, 'max_iter':100})), # does encoding
+                pipeline.SpatialPooler({'grid': (1,1), 'method': 'ave'})
                 ])
     logging.info('Training the pipeline...')
     conv.train(babel, 1000)
     print 'muja'
+    logging.info('Extracting features...')
+    Xtrain = conv.process_dataset(babel, as_2d = True)
+    Ytrain = babel.labels().astype(np.int)
