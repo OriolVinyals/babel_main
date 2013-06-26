@@ -7,16 +7,25 @@ import numpy as np
 import os
 import UtteranceReader
 import PostingParser
+import Sampler
 
 class BabelDataset(datasets.ImageSet):
     """The Bable dataset
     """
     # some  Babel constants
     
-    def __init__(self, utt_reader,posting_sampler):
+    #def __init__(self, utt_reader,posting_sampler):
+    def __init__(self, list_files, feat_range, posting_file, perc_pos):
         '''TODO: Read pieces of utterance from the CSV file instead to save memory. It would be nice to index thse by utt_id (by now I do a map).'''
         super(BabelDataset, self).__init__()
-        self._data = utt_reader.utt_data
+        utt_reader = UtteranceReader.UtteranceReader(list_files)
+        utt_reader.ReadAllUtterances(feat_range)
+        testParser = PostingParser.PostingParser(posting_file)
+        posting_sampler = Sampler.Sampler(testParser)
+        posting_sampler.GetPositive()
+        posting_sampler.GetNegative()
+        posting_sampler.SampleData(perc_pos)
+        
         self._data = []
         self._label = []
         self._dim = False

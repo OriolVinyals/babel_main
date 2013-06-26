@@ -7,24 +7,16 @@ import numpy as np
 import os
 import sys
 import BabelDataset
-import UtteranceReader
-import PostingParser
-import Sampler
 
 if __name__ == '__main__':
     mpi.log_level(logging.DEBUG)
     logging.info('Loading Babel data...')
     list_files = ['./data/BABEL_BP_104_85455_20120310_210107_outLine','./data/BABEL_BP_104_85455_20120310_210107_outLine','./data/BABEL_BP_104_85455_20120310_210107_outLine']
     feat_range = [0,1,2,5,6,7,69,74]
-    utt_reader = UtteranceReader.UtteranceReader(list_files)
-    utt_reader.ReadAllUtterances(feat_range)
-    testParser = PostingParser.PostingParser('./data/word.kwlist.alignment.csv')
-    sampler = Sampler.Sampler(testParser)
-    sampler.GetPositive()
-    sampler.GetNegative()
-    sampler.SampleData(0.2)
+    posting_file = './data/word.kwlist.alignment.csv'
+    perc_pos = 0.2
     
-    babel = BabelDataset.BabelDataset(utt_reader,sampler)
+    babel = BabelDataset.BabelDataset(list_files, feat_range, posting_file, perc_pos)
     
     conv = pipeline.ConvLayer([
                 pipeline.PatchExtractor([10,8], 1), # extracts patches
