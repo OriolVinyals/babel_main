@@ -21,41 +21,41 @@ class BabelDataset(datasets.ImageSet):
         utt_reader = UtteranceReader.UtteranceReader(list_files)
         utt_reader.ReadAllUtterances(feat_range)
         testParser = PostingParser.PostingParser(posting_file)
-        posting_sampler = Sampler.Sampler(testParser)
-        posting_sampler.GetPositive()
-        posting_sampler.GetNegative()
-        posting_sampler.SampleData(perc_pos)
+        self.posting_sampler = Sampler.Sampler(testParser)
+        self.posting_sampler.GetPositive()
+        self.posting_sampler.GetNegative()
+        self.posting_sampler.SampleData(perc_pos)
         
         self._data = []
         self._label = []
         self._dim = False
         self._channels = 1
-        for i in range(len(posting_sampler.negative_data)):
-            if utt_reader.map_utt_idx.has_key(posting_sampler.negative_data[i]['file']):
-                if posting_sampler.negative_data[i]['sys_bt'] == None:
+        for i in range(len(self.posting_sampler.negative_data)):
+            if utt_reader.map_utt_idx.has_key(self.posting_sampler.negative_data[i]['file']):
+                if self.posting_sampler.negative_data[i]['sys_bt'] == None:
                     print 'mujamuja'
                     exit(0)
-                sys_bt = float(posting_sampler.negative_data[i]['sys_bt'])
-                sys_et = float(posting_sampler.negative_data[i]['sys_et'])
+                sys_bt = float(self.posting_sampler.negative_data[i]['sys_bt'])
+                sys_et = float(self.posting_sampler.negative_data[i]['sys_et'])
                 if(sys_et-sys_bt < 0.2):
                     continue
-                self._data.append(utt_reader.GetUtterance(posting_sampler.negative_data[i]['file'],
+                self._data.append(utt_reader.GetUtterance(self.posting_sampler.negative_data[i]['file'],
                                                           sys_bt, sys_et))
                 self._label.append(0)
             else:
                 pass
-        for i in range(len(posting_sampler.positive_data)):
-            if utt_reader.map_utt_idx.has_key(posting_sampler.positive_data[i]['file']):
-                if posting_sampler.positive_data[i]['sys_bt'] == '':
+        for i in range(len(self.posting_sampler.positive_data)):
+            if utt_reader.map_utt_idx.has_key(self.posting_sampler.positive_data[i]['file']):
+                if self.posting_sampler.positive_data[i]['sys_bt'] == '':
                     sys_bt = 0
                     sys_et = None
-                    print posting_sampler.positive_data[i]['alignment']
+                    print self.posting_sampler.positive_data[i]['alignment']
                 else:
-                    sys_bt = float(posting_sampler.positive_data[i]['sys_bt'])
-                    sys_et = float(posting_sampler.positive_data[i]['sys_et'])
+                    sys_bt = float(self.posting_sampler.positive_data[i]['sys_bt'])
+                    sys_et = float(self.posting_sampler.positive_data[i]['sys_et'])
                     if(sys_et-sys_bt < 0.2):
                         continue
-                self._data.append(utt_reader.GetUtterance(posting_sampler.positive_data[i]['file'],
+                self._data.append(utt_reader.GetUtterance(self.posting_sampler.positive_data[i]['file'],
                                                           sys_bt, sys_et))
                 self._label.append(1)
             else:
