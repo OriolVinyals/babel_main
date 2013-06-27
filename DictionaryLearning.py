@@ -1,23 +1,19 @@
-import cPickle as pickle
-import cProfile
-import gflags
 import logging
 from iceberk import mpi, pipeline, classifier
 import numpy as np
-import os
-import sys
 import BabelDataset
 
 if __name__ == '__main__':
+    '''Loading Data: '''
     mpi.log_level(logging.DEBUG)
     logging.info('Loading Babel data...')
     list_files = ['./data/BABEL_BP_104_85455_20120310_210107_outLine','./data/BABEL_BP_104_85455_20120310_210107_outLine','./data/BABEL_BP_104_85455_20120310_210107_outLine']
     feat_range = [0,1,2,5,6,7,69,74]
     posting_file = './data/word.kwlist.alignment.csv'
     perc_pos = 0.2
-    
     babel = BabelDataset.BabelDataset(list_files, feat_range, posting_file, perc_pos)
     
+    '''An example audio pipeline to extract features'''
     conv = pipeline.ConvLayer([
                 pipeline.PatchExtractor([10,8], 1), # extracts patches
                 pipeline.MeanvarNormalizer({'reg': 10}), # normalizes the patches
@@ -30,13 +26,12 @@ if __name__ == '__main__':
                 ])
     logging.info('Training the pipeline...')
     conv.train(babel, 1000)
-    print 'muja'
     logging.info('Extracting features...')
     Xtrain = conv.process_dataset(babel, as_2d = True)
     Ytrain = babel.labels().astype(np.int)
     #Xtrain = np.hstack((Xtrain,np.asmatrix(Ytrain).T))
 
-    
+    '''Classifier stage'''
     w, b = classifier.l2svm_onevsall(Xtrain, Ytrain, 0.0)
     accu = np.sum(Ytrain == (np.dot(Xtrain,w)+b).argmax(axis=1).squeeze()) \
             / float(len(Ytrain))
