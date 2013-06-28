@@ -8,13 +8,14 @@ from external import htkmfc
 import string
 
 class UtteranceReader:
-    def __init__(self,list_files):
-        self.list_files = list_files
+    def __init__(self,list_file):
+        self.list_file = list_file
+        self.list_files = self.ParseListScp(list_file)
         self.utt_data = []
         file_htk = htkmfc.HTKFeat_read(self.list_files[0])
         file_htk.readheader()
         self.feat_size = file_htk.veclen
-        self.num_utt = len(list_files)
+        self.num_utt = len(self.list_files)
         self.samp_period = file_htk.sampPeriod/(1e9/100)
         self.map_utt_idx = {}
          
@@ -42,9 +43,18 @@ class UtteranceReader:
         else:
             t_end=t_end/self.samp_period
         return self.utt_data[index][t_ini:t_end,:]
-        
+    
+    def ParseListScp(self, list_file):
+        list_files = []
+        with open(list_file) as f:
+            for line in f:
+                list_files.append(line.strip().split('=')[1].strip().split('[')[0])
+        list_files = set(list_files)
+        return [n for n in list_files]
+                
+
 if __name__ == '__main__':
-    list_files = ['./data/BABEL_BP_104_85455_20120310_210107_outLine','./data/BABEL_BP_104_85455_20120310_210107_outLine','./data/BABEL_BP_104_85455_20120310_210107_outLine']
+    list_files = './data/list_files.scp'
     feat_range = [0,1,2,5,6,7,69,74]
     utt_reader = UtteranceReader(list_files)
     print utt_reader.feat_size

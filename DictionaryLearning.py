@@ -7,11 +7,11 @@ if __name__ == '__main__':
     '''Loading Data: '''
     mpi.log_level(logging.DEBUG)
     logging.info('Loading Babel data...')
-    list_files = ['./data/BABEL_BP_104_85455_20120310_210107_outLine','./data/BABEL_BP_104_85455_20120310_210107_outLine','./data/BABEL_BP_104_85455_20120310_210107_outLine']
+    list_file = './data/list_files.scp'
     feat_range = [0,1,2,5,6,7,69,74]
     posting_file = './data/word.kwlist.alignment.csv'
     perc_pos = 0.2
-    babel = BabelDataset.BabelDataset(list_files, feat_range, posting_file, perc_pos)
+    babel = BabelDataset.BabelDataset(list_file, feat_range, posting_file, perc_pos)
     
     '''An example audio pipeline to extract features'''
     conv = pipeline.ConvLayer([
