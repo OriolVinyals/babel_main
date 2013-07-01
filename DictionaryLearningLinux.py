@@ -57,7 +57,7 @@ if __name__ == '__main__':
     Xtest = np.hstack((Xp_t_a1,Xp_t_score))
     Ytest = babel_eval.labels().astype(np.int)
     
-    accu = np.sum(Ytrain == (np.dot(Xtest,w)+b).argmax(axis=1).squeeze()) \
+    accu = np.sum(Ytest == (np.dot(Xtest,w)+b).argmax(axis=1).squeeze()) \
             / float(len(Ytest))
             
     print 'Test Accuracy is ',accu
