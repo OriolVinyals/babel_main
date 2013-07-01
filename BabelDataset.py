@@ -74,6 +74,7 @@ class BabelDataset(datasets.ImageSet):
         self._data = mpi.distribute(self._data)
         self._label = mpi.distribute(self._label)
         self._features = mpi.distribute(self._features)
+        print 'I am holding ',len(self._data)
         
     def ConvertFeatures(self,feat_range):
         '''Saves a copy for _data (all features), and strips out some features'''
