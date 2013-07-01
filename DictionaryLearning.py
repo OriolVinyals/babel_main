@@ -33,7 +33,7 @@ if __name__ == '__main__':
     Xp_score = np.asmatrix(babel._features).T
     
     '''Pipeline that cheats'''
-    #Xp_cheat = np.hstack((Xtrain,np.asmatrix(Ytrain).T))
+    #Xp_cheat = np.asmatrix(babel.labels().astype(np.int)).T
 
     '''Building appended features'''
     Xtrain = np.hstack((Xp_a1,Xp_score))

@@ -34,7 +34,7 @@ class BabelDataset(datasets.ImageSet):
         if mpi.is_root():
             for i in range(len(self.posting_sampler.negative_data)):
                 if utt_reader.map_utt_idx.has_key(self.posting_sampler.negative_data[i]['file']):
-                    if self.posting_sampler.negative_data[i]['sys_bt'] == None:
+                    if self.posting_sampler.negative_data[i]['sys_bt'] == '':
                         print 'We found a negative example that was not produced by the system!'
                         exit(0)
                     sys_bt = float(self.posting_sampler.negative_data[i]['sys_bt'])
@@ -55,6 +55,7 @@ class BabelDataset(datasets.ImageSet):
                         sys_et = None
                         sys_sc = -1.0
                         #print self.posting_sampler.positive_data[i]['alignment']
+                        continue #Should just ignore these?
                     else:
                         sys_bt = float(self.posting_sampler.positive_data[i]['sys_bt'])
                         sys_et = float(self.posting_sampler.positive_data[i]['sys_et'])
