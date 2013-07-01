@@ -30,6 +30,7 @@ if __name__ == '__main__':
     Xtrain = conv.process_dataset(babel, as_2d = True)
     Ytrain = babel.labels().astype(np.int)
     #Xtrain = np.hstack((Xtrain,np.asmatrix(Ytrain).T))
+    Xtrain = np.hstack((Xtrain,np.asmatrix(babel._features).T))
 
     '''Classifier stage'''
     w, b = classifier.l2svm_onevsall(Xtrain, Ytrain, 0.0)
