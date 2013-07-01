@@ -69,8 +69,10 @@ class BabelDataset(datasets.ImageSet):
                     self._features.append(sys_sc)
                 else:
                     pass
-            
+                
+            self._data = np.array(self._data)
             self._label = np.array(self._label)
+            self._features = np.array(self._features)
         else:
             self._data = None
             self._label = None
