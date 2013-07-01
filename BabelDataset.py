@@ -33,6 +33,7 @@ class BabelDataset(datasets.ImageSet):
             self._data = []
             self._label = []
             self._features = []
+            self._utt_id = []
             for i in range(len(self.posting_sampler.negative_data)):
                 if utt_reader.map_utt_idx.has_key(self.posting_sampler.negative_data[i]['file']):
                     if self.posting_sampler.negative_data[i]['sys_bt'] == '':
@@ -47,6 +48,7 @@ class BabelDataset(datasets.ImageSet):
                                                               sys_bt, sys_et))
                     self._label.append(0)
                     self._features.append(sys_sc)
+                    self._utt_id.append(self.posting_sampler.negative_data[i]['file'])
                 else:
                     pass
             for i in range(len(self.posting_sampler.positive_data)):
@@ -67,6 +69,7 @@ class BabelDataset(datasets.ImageSet):
                                                               sys_bt, sys_et))
                     self._label.append(1)
                     self._features.append(sys_sc)
+                    self._utt_id.append(self.posting_sampler.positive_data[i]['file'])
                 else:
                     pass
             
@@ -102,4 +105,5 @@ if __name__ == '__main__':
     print babel._data[0].shape
     babel.ConvertFeatures(range(30))
     print babel._data[0].shape
+    print babel._utt_id[0]
             
