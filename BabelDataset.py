@@ -27,12 +27,12 @@ class BabelDataset(datasets.ImageSet):
         self.posting_sampler.SampleData(perc_pos)
         
         self._data_all = None
-        self._data = []
-        self._label = []
-        self._features = []
         self._dim = False
         self._channels = 1
         if mpi.is_root():
+            self._data = []
+            self._label = []
+            self._features = []
             for i in range(len(self.posting_sampler.negative_data)):
                 if utt_reader.map_utt_idx.has_key(self.posting_sampler.negative_data[i]['file']):
                     if self.posting_sampler.negative_data[i]['sys_bt'] == '':
@@ -73,7 +73,7 @@ class BabelDataset(datasets.ImageSet):
             self._label = np.array(self._label)
         else:
             self._data = None
-            self._labels = None
+            self._label = None
             self._features = None
         self._data = mpi.distribute(self._data)
         self._label = mpi.distribute(self._label)
