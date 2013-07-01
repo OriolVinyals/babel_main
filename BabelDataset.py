@@ -71,6 +71,10 @@ class BabelDataset(datasets.ImageSet):
                     pass
             
             self._label = np.array(self._label)
+        else:
+            self._data = None
+            self._labels = None
+            self._features = None
         self._data = mpi.distribute(self._data)
         self._label = mpi.distribute(self._label)
         self._features = mpi.distribute(self._features)
