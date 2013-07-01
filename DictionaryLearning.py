@@ -27,11 +27,17 @@ if __name__ == '__main__':
     logging.info('Training the pipeline...')
     conv.train(babel, 1000)
     logging.info('Extracting features...')
-    Xtrain = conv.process_dataset(babel, as_2d = True)
-    Ytrain = babel.labels().astype(np.int)
-    #Xtrain = np.hstack((Xtrain,np.asmatrix(Ytrain).T))
-    Xtrain = np.hstack((Xtrain,np.asmatrix(babel._features).T))
+    Xp_a1 = conv.process_dataset(babel, as_2d = True)
+    
+    '''Pipeline that just gets the score'''
+    Xp_score = np.asmatrix(babel._features).T
+    
+    '''Pipeline that cheats'''
+    #Xp_cheat = np.hstack((Xtrain,np.asmatrix(Ytrain).T))
 
+    '''Building appended features'''
+    Xtrain = np.hstack((Xp_a1,Xp_score))
+    Ytrain = babel.labels().astype(np.int)
     '''Classifier stage'''
     w, b = classifier.l2svm_onevsall(Xtrain, Ytrain, 0.0)
     accu = np.sum(Ytrain == (np.dot(Xtrain,w)+b).argmax(axis=1).squeeze()) \
