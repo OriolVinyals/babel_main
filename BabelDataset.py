@@ -15,7 +15,7 @@ class BabelDataset(datasets.ImageSet):
     # some  Babel constants
     
     #def __init__(self, utt_reader,posting_sampler):
-    def __init__(self, list_file, feat_range, posting_file, perc_pos):
+    def __init__(self, list_file, feat_range, posting_file, perc_pos, keep_full_utt=False):
         '''TODO: Read pieces of utterance from the CSV file instead to save memory. It would be nice to index thse by utt_id (by now I do a map).'''
         super(BabelDataset, self).__init__()
         utt_reader = UtteranceReader.UtteranceReader(list_file)
@@ -78,6 +78,8 @@ class BabelDataset(datasets.ImageSet):
         self._data = mpi.distribute_list(self._data)
         self._label = mpi.distribute(self._label)
         self._features = mpi.distribute_list(self._features)
+        if keep_full_utt == True:
+            self.utt_reader = utt_reader
         
     def ConvertFeatures(self,feat_range):
         '''Saves a copy for _data (all features), and strips out some features'''

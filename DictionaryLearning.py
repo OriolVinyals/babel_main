@@ -11,7 +11,7 @@ if __name__ == '__main__':
     feat_range = [0,1,2,5,6,7,69,74]
     posting_file = './data/word.kwlist.alignment.csv'
     perc_pos = 0.2
-    babel = BabelDataset.BabelDataset(list_file, feat_range, posting_file, perc_pos)
+    babel = BabelDataset.BabelDataset(list_file, feat_range, posting_file, perc_pos, keep_full_utt=True)
     
     '''An example audio pipeline to extract features'''
     conv = pipeline.ConvLayer([
