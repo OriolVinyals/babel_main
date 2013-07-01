@@ -26,6 +26,7 @@ class BabelDataset(datasets.ImageSet):
         self.posting_sampler.GetNegative()
         self.posting_sampler.SampleData(perc_pos)
         
+        self._data_all = None
         self._data = []
         self._label = []
         self._features = []
@@ -73,4 +74,26 @@ class BabelDataset(datasets.ImageSet):
         self._data = mpi.distribute(self._data)
         self._label = mpi.distribute(self._label)
         self._features = mpi.distribute(self._features)
+        
+    def ConvertFeatures(self,feat_range):
+        '''Saves a copy for _data (all features), and strips out some features'''
+        if self._data_all == None:
+            self._data_all = self._data #make a copy the first time
+        self._data = []
+        for i in range(len(self._data_all)):
+            self._data.append(self._data_all[i][:,feat_range])
+            
+if __name__ == '__main__':
+    list_file = './data/list_files.scp'
+    feat_range = [0,1,2,5,6,7,69,74]
+    posting_file = './data/word.kwlist.alignment.csv'
+    perc_pos = 0.2
+    babel = BabelDataset(list_file, None, posting_file, perc_pos)
+    print babel._data[0].shape
+    babel.ConvertFeatures([0,1,3])
+    print babel._data[0].shape
+    babel.ConvertFeatures([0,1,74])
+    print babel._data[0].shape
+    babel.ConvertFeatures(range(30))
+    print babel._data[0].shape
             
