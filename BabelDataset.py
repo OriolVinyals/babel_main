@@ -69,17 +69,15 @@ class BabelDataset(datasets.ImageSet):
                     self._features.append(sys_sc)
                 else:
                     pass
-                
-            self._data = np.array(self._data)
+            
             self._label = np.array(self._label)
-            self._features = np.array(self._features)
         else:
             self._data = None
             self._label = None
             self._features = None
-        self._data = mpi.distribute(self._data)
+        self._data = mpi.distribute_list(self._data)
         self._label = mpi.distribute(self._label)
-        self._features = mpi.distribute(self._features)
+        self._features = mpi.distribute_list(self._features)
         print 'I am holding ',len(self._data)
         
     def ConvertFeatures(self,feat_range):
