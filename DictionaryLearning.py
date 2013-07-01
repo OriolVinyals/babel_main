@@ -40,8 +40,9 @@ if __name__ == '__main__':
     Ytrain = babel.labels().astype(np.int)
     '''Classifier stage'''
     w, b = classifier.l2svm_onevsall(Xtrain, Ytrain, 0.0)
-    accu = np.sum(Ytrain == (np.dot(Xtrain,w)+b).argmax(axis=1).squeeze()) \
-            / float(len(Ytrain))
+    accu = classifier.Evaluator.accuracy(Ytrain, np.dot(Xtrain,w)+b)
+    #accu2 = np.sum(Ytrain == (np.dot(Xtrain,w)+b).argmax(axis=1).squeeze()) \
+    #        / float(len(Ytrain))
             
     print 'Accuracy is ',accu
     print 'Prior is ',np.sum(Ytrain==0)/float(len(Ytrain))
