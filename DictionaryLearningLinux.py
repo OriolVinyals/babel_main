@@ -14,7 +14,6 @@ if __name__ == '__main__':
     babel = BabelDataset.BabelDataset(list_file, feat_range, posting_file, perc_pos)
     
     list_file = './data/20130307.eval.untightened.scp'
-    feat_range = range(15)
     posting_file = './data/eval_part1.alignment.csv'
     perc_pos = 0.2
     babel_eval = BabelDataset.BabelDataset(list_file, feat_range, posting_file, perc_pos)
