@@ -38,6 +38,9 @@ if __name__ == '__main__':
     '''Building appended features'''
     Xtrain = np.hstack((Xp_a1,Xp_score))
     Ytrain = babel.labels().astype(np.int)
+    m, std = classifier.feature_meanstd(Xtrain)
+    Xtrain -= m
+    Xtrain /= std
     '''Classifier stage'''
     w, b = classifier.l2svm_onevsall(Xtrain, Ytrain, 0.0)
     accu = classifier.Evaluator.accuracy(Ytrain, np.dot(Xtrain,w)+b)
