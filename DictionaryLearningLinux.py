@@ -6,10 +6,10 @@ import BabelDataset
 if __name__ == '__main__':
     '''Loading Data: '''
     print 'Rank of this process is ',mpi.RANK
-    #mpi.log_level(logging.DEBUG)
+    mpi.log_level(logging.DEBUG)
     logging.info('Loading Babel data...')
     list_file = './data/20130307.dev.untightened.scp'
-    feat_range = range(15)
+    feat_range = None
     posting_file = './data/word.kwlist.alignment.csv'
     perc_pos = 0.2
     babel = BabelDataset.BabelDataset(list_file, feat_range, posting_file, perc_pos)
@@ -21,17 +21,17 @@ if __name__ == '__main__':
     
     '''An example audio pipeline to extract features'''
     conv = pipeline.ConvLayer([
-                pipeline.PatchExtractor([10,15], 1), # extracts patches
+                pipeline.PatchExtractor([10,75], 1), # extracts patches
                 pipeline.MeanvarNormalizer({'reg': 10}), # normalizes the patches
                 pipeline.LinearEncoder({},
                 trainer = pipeline.ZcaTrainer({'reg': 0.1})), # Does whitening
                 pipeline.ThresholdEncoder({'alpha': 0.25, 'twoside': True},
                     trainer = pipeline.OMPTrainer(
-                            {'k': 50, 'max_iter':100})), # does encoding
+                            {'k': 500, 'max_iter':100})), # does encoding
                 pipeline.SpatialPooler({'grid': (1,1), 'method': 'ave'})
                 ])
     logging.info('Training the pipeline...')
-    conv.train(babel, 10000)
+    conv.train(babel, 100000)
     logging.info('Extracting features...')
     Xp_a1 = conv.process_dataset(babel, as_2d = True)
     
@@ -49,8 +49,7 @@ if __name__ == '__main__':
     Xtrain /= std
     '''Classifier stage'''
     w, b = classifier.l2svm_onevsall(Xtrain, Ytrain, 0.0)
-    accu = np.sum(Ytrain == (np.dot(Xtrain,w)+b).argmax(axis=1).squeeze()) \
-            / float(len(Ytrain))
+    accu = classifier.Evaluator.accuracy(Ytrain, np.dot(Xtrain,w)+b)
             
     print 'Accuracy is ',accu
     print 'Prior is ',np.sum(Ytrain==0)/float(len(Ytrain))
@@ -63,7 +62,51 @@ if __name__ == '__main__':
     Xtest -= m
     Xtest /= std
     
-    accu = classifier.Evaluator.accuracy(Ytrain, np.dot(Xtrain,w)+b)
+    accu = classifier.Evaluator.accuracy(Ytest, np.dot(Xtest,w)+b)
             
     print 'Test Accuracy is ',accu
+    print 'Test Prior is ',np.sum(Ytest==0)/float(len(Ytest))
+    
+    '''Building appended features'''
+    Xtrain = Xp_score
+    m, std = classifier.feature_meanstd(Xtrain)
+    Xtrain -= m
+    Xtrain /= std
+    '''Classifier stage'''
+    w, b = classifier.l2svm_onevsall(Xtrain, Ytrain, 0.0)
+    accu = classifier.Evaluator.accuracy(Ytrain, np.dot(Xtrain,w)+b)
+            
+    print 'Score only Accuracy is ',accu
+    print 'Prior is ',np.sum(Ytrain==0)/float(len(Ytrain))
+    
+    logging.info('Running Test...')
+    Xtest = Xp_t_score
+    Xtest -= m
+    Xtest /= std
+    
+    accu = classifier.Evaluator.accuracy(Ytest, np.dot(Xtest,w)+b)
+            
+    print 'Score only Test Accuracy is ',accu
+    print 'Test Prior is ',np.sum(Ytest==0)/float(len(Ytest))
+    
+    '''Building appended features'''
+    Xtrain = Xp_a1
+    m, std = classifier.feature_meanstd(Xtrain)
+    Xtrain -= m
+    Xtrain /= std
+    '''Classifier stage'''
+    w, b = classifier.l2svm_onevsall(Xtrain, Ytrain, 0.0)
+    accu = classifier.Evaluator.accuracy(Ytrain, np.dot(Xtrain,w)+b)
+            
+    print 'Audio only Accuracy is ',accu
+    print 'Prior is ',np.sum(Ytrain==0)/float(len(Ytrain))
+    
+    logging.info('Running Test...')
+    Xtest = Xp_t_a1
+    Xtest -= m
+    Xtest /= std
+    
+    accu = classifier.Evaluator.accuracy(Ytest, np.dot(Xtest,w)+b)
+            
+    print 'Audio only Test Accuracy is ',accu
     print 'Test Prior is ',np.sum(Ytest==0)/float(len(Ytest))
