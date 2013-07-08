@@ -32,6 +32,7 @@ class BabelDataset(datasets.ImageSet):
         self._data_all = None
         self._dim = False
         self._channels = 1
+        self.keep_full_utt = keep_full_utt
         if mpi.is_root():
             self._data = []
             self._label = []
@@ -81,10 +82,12 @@ class BabelDataset(datasets.ImageSet):
             self._data = None
             self._label = None
             self._features = None
+            self._utt_id = None
         self._data = mpi.distribute_list(self._data)
         self._label = mpi.distribute(self._label)
         self._features = mpi.distribute_list(self._features)
-        if keep_full_utt == True:
+        self._utt_id = mpi.distribute_list(self._utt_id)
+        if self.keep_full_utt == True:
             self.utt_reader = utt_reader
         
     def ConvertFeatures(self,feat_range):
@@ -102,6 +105,46 @@ class BabelDataset(datasets.ImageSet):
             aux = self._data[i]*np.log(self._data[i])
             self._data[i] = np.sum(aux,1)
             self._entropy.append(np.average(self._data[i]))
+            
+    def GetGlobalFeatures(self):
+        if self.keep_full_utt == False:
+            print 'Error, we need to keep full utterance to compute global (per utterance) features!'
+            exit(0)
+        if mpi.is_root():
+            self._glob_features = []
+            for i in range(len(self.posting_sampler.negative_data)):
+                if self.utt_reader.map_utt_idx.has_key(self.posting_sampler.negative_data[i]['file']):
+                    if self.posting_sampler.negative_data[i]['sys_bt'] == '':
+                        print 'We found a negative example that was not produced by the system!'
+                        exit(0)
+                    sys_bt = float(self.posting_sampler.negative_data[i]['sys_bt'])
+                    sys_et = float(self.posting_sampler.negative_data[i]['sys_et'])
+                    sys_sc = float(self.posting_sampler.negative_data[i]['sys_score'])
+                    if(sys_et-sys_bt < 0.2):
+                        continue
+                    self._glob_features.append(self.utt_reader.GetGlobFeature(self.posting_sampler.negative_data[i]['file']))
+                else:
+                    pass
+            for i in range(len(self.posting_sampler.positive_data)):
+                if self.utt_reader.map_utt_idx.has_key(self.posting_sampler.positive_data[i]['file']):
+                    if self.posting_sampler.positive_data[i]['sys_bt'] == '':
+                        sys_bt = 0
+                        sys_et = None
+                        sys_sc = -1.0
+                        #print self.posting_sampler.positive_data[i]['alignment']
+                        continue #Should just ignore these?
+                    else:
+                        sys_bt = float(self.posting_sampler.positive_data[i]['sys_bt'])
+                        sys_et = float(self.posting_sampler.positive_data[i]['sys_et'])
+                        sys_sc = float(self.posting_sampler.positive_data[i]['sys_score'])
+                        if(sys_et-sys_bt < 0.2):
+                            continue
+                    self._glob_features.append(self.utt_reader.GetGlobFeature(self.posting_sampler.positive_data[i]['file']))
+                else:
+                    pass
+        else:
+            self._glob_features = None
+        self._glob_features = mpi.distribute_list(self._glob_features)
             
 if __name__ == '__main__':
     list_file = './data/list_files.scp'

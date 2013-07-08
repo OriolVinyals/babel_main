@@ -38,7 +38,9 @@ if __name__ == '__main__':
     feat_range = None
     babel_post = BabelDataset.BabelDataset(list_file, feat_range, posting_file, perc_pos, keep_full_utt=True,posting_sampler=babel.posting_sampler)
     babel_post.ComputeEntropy()
+    babel_post.GetGlobalFeatures()
     Xp_entropy = np.asmatrix(babel_post._entropy).T
+    Xp_entropy_glob = np.asmatrix(babel_post._glob_features).T
 
     
     '''Pipeline that just gets the score'''

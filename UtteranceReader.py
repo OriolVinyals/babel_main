@@ -6,12 +6,14 @@ Created on Jun 18, 2013
 
 from external import htkmfc
 import string
+import numpy as np
 
 class UtteranceReader:
     def __init__(self,list_file):
         self.list_file = list_file
         self.list_files = self.ParseListScp(list_file)
         self.utt_data = []
+        self.glob_feature = {}
         file_htk = htkmfc.HTKFeat_read(self.list_files[0])
         file_htk.readheader()
         self.feat_size = file_htk.veclen
@@ -51,6 +53,20 @@ class UtteranceReader:
                 list_files.append(line.strip().split('=')[1].strip().split('[')[0])
         list_files = set(list_files)
         return [n for n in list_files]
+    
+    def GetGlobFeature(self, utt_name, feat_type=None):
+        if self.utt_data == []:
+            print 'We need to read utterances first'
+            return
+        if self.glob_feature.has_key(utt_name):
+            return self.glob_feature[utt_name]
+        index = self.map_utt_idx[utt_name]
+        utt = self.utt_data[index]
+        aux = utt*np.log(utt)
+        aux = np.sum(aux,1)
+        self.glob_feature[utt_name] = np.average(aux)
+        return self.glob_feature[utt_name]
+
                 
 
 if __name__ == '__main__':
