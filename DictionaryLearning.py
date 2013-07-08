@@ -33,10 +33,10 @@ if __name__ == '__main__':
     Xp_score = np.asmatrix(babel._features).T
     
     '''An example for posterior features'''
-    posting_file = './data/fake.word.kwlist.alignment.csv'
+    posting_file = './data/word.kwlist.alignment.csv'
     list_file = './data/post_list_files.scp'
     feat_range = None
-    babel_post = BabelDataset.BabelDataset(list_file, feat_range, posting_file, perc_pos, keep_full_utt=True)
+    babel_post = BabelDataset.BabelDataset(list_file, feat_range, posting_file, perc_pos, keep_full_utt=True,posting_sampler=babel.posting_sampler)
     babel_post.ComputeEntropy()
     Xp_entropy = np.asmatrix(babel_post._entropy).T
 
@@ -48,7 +48,7 @@ if __name__ == '__main__':
     #Xp_cheat = np.asmatrix(babel.labels().astype(np.int)).T
 
     '''Building appended features'''
-    Xtrain = np.hstack((Xp_a1,Xp_score))
+    Xtrain = np.hstack((Xp_a1,Xp_entropy,Xp_score))
     Ytrain = babel.labels().astype(np.int)
     m, std = classifier.feature_meanstd(Xtrain)
     Xtrain -= m
