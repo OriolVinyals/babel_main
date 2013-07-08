@@ -126,3 +126,25 @@ if __name__ == '__main__':
             
     print 'Audio only Test Accuracy is ',accu
     print 'Test Prior is ',np.sum(Ytest==0)/float(len(Ytest))
+    
+    '''Building appended features'''
+    Xtrain = Xp_entropy
+    m, std = classifier.feature_meanstd(Xtrain)
+    Xtrain -= m
+    Xtrain /= std
+    '''Classifier stage'''
+    w, b = classifier.l2svm_onevsall(Xtrain, Ytrain, 0.0)
+    accu = classifier.Evaluator.accuracy(Ytrain, np.dot(Xtrain,w)+b)
+            
+    print 'Entropy only Accuracy is ',accu
+    print 'Prior is ',np.sum(Ytrain==0)/float(len(Ytrain))
+    
+    logging.info('Running Test...')
+    Xtest = Xp_t_entropy
+    Xtest -= m
+    Xtest /= std
+    
+    accu = classifier.Evaluator.accuracy(Ytest, np.dot(Xtest,w)+b)
+            
+    print 'Entropy only Test Accuracy is ',accu
+    print 'Test Prior is ',np.sum(Ytest==0)/float(len(Ytest))
