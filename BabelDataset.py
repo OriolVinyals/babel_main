@@ -92,6 +92,14 @@ class BabelDataset(datasets.ImageSet):
         for i in range(len(self._data_all)):
             self._data.append(self._data_all[i][:,feat_range])
             
+    def ComputeEntropy(self):
+        '''Computes the entropy treating the features as posteriors'''
+        self._entropy = []
+        for i in range(len(self._data)):
+            aux = self._data[i]*np.log(self._data[i])
+            self._data[i] = np.sum(aux,1)
+            self._entropy.append(np.average(self._data[i]))
+            
 if __name__ == '__main__':
     list_file = './data/list_files.scp'
     feat_range = [0,1,2,5,6,7,69,74]

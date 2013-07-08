@@ -32,6 +32,18 @@ if __name__ == '__main__':
     '''Pipeline that just gets the score'''
     Xp_score = np.asmatrix(babel._features).T
     
+    '''An example for posterior features'''
+    posting_file = './data/fake.word.kwlist.alignment.csv'
+    list_file = './data/post_list_files.scp'
+    feat_range = None
+    babel_post = BabelDataset.BabelDataset(list_file, feat_range, posting_file, perc_pos, keep_full_utt=True)
+    babel_post.ComputeEntropy()
+    Xp_entropy = np.asmatrix(babel_post._entropy).T
+
+    
+    '''Pipeline that just gets the score'''
+    Xp_score = np.asmatrix(babel._features).T
+    
     '''Pipeline that cheats'''
     #Xp_cheat = np.asmatrix(babel.labels().astype(np.int)).T
 
