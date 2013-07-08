@@ -14,10 +14,22 @@ if __name__ == '__main__':
     perc_pos = 0.2
     babel = BabelDataset.BabelDataset(list_file, feat_range, posting_file, perc_pos)
     
+    list_file = './data/20130307.dev.post.untightened.scp'
+    feat_range = None
+    babel_post = BabelDataset.BabelDataset(list_file, feat_range, posting_file, perc_pos, posting_sampler=babel.posting_sampler)
+    babel_post.ComputeEntropy()
+    
     list_file = './data/20130307.eval.untightened.scp'
     posting_file = './data/eval_part1.alignment.csv'
     perc_pos = 0.2
     babel_eval = BabelDataset.BabelDataset(list_file, feat_range, posting_file, perc_pos)
+    
+    list_file = './data/20130307.eval.post.untightened.scp'
+    feat_range = None
+    babel_eval_post = BabelDataset.BabelDataset(list_file, feat_range, posting_file, perc_pos, posting_sampler=babel_eval.posting_sampler)
+    babel_eval_post.ComputeEntropy()
+
+
     
     '''An example audio pipeline to extract features'''
     conv = pipeline.ConvLayer([
@@ -34,6 +46,9 @@ if __name__ == '__main__':
     conv.train(babel, 100000)
     logging.info('Extracting features...')
     Xp_a1 = conv.process_dataset(babel, as_2d = True)
+    
+    '''An example for posterior features'''
+    Xp_entropy = np.asmatrix(babel_post._entropy).T
     
     '''Pipeline that just gets the score'''
     Xp_score = np.asmatrix(babel._features).T
@@ -56,6 +71,7 @@ if __name__ == '__main__':
     
     logging.info('Running Test...')
     Xp_t_a1 = conv.process_dataset(babel_eval, as_2d = True)
+    Xp_t_entropy = np.asmatrix(babel_eval_post._entropy).T
     Xp_t_score = np.asmatrix(babel_eval._features).T
     Xtest = np.hstack((Xp_t_a1,Xp_t_score))
     Ytest = babel_eval.labels().astype(np.int)

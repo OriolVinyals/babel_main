@@ -15,16 +15,19 @@ class BabelDataset(datasets.ImageSet):
     # some  Babel constants
     
     #def __init__(self, utt_reader,posting_sampler):
-    def __init__(self, list_file, feat_range, posting_file, perc_pos, keep_full_utt=False):
+    def __init__(self, list_file, feat_range, posting_file, perc_pos, keep_full_utt=False, posting_sampler=None):
         '''TODO: Read pieces of utterance from the CSV file instead to save memory. It would be nice to index thse by utt_id (by now I do a map).'''
         super(BabelDataset, self).__init__()
         utt_reader = UtteranceReader.UtteranceReader(list_file)
         utt_reader.ReadAllUtterances(feat_range)
-        testParser = PostingParser.PostingParser(posting_file)
-        self.posting_sampler = Sampler.Sampler(testParser)
-        self.posting_sampler.GetPositive()
-        self.posting_sampler.GetNegative()
-        self.posting_sampler.SampleData(perc_pos)
+        if posting_sampler == None:
+            testParser = PostingParser.PostingParser(posting_file)
+            self.posting_sampler = Sampler.Sampler(testParser)
+            self.posting_sampler.GetPositive()
+            self.posting_sampler.GetNegative()
+            self.posting_sampler.SampleData(perc_pos)
+        else:
+            self.posting_sampler = posting_sampler
         
         self._data_all = None
         self._dim = False
