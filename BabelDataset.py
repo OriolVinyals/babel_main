@@ -113,17 +113,13 @@ class BabelDataset(datasets.ImageSet):
             self._local_features.append(vector_return)
             
     def GetGlobalFeatures(self, feat_type=['entropy','entropy']):
-        '''Computes global features. Root computes on all utterances and then mpi distributes to nodes (not sure if the other way around is more efficient)'''
+        '''Computes global features. Each mpi node computes its own'''
         if self.keep_full_utt == False:
             print 'Error, we need to keep full utterance to compute global (per utterance) features!'
             exit(0)
-        if mpi.is_root():
-            self._glob_features = []
-            for i in range(len(self._data)):
-                self._glob_features.append(self.utt_reader.GetGlobFeature(self._utt_id[i], feat_type=feat_type))
-        else:
-            self._glob_features = None
-        self._glob_features = mpi.distribute_list(self._glob_features)
+        self._glob_features = []
+        for i in range(len(self._data)):
+            self._glob_features.append(self.utt_reader.GetGlobFeature(self._utt_id[i], feat_type=feat_type))
             
 if __name__ == '__main__':
     list_file = './data/list_files.scp'
