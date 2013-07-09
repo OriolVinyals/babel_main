@@ -45,7 +45,7 @@ if __name__ == '__main__':
     Xp_a1 = conv.process_dataset(babel, as_2d = True)
     
     '''An example for posterior features'''
-    babel_post.GetLocalFeatures(feat_type=['entropy','duration'])
+    babel_post.GetLocalFeatures(feat_type=['entropy'])
     babel_post.GetGlobalFeatures(feat_type=['entropy'])
     Xp_entropy = np.asmatrix(babel_post._local_features)
     Xp_entropy_glob = np.asmatrix(babel_post._glob_features)
@@ -71,7 +71,7 @@ if __name__ == '__main__':
     
     logging.info('Running Test...')
     Xp_t_a1 = conv.process_dataset(babel_eval, as_2d = True)
-    babel_eval_post.GetLocalFeatures(feat_type=['entropy','duration'])
+    babel_eval_post.GetLocalFeatures(feat_type=['entropy'])
     babel_eval_post.GetGlobalFeatures(feat_type=['entropy'])
     Xp_t_entropy = np.asmatrix(babel_eval_post._local_features)
     Xp_t_entropy_glob = np.asmatrix(babel_eval_post._glob_features)
