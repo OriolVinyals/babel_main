@@ -17,7 +17,6 @@ if __name__ == '__main__':
     list_file = './data/20130307.dev.post.untightened.scp'
     feat_range = None
     babel_post = BabelDataset.BabelDataset(list_file, feat_range, posting_file, perc_pos, posting_sampler=babel.posting_sampler)
-    babel_post.GetLocalFeatures()
     
     list_file = './data/20130307.eval.untightened.scp'
     posting_file = './data/eval_part1.alignment.csv'
@@ -27,10 +26,8 @@ if __name__ == '__main__':
     list_file = './data/20130307.eval.post.untightened.scp'
     feat_range = None
     babel_eval_post = BabelDataset.BabelDataset(list_file, feat_range, posting_file, perc_pos, posting_sampler=babel_eval.posting_sampler)
-    babel_eval_post.GetLocalFeatures()
 
 
-    
     '''An example audio pipeline to extract features'''
     conv = pipeline.ConvLayer([
                 pipeline.PatchExtractor([10,75], 1), # extracts patches
@@ -48,7 +45,10 @@ if __name__ == '__main__':
     Xp_a1 = conv.process_dataset(babel, as_2d = True)
     
     '''An example for posterior features'''
-    Xp_entropy = np.asmatrix(babel_post._local_features).T
+    babel_post.GetLocalFeatures(feat_type=['entropy','duration'])
+    babel_post.GetGlobalFeatures(feat_type=['entropy'])
+    Xp_entropy = np.asmatrix(babel_post._local_features)
+    Xp_entropy_glob = np.asmatrix(babel_post._glob_features)
     
     '''Pipeline that just gets the score'''
     Xp_score = np.asmatrix(babel._features).T
@@ -57,7 +57,7 @@ if __name__ == '__main__':
     #Xp_cheat = np.asmatrix(babel.labels().astype(np.int)).T
 
     '''Building appended features'''
-    Xtrain = np.hstack((Xp_a1,Xp_entropy,Xp_score))
+    Xtrain = np.hstack((Xp_a1,Xp_entropy,Xp_entropy_glob,Xp_score))
     Ytrain = babel.labels().astype(np.int)
     m, std = classifier.feature_meanstd(Xtrain)
     Xtrain -= m
@@ -71,9 +71,12 @@ if __name__ == '__main__':
     
     logging.info('Running Test...')
     Xp_t_a1 = conv.process_dataset(babel_eval, as_2d = True)
-    Xp_t_entropy = np.asmatrix(babel_eval_post._local_features).T
+    babel_eval_post.GetLocalFeatures(feat_type=['entropy','duration'])
+    babel_eval_post.GetGlobalFeatures(feat_type=['entropy'])
+    Xp_t_entropy = np.asmatrix(babel_eval_post._local_features)
+    Xp_t_entropy_glob = np.asmatrix(babel_eval_post._glob_features)
     Xp_t_score = np.asmatrix(babel_eval._features).T
-    Xtest = np.hstack((Xp_t_a1,Xp_t_entropy,Xp_t_score))
+    Xtest = np.hstack((Xp_t_a1,Xp_t_entropy,Xp_t_entropy_glob,Xp_t_score))
     Ytest = babel_eval.labels().astype(np.int)
     Xtest -= m
     Xtest /= std
@@ -148,3 +151,25 @@ if __name__ == '__main__':
             
     print 'Entropy only Test Accuracy is ',accu
     print 'Test Prior is ',np.sum(Ytest==0)/float(len(Ytest))
+    
+    '''Building appended features'''
+    Xtrain = Xp_entropy_glob
+    m, std = classifier.feature_meanstd(Xtrain)
+    Xtrain -= m
+    Xtrain /= std
+    '''Classifier stage'''
+    w, b = classifier.l2svm_onevsall(Xtrain, Ytrain, 0.0)
+    accu = classifier.Evaluator.accuracy(Ytrain, np.dot(Xtrain,w)+b)
+            
+    print 'Entropy only Accuracy is ',accu
+    print 'Prior Accuracy is ',np.sum(Ytrain==0)/float(len(Ytrain))
+    
+    logging.info('Running Test...')
+    Xtest = Xp_t_entropy_glob
+    Xtest -= m
+    Xtest /= std
+    
+    accu = classifier.Evaluator.accuracy(Ytest, np.dot(Xtest,w)+b)
+            
+    print 'Global Entropy only Test Accuracy is ',accu
+    print 'Test Prior Accuracy is ',np.sum(Ytest==0)/float(len(Ytest))

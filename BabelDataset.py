@@ -118,7 +118,7 @@ class BabelDataset(datasets.ImageSet):
             print 'Error, we need to keep full utterance to compute global (per utterance) features!'
             exit(0)
         self._glob_features = []
-        for i in range(len(self._data)):
+        for i in range(len(self._utt_id)):
             self._glob_features.append(self.utt_reader.GetGlobFeature(self._utt_id[i], feat_type=feat_type))
             
 if __name__ == '__main__':
