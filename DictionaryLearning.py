@@ -50,6 +50,10 @@ if __name__ == '__main__':
     #Xp_cheat = np.asmatrix(babel.labels().astype(np.int)).T
 
     '''Building appended features'''
+    print 'audio: ',Xp_a1.shape
+    print 'local entropy: ',Xp_entropy.shape
+    print 'global entropy: ',Xp_entropy_glob.shape
+    print 'score: ',Xp_score.shape
     Xtrain = np.hstack((Xp_a1,Xp_entropy,Xp_entropy_glob,Xp_score))
     Ytrain = babel.labels().astype(np.int)
     m, std = classifier.feature_meanstd(Xtrain)
