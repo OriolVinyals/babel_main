@@ -54,7 +54,7 @@ class UtteranceReader:
         list_files = set(list_files)
         return [n for n in list_files]
     
-    def GetGlobFeature(self, utt_name, feat_type=None):
+    def GetGlobFeature(self, utt_name, feat_type='entropy'):
         if self.utt_data == []:
             print 'We need to read utterances first'
             return
@@ -62,9 +62,13 @@ class UtteranceReader:
             return self.glob_feature[utt_name]
         index = self.map_utt_idx[utt_name]
         utt = self.utt_data[index]
-        aux = utt*np.log(utt)
-        aux = np.sum(aux,1)
-        self.glob_feature[utt_name] = np.average(aux)
+        vector_return = []
+        for i in range(len(feat_type)):
+            if feat_type[i] == 'entropy':
+                aux = utt*np.log(utt)
+                aux = np.sum(aux,1)
+                vector_return.append(np.average(aux))
+        self.glob_feature[utt_name] = vector_return
         return self.glob_feature[utt_name]
 
                 

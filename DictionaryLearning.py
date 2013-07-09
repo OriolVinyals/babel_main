@@ -37,10 +37,10 @@ if __name__ == '__main__':
     list_file = './data/post_list_files.scp'
     feat_range = None
     babel_post = BabelDataset.BabelDataset(list_file, feat_range, posting_file, perc_pos, keep_full_utt=True,posting_sampler=babel.posting_sampler)
-    babel_post.ComputeEntropy()
-    babel_post.GetGlobalFeatures()
-    Xp_entropy = np.asmatrix(babel_post._entropy).T
-    Xp_entropy_glob = np.asmatrix(babel_post._glob_features).T
+    babel_post.GetLocalFeatures(feat_type=['entropy','entropy'])
+    babel_post.GetGlobalFeatures(feat_type=['entropy','entropy'])
+    Xp_entropy = np.asmatrix(babel_post._local_features)
+    Xp_entropy_glob = np.asmatrix(babel_post._glob_features)
 
     
     '''Pipeline that just gets the score'''
@@ -50,7 +50,7 @@ if __name__ == '__main__':
     #Xp_cheat = np.asmatrix(babel.labels().astype(np.int)).T
 
     '''Building appended features'''
-    Xtrain = np.hstack((Xp_a1,Xp_entropy,Xp_score))
+    Xtrain = np.hstack((Xp_a1,Xp_entropy,Xp_entropy_glob,Xp_score))
     Ytrain = babel.labels().astype(np.int)
     m, std = classifier.feature_meanstd(Xtrain)
     Xtrain -= m
