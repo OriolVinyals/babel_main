@@ -66,4 +66,4 @@ if __name__ == '__main__':
     #        / float(len(Ytrain))
             
     print 'Accuracy is ',accu
-    print 'Prior is ',np.sum(Ytrain==0)/float(len(Ytrain))
+    print 'Prior is ',mpi.COMM.allreduce((Ytrain==0).sum())/float(mpi.COMM.allreduce(len(Ytrain)))
