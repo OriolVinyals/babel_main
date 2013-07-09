@@ -108,6 +108,8 @@ class BabelDataset(datasets.ImageSet):
                     aux = self._data[i]*np.log(self._data[i])
                     aux = np.sum(aux,1)
                     vector_return.append(np.average(aux))
+                if feat_type[j] == 'duration':
+                    vector_return.append(self._data[i].shape[0]/float(100))
             self._local_features.append(vector_return)
             
     def GetGlobalFeatures(self, feat_type=['entropy','entropy']):

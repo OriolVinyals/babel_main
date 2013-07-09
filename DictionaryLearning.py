@@ -37,7 +37,7 @@ if __name__ == '__main__':
     list_file = './data/post_list_files.scp'
     feat_range = None
     babel_post = BabelDataset.BabelDataset(list_file, feat_range, posting_file, perc_pos, keep_full_utt=True,posting_sampler=babel.posting_sampler)
-    babel_post.GetLocalFeatures(feat_type=['entropy','entropy'])
+    babel_post.GetLocalFeatures(feat_type=['entropy','duration'])
     babel_post.GetGlobalFeatures(feat_type=['entropy','entropy'])
     Xp_entropy = np.asmatrix(babel_post._local_features)
     Xp_entropy_glob = np.asmatrix(babel_post._glob_features)
