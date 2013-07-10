@@ -6,7 +6,7 @@ import BabelDataset
 if __name__ == '__main__':
     '''Loading Data: '''
     print 'Rank of this process is ',mpi.RANK
-    mpi.log_level(logging.DEBUG)
+    mpi.root_log_level(logging.DEBUG)
     logging.info('Loading Babel data...')
     list_file = './data/20130307.dev.untightened.scp'
     feat_range = None
