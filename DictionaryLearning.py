@@ -65,5 +65,5 @@ if __name__ == '__main__':
     #accu2 = np.sum(Ytrain == (np.dot(Xtrain,w)+b).argmax(axis=1).squeeze()) \
     #        / float(len(Ytrain))
             
-    print 'Accuracy is ',accu
-    print 'Prior is ',mpi.COMM.allreduce((Ytrain==0).sum())/float(mpi.COMM.allreduce(len(Ytrain)))
+    logging.info('Accuracy is %f' % (accu))
+    logging.info('Prior is %f' % (mpi.COMM.allreduce((Ytrain==0).sum())/float(mpi.COMM.allreduce(len(Ytrain)))))
