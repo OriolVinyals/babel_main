@@ -5,7 +5,7 @@ import BabelDataset
 
 if __name__ == '__main__':
     '''Loading Data: '''
-    mpi.log_level(logging.DEBUG)
+    mpi.root_log_level(logging.DEBUG)
     logging.info('Loading Babel data...')
     list_file = './data/list_files.scp'
     feat_range = [0,1,2,5,6,7,69,74]
