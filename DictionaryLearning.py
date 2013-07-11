@@ -68,8 +68,7 @@ if __name__ == '__main__':
     accu_logreg = classifier.Evaluator.accuracy(Ytrain, np.dot(Xtrain,w2)+b2)
     neg_ll = Classifier.loss_multiclass_logreg(Ytrain, Xtrain, (w2,b2))
     prob = Classifier.get_predictions_logreg(Xtrain, (w2,b2))
-    for i in range(len(prob)):
-        print prob[i].shape
+    print prob.shape
     #accu2 = np.sum(Ytrain == (np.dot(Xtrain,w)+b).argmax(axis=1).squeeze()) \
     #        / float(len(Ytrain))
             
