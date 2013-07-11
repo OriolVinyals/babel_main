@@ -1,4 +1,4 @@
-from iceberk import classifier, mathutil
+from iceberk import classifier, mathutil, mpi
 import numpy as np
 
 def l2logreg_onevsall(X, Y, gamma, weight = None, **kwargs):
@@ -16,7 +16,15 @@ def l2logreg_onevsall(X, Y, gamma, weight = None, **kwargs):
 
 def loss_multiclass_logreg(Y, X, weights):
     pred = mathutil.dot(X,weights[0])+weights[1]
-    return classifier.Loss.loss_multiclass_logistic(classifier.to_one_of_k_coding(Y, 0), pred, None)[0] / float(Y.shape[0])
+    mpi.barrier()
+    pred = mpi.COMM.gather(pred)
+    Y = mpi.COMM.gather(Y)
+    if mpi.is_root():
+        Y = np.hstack(Y)
+        pred = np.hstack(pred)
+        return classifier.Loss.loss_multiclass_logistic(classifier.to_one_of_k_coding(Y, 0), pred, None)[0] / float(Y.shape[0])
+    else:
+        return 0
 
 def get_predictions_logreg(X, weights):
     pred = mathutil.dot(X,weights[0])+weights[1]
