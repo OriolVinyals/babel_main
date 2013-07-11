@@ -28,7 +28,7 @@ def get_predictions_logreg(X, weights):
     prob /= prob.sum(axis=1)[:, np.newaxis]
     prob = mpi.COMM.gather(prob)
     if mpi.is_root():
-        return prob
+        return np.vstack(prob)
     else:
         return None
 
