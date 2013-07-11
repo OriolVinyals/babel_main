@@ -58,7 +58,7 @@ if __name__ == '__main__':
     #Xp_cheat = np.asmatrix(babel.labels().astype(np.int)).T
 
     '''Building appended features'''
-    Xtrain = np.hstack((Xp_a1,Xp_entropy_glob,Xp_score))
+    Xtrain = np.hstack((Xp_a1,Xp_entropy,Xp_score))
     Ytrain = babel.labels().astype(np.int)
     m, std = classifier.feature_meanstd(Xtrain)
     Xtrain -= m
@@ -77,7 +77,7 @@ if __name__ == '__main__':
     Xp_t_entropy = np.asmatrix(babel_eval_post._local_features)
     Xp_t_entropy_glob = np.asmatrix(babel_eval_post._glob_features)
     Xp_t_score = np.asmatrix(babel_eval._features).T
-    Xtest = np.hstack((Xp_t_a1,Xp_t_entropy_glob,Xp_t_score))
+    Xtest = np.hstack((Xp_t_a1,Xp_t_entropy,Xp_t_score))
     Ytest = babel_eval.labels().astype(np.int)
     Xtest -= m
     Xtest /= std
