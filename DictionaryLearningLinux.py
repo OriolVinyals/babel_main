@@ -66,8 +66,10 @@ if __name__ == '__main__':
     '''Classifier stage'''
     w, b = Classifier.l2logreg_onevsall(Xtrain, Ytrain, 0.0)
     accu = classifier.Evaluator.accuracy(Ytrain, np.dot(Xtrain,w)+b)
-            
+    neg_ll = Classifier.loss_multiclass_logreg(Ytrain, Xtrain, (w,b))
+
     print 'Accuracy is ',accu
+    print 'Neg LogLikelihood is ',neg_ll
     print 'Prior is ',np.sum(Ytrain==0)/float(len(Ytrain))
     
     logging.info('Running Test...')
@@ -83,8 +85,11 @@ if __name__ == '__main__':
     Xtest /= std
     
     accu = classifier.Evaluator.accuracy(Ytest, np.dot(Xtest,w)+b)
+    neg_ll = Classifier.loss_multiclass_logreg(Ytest, Xtest, (w,b))
+
             
     print 'Test Accuracy is ',accu
+    print 'Test Neg LogLikelihood is ',neg_ll
     print 'Test Prior is ',np.sum(Ytest==0)/float(len(Ytest))
     
     '''Building appended features'''
@@ -95,8 +100,10 @@ if __name__ == '__main__':
     '''Classifier stage'''
     w, b = Classifier.l2logreg_onevsall(Xtrain, Ytrain, 0.0)
     accu = classifier.Evaluator.accuracy(Ytrain, np.dot(Xtrain,w)+b)
-            
+    neg_ll = Classifier.loss_multiclass_logreg(Ytrain, Xtrain, (w,b))
+
     print 'Score only Accuracy is ',accu
+    print 'Score only Neg LogLikelihood is ',neg_ll
     print 'Prior is ',np.sum(Ytrain==0)/float(len(Ytrain))
     
     logging.info('Running Test...')
@@ -105,8 +112,10 @@ if __name__ == '__main__':
     Xtest /= std
     
     accu = classifier.Evaluator.accuracy(Ytest, np.dot(Xtest,w)+b)
+    neg_ll = Classifier.loss_multiclass_logreg(Ytest, Xtest, (w,b))
             
     print 'Score only Test Accuracy is ',accu
+    print 'Score only Test Neg LogLikelihood is ',neg_ll
     print 'Test Prior is ',np.sum(Ytest==0)/float(len(Ytest))
     
     '''Building appended features'''
