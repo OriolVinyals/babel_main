@@ -1,5 +1,5 @@
 import logging
-from iceberk import mpi, pipeline, classifier, mathutil
+from iceberk import mpi, pipeline, classifier
 import numpy as np
 import BabelDataset
 import Classifier
@@ -66,7 +66,8 @@ if __name__ == '__main__':
     
     w2, b2 = Classifier.l2logreg_onevsall(Xtrain, Ytrain, 0.0)
     accu_logreg = classifier.Evaluator.accuracy(Ytrain, np.dot(Xtrain,w2)+b2)
-    neg_ll = Classifier.loss_multiclass_logistic(Ytrain, Xtrain, (w2,b2))
+    neg_ll = Classifier.loss_multiclass_logreg(Ytrain, Xtrain, (w2,b2))
+    prob = Classifier.get_predictions_logreg(Xtrain, (w2,b2))
     #accu2 = np.sum(Ytrain == (np.dot(Xtrain,w)+b).argmax(axis=1).squeeze()) \
     #        / float(len(Ytrain))
             
