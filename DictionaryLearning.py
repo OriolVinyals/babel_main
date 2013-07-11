@@ -1,7 +1,8 @@
 import logging
-from iceberk import mpi, pipeline, classifier
+from iceberk import mpi, pipeline, classifier, mathutil
 import numpy as np
 import BabelDataset
+import Classifier
 
 if __name__ == '__main__':
     '''Loading Data: '''
@@ -62,8 +63,14 @@ if __name__ == '__main__':
     '''Classifier stage'''
     w, b = classifier.l2svm_onevsall(Xtrain, Ytrain, 0.0)
     accu = classifier.Evaluator.accuracy(Ytrain, np.dot(Xtrain,w)+b)
+    
+    w2, b2 = Classifier.l2logreg_onevsall(Xtrain, Ytrain, 0.0)
+    accu_logreg = classifier.Evaluator.accuracy(Ytrain, np.dot(Xtrain,w2)+b2)
+    neg_ll = Classifier.loss_multiclass_logistic(Ytrain, Xtrain, (w2,b2))
     #accu2 = np.sum(Ytrain == (np.dot(Xtrain,w)+b).argmax(axis=1).squeeze()) \
     #        / float(len(Ytrain))
             
     logging.info('Accuracy is %f' % (accu))
+    logging.info('LogReg Accuracy is %f' % (accu_logreg))
+    logging.info('Negated LL is %f' % (neg_ll))
     logging.info('Prior is %f' % (mpi.COMM.allreduce((Ytrain==0).sum())/float(mpi.COMM.allreduce(len(Ytrain)))))
