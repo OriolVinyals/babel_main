@@ -30,5 +30,5 @@ def get_predictions_logreg(X, weights):
     if mpi.is_root():
         return np.vstack(prob)
     else:
-        return prob[mpi.RANK]
+        return np.zeros((0))
 
