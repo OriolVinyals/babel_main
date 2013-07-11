@@ -15,13 +15,11 @@ def l2logreg_onevsall(X, Y, gamma, weight = None, **kwargs):
     return solver.solve(X, Y, weight)
 
 def loss_multiclass_logreg(Y, X, weights):
-    pred = mathutil.dot(X,weights[0])+weights[1]
-    mpi.barrier()
-    pred = mpi.COMM.gather(pred)
+    X = mpi.COMM.gather(X)
     Y = mpi.COMM.gather(Y)
     if mpi.is_root():
         Y = np.hstack(Y)
-        pred = np.hstack(pred)
+        pred = mathutil.dot(X,weights[0])+weights[1]
         return classifier.Loss.loss_multiclass_logistic(classifier.to_one_of_k_coding(Y, 0), pred, None)[0] / float(Y.shape[0])
     else:
         return 0
