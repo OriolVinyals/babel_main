@@ -2,6 +2,7 @@ import logging
 from iceberk import mpi, pipeline, classifier
 import numpy as np
 import BabelDataset
+import Classifier
 
 if __name__ == '__main__':
     '''Loading Data: '''
@@ -63,7 +64,7 @@ if __name__ == '__main__':
     Xtrain -= m
     Xtrain /= std
     '''Classifier stage'''
-    w, b = classifier.l2svm_onevsall(Xtrain, Ytrain, 0.0)
+    w, b = Classifier.l2logreg_onevsall(Xtrain, Ytrain, 0.0)
     accu = classifier.Evaluator.accuracy(Ytrain, np.dot(Xtrain,w)+b)
             
     print 'Accuracy is ',accu
@@ -92,7 +93,7 @@ if __name__ == '__main__':
     Xtrain -= m
     Xtrain /= std
     '''Classifier stage'''
-    w, b = classifier.l2svm_onevsall(Xtrain, Ytrain, 0.0)
+    w, b = Classifier.l2logreg_onevsall(Xtrain, Ytrain, 0.0)
     accu = classifier.Evaluator.accuracy(Ytrain, np.dot(Xtrain,w)+b)
             
     print 'Score only Accuracy is ',accu
@@ -114,7 +115,7 @@ if __name__ == '__main__':
     Xtrain -= m
     Xtrain /= std
     '''Classifier stage'''
-    w, b = classifier.l2svm_onevsall(Xtrain, Ytrain, 0.0)
+    w, b = Classifier.l2logreg_onevsall(Xtrain, Ytrain, 0.0)
     accu = classifier.Evaluator.accuracy(Ytrain, np.dot(Xtrain,w)+b)
             
     print 'Audio only Accuracy is ',accu
@@ -136,7 +137,7 @@ if __name__ == '__main__':
     Xtrain -= m
     Xtrain /= std
     '''Classifier stage'''
-    w, b = classifier.l2svm_onevsall(Xtrain, Ytrain, 0.0)
+    w, b = Classifier.l2logreg_onevsall(Xtrain, Ytrain, 0.0)
     accu = classifier.Evaluator.accuracy(Ytrain, np.dot(Xtrain,w)+b)
             
     print 'Entropy only Accuracy is ',accu
@@ -158,7 +159,7 @@ if __name__ == '__main__':
     Xtrain -= m
     Xtrain /= std
     '''Classifier stage'''
-    w, b = classifier.l2svm_onevsall(Xtrain, Ytrain, 0.0)
+    w, b = Classifier.l2logreg_onevsall(Xtrain, Ytrain, 0.0)
     accu = classifier.Evaluator.accuracy(Ytrain, np.dot(Xtrain,w)+b)
             
     print 'Entropy only Accuracy is ',accu
