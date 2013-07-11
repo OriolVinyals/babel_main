@@ -26,5 +26,9 @@ def get_predictions_logreg(X, weights):
     prob = pred - pred.max(axis=1)[:,np.newaxis]
     mathutil.exp(prob, out=prob)
     prob /= prob.sum(axis=1)[:, np.newaxis]
-    return prob
+    prob = mpi.COMM.gather(prob)
+    if mpi.is_root():
+        return prob
+    else:
+        return None
 
