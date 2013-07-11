@@ -19,6 +19,7 @@ def loss_multiclass_logreg(Y, X, weights):
     Y = mpi.COMM.gather(Y)
     if mpi.is_root():
         Y = np.hstack(Y)
+        X = np.hstack(X)
         pred = mathutil.dot(X,weights[0])+weights[1]
         return classifier.Loss.loss_multiclass_logistic(classifier.to_one_of_k_coding(Y, 0), pred, None)[0] / float(Y.shape[0])
     else:
