@@ -56,6 +56,7 @@ if __name__ == '__main__':
     print 'global entropy: ',Xp_entropy_glob.shape
     print 'score: ',Xp_score.shape
     Xtrain = np.hstack((Xp_a1,Xp_entropy,Xp_entropy_glob,Xp_score))
+    Xtrain_dict = {'Audio':Xp_a1, 'Local':Xp_entropy, 'Global':Xp_entropy_glob, 'Score':Xp_score}
     Ytrain = babel.labels().astype(np.int)
     m, std = classifier.feature_meanstd(Xtrain)
     Xtrain -= m

@@ -1,6 +1,18 @@
 from iceberk import classifier, mathutil, mpi
 import numpy as np
 
+class Classifier:
+    def __init__(self,Xtrain,Ytrain,Xtest,Ytest):
+        self._Xtrain=Xtrain
+        self._Ytrain=Ytrain
+        self._Xtest=Xtest
+        self._Ytest=Ytest
+        self.features=Xtrain.keys
+        
+    def Train(self,feat_list=None):
+        return
+        
+
 def l2logreg_onevsall(X, Y, gamma, weight = None, **kwargs):
     if Y.ndim == 1:
         Y = classifier.to_one_of_k_coding(Y,0)
