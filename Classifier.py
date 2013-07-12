@@ -2,15 +2,45 @@ from iceberk import classifier, mathutil, mpi
 import numpy as np
 
 class Classifier:
-    def __init__(self,Xtrain,Ytrain,Xtest,Ytest):
+    def __init__(self,Xtrain,Ytrain, gamma):
         self._Xtrain=Xtrain
         self._Ytrain=Ytrain
-        self._Xtest=Xtest
-        self._Ytest=Ytest
-        self.features=Xtrain.keys
+        self._gamma=gamma
+        self.features=Xtrain.keys()
         
-    def Train(self,feat_list=None):
-        return
+    def Train(self,feat_list=None,type='logreg'):
+        if feat_list==None:
+            feat_list=self.features
+        self.feat_list=feat_list
+        Xtrain_feats=np.hstack((self._Xtrain[feat_list[i]] for i in range(len(feat_list))))
+        self.m, self.std = classifier.feature_meanstd(Xtrain_feats)
+        Xtrain_feats -= self.m
+        Xtrain_feats /= self.std
+        '''Classifier stage'''
+        if type=='linsvm':
+            self.w, self.b = classifier.l2svm_onevsall(Xtrain_feats, self._Ytrain, self._gamma)
+        elif type=='logreg':
+            self.w, self.b = l2logreg_onevsall(Xtrain_feats, self._Ytrain, self._gamma)
+        return (self.w,self.b)
+    
+    def Accuracy(self, X, Y):
+        X_feats=np.hstack((X[self.feat_list[i]] for i in range(len(self.feat_list))))
+        X_feats -= self.m
+        X_feats /= self.std
+        self.test_accu = classifier.Evaluator.accuracy(Y, np.dot(X_feats,self.w)+self.b)
+        return self.test_accu
+    
+    def loss_multiclass_logreg(self, X, Y):
+        X_feats=np.hstack((X[self.feat_list[i]] for i in range(len(self.feat_list))))
+        X_feats -= self.m
+        X_feats /= self.std
+        return loss_multiclass_logreg(Y, X_feats, (self.w,self.b))
+
+    def get_predictions_logreg(self, X):
+        X_feats=np.hstack((X[self.feat_list[i]] for i in range(len(self.feat_list))))
+        X_feats -= self.m
+        X_feats /= self.std
+        return get_predictions_logreg(X_feats, (self.w,self.b))
         
 
 def l2logreg_onevsall(X, Y, gamma, weight = None, **kwargs):

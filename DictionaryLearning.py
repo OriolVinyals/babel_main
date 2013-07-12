@@ -55,20 +55,28 @@ if __name__ == '__main__':
     print 'local entropy: ',Xp_entropy.shape
     print 'global entropy: ',Xp_entropy_glob.shape
     print 'score: ',Xp_score.shape
-    Xtrain = np.hstack((Xp_a1,Xp_entropy,Xp_entropy_glob,Xp_score))
+    #Xtrain = np.hstack((Xp_a1,Xp_entropy,Xp_entropy_glob,Xp_score))
     Xtrain_dict = {'Audio':Xp_a1, 'Local':Xp_entropy, 'Global':Xp_entropy_glob, 'Score':Xp_score}
     Ytrain = babel.labels().astype(np.int)
-    m, std = classifier.feature_meanstd(Xtrain)
-    Xtrain -= m
-    Xtrain /= std
+    #m, std = classifier.feature_meanstd(Xtrain)
+    #Xtrain -= m
+    #Xtrain /= std
     '''Classifier stage'''
-    w, b = classifier.l2svm_onevsall(Xtrain, Ytrain, 0.0)
-    accu = classifier.Evaluator.accuracy(Ytrain, np.dot(Xtrain,w)+b)
+    lr_classifier = Classifier.Classifier(Xtrain_dict, Ytrain, 0.0)
+    w, b = lr_classifier.Train(type='linsvm')
+    accu = lr_classifier.Accuracy(Xtrain_dict, Ytrain)
+    w2, b2 = lr_classifier.Train(type='logreg')
+    accu_logreg = lr_classifier.Accuracy(Xtrain_dict, Ytrain)
+    neg_ll = lr_classifier.loss_multiclass_logreg(Xtrain_dict, Ytrain)
+    prob = lr_classifier.get_predictions_logreg(Xtrain_dict)
+
+    #w, b = classifier.l2svm_onevsall(Xtrain, Ytrain, 0.0)
+    #accu = classifier.Evaluator.accuracy(Ytrain, np.dot(Xtrain,w)+b)
+    #w2, b2 = Classifier.l2logreg_onevsall(Xtrain, Ytrain, 0.0)    
+    #accu_logreg = classifier.Evaluator.accuracy(Ytrain, np.dot(Xtrain,w2)+b2)
+    #neg_ll = Classifier.loss_multiclass_logreg(Ytrain, Xtrain, (w2,b2))
+    #prob = Classifier.get_predictions_logreg(Xtrain, (w2,b2))
     
-    w2, b2 = Classifier.l2logreg_onevsall(Xtrain, Ytrain, 0.0)
-    accu_logreg = classifier.Evaluator.accuracy(Ytrain, np.dot(Xtrain,w2)+b2)
-    neg_ll = Classifier.loss_multiclass_logreg(Ytrain, Xtrain, (w2,b2))
-    prob = Classifier.get_predictions_logreg(Xtrain, (w2,b2))
     print prob.shape
     #accu2 = np.sum(Ytrain == (np.dot(Xtrain,w)+b).argmax(axis=1).squeeze()) \
     #        / float(len(Ytrain))
