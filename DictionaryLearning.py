@@ -42,7 +42,6 @@ if __name__ == '__main__':
     babel_post.GetGlobalFeatures(feat_type=['entropy','entropy'])
     Xp_entropy = np.asmatrix(babel_post._local_features)
     Xp_entropy_glob = np.asmatrix(babel_post._glob_features)
-
     
     '''Pipeline that just gets the score'''
     Xp_score = np.asmatrix(babel._features).T
@@ -56,16 +55,18 @@ if __name__ == '__main__':
     print 'global entropy: ',Xp_entropy_glob.shape
     print 'score: ',Xp_score.shape
     #Xtrain = np.hstack((Xp_a1,Xp_entropy,Xp_entropy_glob,Xp_score))
-    Xtrain_dict = {'Audio':Xp_a1, 'Local':Xp_entropy, 'Global':Xp_entropy_glob, 'Score':Xp_score}
-    Ytrain = babel.labels().astype(np.int)
     #m, std = classifier.feature_meanstd(Xtrain)
     #Xtrain -= m
     #Xtrain /= std
+    Xtrain_dict = {'Audio':Xp_a1, 'Local':Xp_entropy, 'Global':Xp_entropy_glob, 'Score':Xp_score}
+    Ytrain = babel.labels().astype(np.int)
     '''Classifier stage'''
-    lr_classifier = Classifier.Classifier(Xtrain_dict, Ytrain, 0.0)
-    w, b = lr_classifier.Train(type='linsvm')
+    feat_list=['Audio','Local','Score']
+    feat_list=None
+    lr_classifier = Classifier.Classifier(Xtrain_dict, Ytrain)
+    w, b = lr_classifier.Train(feat_list=feat_list,type='linsvm',gamma=0.0)
     accu = lr_classifier.Accuracy(Xtrain_dict, Ytrain)
-    w2, b2 = lr_classifier.Train(type='logreg')
+    w2, b2 = lr_classifier.Train(feat_list=feat_list,type='logreg',gamma=0.0)
     accu_logreg = lr_classifier.Accuracy(Xtrain_dict, Ytrain)
     neg_ll = lr_classifier.loss_multiclass_logreg(Xtrain_dict, Ytrain)
     prob = lr_classifier.get_predictions_logreg(Xtrain_dict)
@@ -78,8 +79,6 @@ if __name__ == '__main__':
     #prob = Classifier.get_predictions_logreg(Xtrain, (w2,b2))
     
     print prob.shape
-    #accu2 = np.sum(Ytrain == (np.dot(Xtrain,w)+b).argmax(axis=1).squeeze()) \
-    #        / float(len(Ytrain))
             
     logging.info('Accuracy is %f' % (accu))
     logging.info('LogReg Accuracy is %f' % (accu_logreg))

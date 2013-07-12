@@ -2,16 +2,16 @@ from iceberk import classifier, mathutil, mpi
 import numpy as np
 
 class Classifier:
-    def __init__(self,Xtrain,Ytrain, gamma):
+    def __init__(self,Xtrain,Ytrain):
         self._Xtrain=Xtrain
         self._Ytrain=Ytrain
-        self._gamma=gamma
         self.features=Xtrain.keys()
         
-    def Train(self,feat_list=None,type='logreg'):
+    def Train(self,feat_list=None,type='logreg',gamma=0.0):
         if feat_list==None:
             feat_list=self.features
         self.feat_list=feat_list
+        self._gamma=gamma
         Xtrain_feats=np.hstack((self._Xtrain[feat_list[i]] for i in range(len(feat_list))))
         self.m, self.std = classifier.feature_meanstd(Xtrain_feats)
         Xtrain_feats -= self.m
