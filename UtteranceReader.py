@@ -7,6 +7,7 @@ Created on Jun 18, 2013
 from external import htkmfc
 import string
 import numpy as np
+import bisect
 
 class UtteranceReader:
     def __init__(self,list_file):
@@ -14,6 +15,7 @@ class UtteranceReader:
         self.list_files = self.ParseListScp(list_file)
         self.utt_data = []
         self.glob_feature = {}
+        self.utt_feature = {}
         file_htk = htkmfc.HTKFeat_read(self.list_files[0])
         file_htk.readheader()
         self.feat_size = file_htk.veclen
@@ -48,9 +50,17 @@ class UtteranceReader:
     
     def ParseListScp(self, list_file):
         list_files = []
+        self.list_times_utt = {}
         with open(list_file) as f:
             for line in f:
                 list_files.append(line.strip().split('=')[1].strip().split('[')[0])
+                times = line.strip().split('=')[1].strip().split('[')[1].strip().split(']')[0].split(',')
+                utt_id = string.split(list_files[-1],'/')[-1]
+                if self.list_times_utt.has_key(utt_id):
+                    self.list_times_utt[utt_id].append((float(times[0]),float(times[1])))
+                else:
+                    self.list_times_utt[utt_id]=[]
+                    self.list_times_utt[utt_id].append((float(times[0]),float(times[1])))
         list_files = set(list_files)
         return [n for n in list_files]
     
@@ -70,7 +80,31 @@ class UtteranceReader:
                 vector_return.append(np.average(aux))
         self.glob_feature[utt_name] = vector_return
         return self.glob_feature[utt_name]
-
+    
+    def GetUtteranceFeature(self, utt_name, times, feat_type='entropy'):
+        if self.utt_data == []:
+            print 'We need to read utterances first'
+            return
+        utt_times = self.GetTimesUtterance(utt_name,times)
+        key = utt_name,np.array2string(utt_times)
+        if self.utt_feature.has_key(key):
+            return self.utt_feature[key]
+        index = self.map_utt_idx[utt_name]
+        utt = self.utt_data[index]
+        utt = utt[utt_times[0]:utt_times[1],:]
+        vector_return = []
+        for i in range(len(feat_type)):
+            if feat_type[i] == 'entropy':
+                aux = utt*np.log(utt)
+                aux = np.sum(aux,1)
+                vector_return.append(np.average(aux))
+        self.utt_feature[key] = vector_return
+        return self.utt_feature[key]
+    
+    def GetTimesUtterance(self, utt_name, times):
+        time_ind = times[0]/self.samp_period
+        utt_times = np.asmatrix(self.list_times_utt[utt_name])
+        return np.squeeze(np.asarray(utt_times[np.nonzero(np.sum(time_ind<utt_times,axis=1)==1)[0]]))
                 
 
 if __name__ == '__main__':

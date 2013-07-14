@@ -40,8 +40,10 @@ if __name__ == '__main__':
     babel_post = BabelDataset.BabelDataset(list_file, feat_range, posting_file, perc_pos, keep_full_utt=True,posting_sampler=babel.posting_sampler)
     babel_post.GetLocalFeatures(feat_type=['entropy','duration'])
     babel_post.GetGlobalFeatures(feat_type=['entropy','entropy'])
+    babel_post.GetUtteranceFeatures(feat_type=['entropy','entropy'])
     Xp_entropy = np.asmatrix(babel_post._local_features)
     Xp_entropy_glob = np.asmatrix(babel_post._glob_features)
+    Xp_entropy_utt = np.asmatrix(babel_post._utt_features)
     
     '''Pipeline that just gets the score'''
     Xp_score = np.asmatrix(babel._features).T
@@ -58,10 +60,10 @@ if __name__ == '__main__':
     #m, std = classifier.feature_meanstd(Xtrain)
     #Xtrain -= m
     #Xtrain /= std
-    Xtrain_dict = {'Audio':Xp_a1, 'Local':Xp_entropy, 'Global':Xp_entropy_glob, 'Score':Xp_score}
+    Xtrain_dict = {'Audio':Xp_a1, 'Local':Xp_entropy, 'Global':Xp_entropy_glob, 'Score':Xp_score, 'Utterance':Xp_entropy_utt}
     Ytrain = babel.labels().astype(np.int)
     '''Classifier stage'''
-    feat_list=['Audio','Local','Score']
+    feat_list=['Audio','Utterance','Score']
     feat_list=None
     lr_classifier = Classifier.Classifier(Xtrain_dict, Ytrain)
     w, b = lr_classifier.Train(feat_list=feat_list,type='linsvm',gamma=0.0)

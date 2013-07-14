@@ -38,6 +38,7 @@ class BabelDataset(datasets.ImageSet):
             self._label = []
             self._features = []
             self._utt_id = []
+            self._times = []
             for i in range(len(self.posting_sampler.negative_data)):
                 if utt_reader.map_utt_idx.has_key(self.posting_sampler.negative_data[i]['file']):
                     if self.posting_sampler.negative_data[i]['sys_bt'] == '':
@@ -53,6 +54,7 @@ class BabelDataset(datasets.ImageSet):
                     self._label.append(0)
                     self._features.append(sys_sc)
                     self._utt_id.append(self.posting_sampler.negative_data[i]['file'])
+                    self._times.append((sys_bt,sys_et))
                 else:
                     pass
             for i in range(len(self.posting_sampler.positive_data)):
@@ -74,6 +76,7 @@ class BabelDataset(datasets.ImageSet):
                     self._label.append(1)
                     self._features.append(sys_sc)
                     self._utt_id.append(self.posting_sampler.positive_data[i]['file'])
+                    self._times.append((sys_bt,sys_et))
                 else:
                     pass
             
@@ -83,10 +86,12 @@ class BabelDataset(datasets.ImageSet):
             self._label = None
             self._features = None
             self._utt_id = None
+            self._times = None
         self._data = mpi.distribute_list(self._data)
         self._label = mpi.distribute(self._label)
         self._features = mpi.distribute_list(self._features)
         self._utt_id = mpi.distribute_list(self._utt_id)
+        self._times = mpi.distribute_list(self._times)
         if self.keep_full_utt == True:
             self.utt_reader = utt_reader
         
@@ -120,6 +125,15 @@ class BabelDataset(datasets.ImageSet):
         self._glob_features = []
         for i in range(len(self._utt_id)):
             self._glob_features.append(self.utt_reader.GetGlobFeature(self._utt_id[i], feat_type=feat_type))
+            
+    def GetUtteranceFeatures(self, feat_type=['entropy','entropy']):
+        '''Computes global features. Each mpi node computes its own'''
+        if self.keep_full_utt == False:
+            print 'Error, we need to keep full utterance to compute utterance features!'
+            exit(0)
+        self._utt_features = []
+        for i in range(len(self._utt_id)):
+            self._utt_features.append(self.utt_reader.GetUtteranceFeature(self._utt_id[i], self._times[i], feat_type=feat_type))
             
 if __name__ == '__main__':
     list_file = './data/list_files.scp'
