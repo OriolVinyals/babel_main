@@ -48,8 +48,10 @@ if __name__ == '__main__':
     '''An example for posterior features'''
     babel_post.GetLocalFeatures(feat_type=['entropy'])
     babel_post.GetGlobalFeatures(feat_type=['entropy'])
+    babel_post.GetUtteranceFeatures(feat_type=['entropy'])
     Xp_entropy = np.asmatrix(babel_post._local_features)
     Xp_entropy_glob = np.asmatrix(babel_post._glob_features)
+    Xp_entropy_utt = np.asmatrix(babel_post._utt_features)
     
     '''Pipeline that just gets the score'''
     Xp_score = np.asmatrix(babel._features).T
@@ -57,12 +59,23 @@ if __name__ == '__main__':
     '''Pipeline that cheats'''
     #Xp_cheat = np.asmatrix(babel.labels().astype(np.int)).T
 
+    '''Constructing Dictionary of Features'''    
+    Xtrain_dict = {'Audio':Xp_a1, 'Local':Xp_entropy, 'Global':Xp_entropy_glob, 'Score':Xp_score, 'Utterance':Xp_entropy_utt}
     Ytrain = babel.labels().astype(np.int)
-    '''Classifier stage'''    
-    Xtrain_dict = {'Audio':Xp_a1, 'Local':Xp_entropy, 'Global':Xp_entropy_glob, 'Score':Xp_score}
-    lr_classifier = Classifier.Classifier(Xtrain_dict, Ytrain)
+    Xp_t_a1 = conv.process_dataset(babel_eval, as_2d = True)
+    babel_eval_post.GetLocalFeatures(feat_type=['entropy'])
+    babel_eval_post.GetGlobalFeatures(feat_type=['entropy'])
+    babel_eval_post.GetUtteranceFeatures(feat_type=['entropy'])
+    Xp_t_entropy = np.asmatrix(babel_eval_post._local_features)
+    Xp_t_entropy_glob = np.asmatrix(babel_eval_post._glob_features)
+    Xp_t_entropy_utt = np.asmatrix(babel_eval_post._utt_features)
+    Xp_t_score = np.asmatrix(babel_eval._features).T
+    Xtest_dict = {'Audio':Xp_t_a1, 'Local':Xp_t_entropy, 'Global':Xp_t_entropy_glob, 'Score':Xp_t_score, 'Utterance':Xp_t_entropy_utt}
+    Ytest = babel_eval.labels().astype(np.int)
 
-    feat_list=['Audio','Local','Score','Global']
+    lr_classifier = Classifier.Classifier(Xtrain_dict, Ytrain)
+    '''Classifier stage'''
+    feat_list=['Audio','Local','Score','Global','Utterance']
     w, b = lr_classifier.Train(feat_list=feat_list,type='logreg',gamma=0.0)
     accu = lr_classifier.Accuracy(Xtrain_dict, Ytrain)
     neg_ll = lr_classifier.loss_multiclass_logreg(Xtrain_dict, Ytrain)
@@ -72,16 +85,24 @@ if __name__ == '__main__':
     print 'Prior is ',np.sum(Ytrain==0)/float(len(Ytrain))
     
     logging.info('Running Test...')
-    Xp_t_a1 = conv.process_dataset(babel_eval, as_2d = True)
-    babel_eval_post.GetLocalFeatures(feat_type=['entropy'])
-    babel_eval_post.GetGlobalFeatures(feat_type=['entropy'])
-    Xp_t_entropy = np.asmatrix(babel_eval_post._local_features)
-    Xp_t_entropy_glob = np.asmatrix(babel_eval_post._glob_features)
-    Xp_t_score = np.asmatrix(babel_eval._features).T
-    Xtest_dict = {'Audio':Xp_t_a1, 'Local':Xp_t_entropy, 'Global':Xp_t_entropy_glob, 'Score':Xp_t_score}
-
-    Ytest = babel_eval.labels().astype(np.int)
+    accu = lr_classifier.Accuracy(Xtest_dict, Ytest)
+    neg_ll = lr_classifier.loss_multiclass_logreg(Xtest_dict, Ytest)
+      
+    print 'Test Accuracy is ',accu
+    print 'Test Neg LogLikelihood is ',neg_ll
+    print 'Test Prior is ',np.sum(Ytest==0)/float(len(Ytest))
     
+    '''Classifier stage'''
+    feat_list=['Audio','Local','Score','Global']
+    w, b = lr_classifier.Train(feat_list=feat_list,type='logreg',gamma=0.0)
+    accu = lr_classifier.Accuracy(Xtrain_dict, Ytrain)
+    neg_ll = lr_classifier.loss_multiclass_logreg(Xtrain_dict, Ytrain)
+
+    print 'Accuracy is ',accu
+    print 'No utterance Neg LogLikelihood is ',neg_ll
+    print 'Prior is ',np.sum(Ytrain==0)/float(len(Ytrain))
+    
+    logging.info('Running Test...')
     accu = lr_classifier.Accuracy(Xtest_dict, Ytest)
     neg_ll = lr_classifier.loss_multiclass_logreg(Xtest_dict, Ytest)
       
