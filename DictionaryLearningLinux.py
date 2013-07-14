@@ -57,17 +57,8 @@ if __name__ == '__main__':
     '''Pipeline that cheats'''
     #Xp_cheat = np.asmatrix(babel.labels().astype(np.int)).T
 
-    '''Building appended features'''
-    #Xtrain = np.hstack((Xp_a1,Xp_entropy,Xp_score))
     Ytrain = babel.labels().astype(np.int)
-    #m, std = classifier.feature_meanstd(Xtrain)
-    #Xtrain -= m
-    #Xtrain /= std
-    '''Classifier stage'''
-    #w, b = Classifier.l2logreg_onevsall(Xtrain, Ytrain, 0.0)
-    #accu = classifier.Evaluator.accuracy(Ytrain, np.dot(Xtrain,w)+b)
-    #neg_ll = Classifier.loss_multiclass_logreg(Ytrain, Xtrain, (w,b))
-    
+    '''Classifier stage'''    
     Xtrain_dict = {'Audio':Xp_a1, 'Local':Xp_entropy, 'Global':Xp_entropy_glob, 'Score':Xp_score}
     lr_classifier = Classifier.Classifier(Xtrain_dict, Ytrain)
 
@@ -89,48 +80,26 @@ if __name__ == '__main__':
     Xp_t_score = np.asmatrix(babel_eval._features).T
     Xtest_dict = {'Audio':Xp_t_a1, 'Local':Xp_t_entropy, 'Global':Xp_t_entropy_glob, 'Score':Xp_t_score}
 
-    #Xtest = np.hstack((Xp_t_a1,Xp_t_entropy,Xp_t_score))
     Ytest = babel_eval.labels().astype(np.int)
-    #Xtest -= m
-    #Xtest /= std
     
     accu = lr_classifier.Accuracy(Xtest_dict, Ytest)
     neg_ll = lr_classifier.loss_multiclass_logreg(Xtest_dict, Ytest)
-    
-    #accu = classifier.Evaluator.accuracy(Ytest, np.dot(Xtest,w)+b)
-    #neg_ll = Classifier.loss_multiclass_logreg(Ytest, Xtest, (w,b))
-
-            
+      
     print 'Test Accuracy is ',accu
     print 'Test Neg LogLikelihood is ',neg_ll
     print 'Test Prior is ',np.sum(Ytest==0)/float(len(Ytest))
     
-    '''Building appended features'''
-    #Xtrain = Xp_score
-    #m, std = classifier.feature_meanstd(Xtrain)
-    #Xtrain -= m
-    #Xtrain /= std
     '''Classifier stage'''
     feat_list=['Score']
     w, b = lr_classifier.Train(feat_list=feat_list,type='logreg',gamma=0.0)
     accu = lr_classifier.Accuracy(Xtrain_dict, Ytrain)
     neg_ll = lr_classifier.loss_multiclass_logreg(Xtrain_dict, Ytrain)
-    #w, b = Classifier.l2logreg_onevsall(Xtrain, Ytrain, 0.0)
-    #accu = classifier.Evaluator.accuracy(Ytrain, np.dot(Xtrain,w)+b)
-    #neg_ll = Classifier.loss_multiclass_logreg(Ytrain, Xtrain, (w,b))
 
     print 'Score only Accuracy is ',accu
     print 'Score only Neg LogLikelihood is ',neg_ll
     print 'Prior is ',np.sum(Ytrain==0)/float(len(Ytrain))
     
-    logging.info('Running Test...')
-    #Xtest = Xp_t_score
-    #Xtest -= m
-    #Xtest /= std
-    
-    #accu = classifier.Evaluator.accuracy(Ytest, np.dot(Xtest,w)+b)
-    #neg_ll = Classifier.loss_multiclass_logreg(Ytest, Xtest, (w,b))
-    
+    logging.info('Running Test...')    
     accu = lr_classifier.Accuracy(Xtest_dict, Ytest)
     neg_ll = lr_classifier.loss_multiclass_logreg(Xtest_dict, Ytest)
             
@@ -138,28 +107,16 @@ if __name__ == '__main__':
     print 'Score only Test Neg LogLikelihood is ',neg_ll
     print 'Test Prior is ',np.sum(Ytest==0)/float(len(Ytest))
     
-    '''Building appended features'''
-    #Xtrain = Xp_a1
-    #m, std = classifier.feature_meanstd(Xtrain)
-    #Xtrain -= m
-    #Xtrain /= std
     '''Classifier stage'''
     feat_list=['Audio']
     w, b = lr_classifier.Train(feat_list=feat_list,type='logreg',gamma=0.0)
     accu = lr_classifier.Accuracy(Xtrain_dict, Ytrain)
     neg_ll = lr_classifier.loss_multiclass_logreg(Xtrain_dict, Ytrain)
-    #w, b = Classifier.l2logreg_onevsall(Xtrain, Ytrain, 0.0)
-    #accu = classifier.Evaluator.accuracy(Ytrain, np.dot(Xtrain,w)+b)
             
     print 'Audio only Accuracy is ',accu
     print 'Prior is ',np.sum(Ytrain==0)/float(len(Ytrain))
     
     logging.info('Running Test...')
-    #Xtest = Xp_t_a1
-    #Xtest -= m
-    #Xtest /= std
-    
-    #accu = classifier.Evaluator.accuracy(Ytest, np.dot(Xtest,w)+b)
     accu = lr_classifier.Accuracy(Xtest_dict, Ytest)
     neg_ll = lr_classifier.loss_multiclass_logreg(Xtest_dict, Ytest)
             
@@ -167,56 +124,32 @@ if __name__ == '__main__':
     print 'Score only Test Neg LogLikelihood is ',neg_ll
     print 'Test Prior is ',np.sum(Ytest==0)/float(len(Ytest))
     
-    '''Building appended features'''
-    #Xtrain = Xp_entropy
-    #m, std = classifier.feature_meanstd(Xtrain)
-    #Xtrain -= m
-    #Xtrain /= std
     '''Classifier stage'''
     feat_list=['Local']
     w, b = lr_classifier.Train(feat_list=feat_list,type='logreg',gamma=0.0)
     accu = lr_classifier.Accuracy(Xtrain_dict, Ytrain)
     neg_ll = lr_classifier.loss_multiclass_logreg(Xtrain_dict, Ytrain)
-    #w, b = Classifier.l2logreg_onevsall(Xtrain, Ytrain, 0.0)
-    #accu = classifier.Evaluator.accuracy(Ytrain, np.dot(Xtrain,w)+b)
             
     print 'Entropy only Accuracy is ',accu
     print 'Prior is ',np.sum(Ytrain==0)/float(len(Ytrain))
     
-    #logging.info('Running Test...')
-    #Xtest = Xp_t_entropy
-    #Xtest -= m
-    #Xtest /= std
-    
-    #accu = classifier.Evaluator.accuracy(Ytest, np.dot(Xtest,w)+b)
+    logging.info('Running Test...')
     accu = lr_classifier.Accuracy(Xtest_dict, Ytest)
     neg_ll = lr_classifier.loss_multiclass_logreg(Xtest_dict, Ytest)
             
     print 'Entropy only Test Accuracy is ',accu
     print 'Test Prior is ',np.sum(Ytest==0)/float(len(Ytest))
-    
-    '''Building appended features'''
-    #Xtrain = Xp_entropy_glob
-    #m, std = classifier.feature_meanstd(Xtrain)
-    #Xtrain -= m
-    #Xtrain /= std
+
     '''Classifier stage'''
     feat_list=['Global']
     w, b = lr_classifier.Train(feat_list=feat_list,type='logreg',gamma=0.0)
     accu = lr_classifier.Accuracy(Xtrain_dict, Ytrain)
     neg_ll = lr_classifier.loss_multiclass_logreg(Xtrain_dict, Ytrain)
-    #w, b = Classifier.l2logreg_onevsall(Xtrain, Ytrain, 0.0)
-    #accu = classifier.Evaluator.accuracy(Ytrain, np.dot(Xtrain,w)+b)
             
     print 'Global Entropy only Accuracy is ',accu
     print 'Prior Accuracy is ',np.sum(Ytrain==0)/float(len(Ytrain))
     
-    #logging.info('Running Test...')
-    #Xtest = Xp_t_entropy_glob
-    #Xtest -= m
-    #Xtest /= std
-    
-    #accu = classifier.Evaluator.accuracy(Ytest, np.dot(Xtest,w)+b)
+    logging.info('Running Test...')
     accu = lr_classifier.Accuracy(Xtest_dict, Ytest)
     neg_ll = lr_classifier.loss_multiclass_logreg(Xtest_dict, Ytest)
             
