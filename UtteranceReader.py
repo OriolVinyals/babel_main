@@ -85,6 +85,7 @@ class UtteranceReader:
             print 'We need to read utterances first'
             return
         utt_times = self.GetTimesUtterance(utt_name,times)
+        print utt_times
         key = utt_name,np.array2string(utt_times)
         if self.utt_feature.has_key(key):
             return self.utt_feature[key]
