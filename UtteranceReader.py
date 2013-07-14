@@ -7,7 +7,6 @@ Created on Jun 18, 2013
 from external import htkmfc
 import string
 import numpy as np
-import bisect
 
 class UtteranceReader:
     def __init__(self,list_file):
@@ -91,6 +90,9 @@ class UtteranceReader:
             return self.utt_feature[key]
         index = self.map_utt_idx[utt_name]
         utt = self.utt_data[index]
+        if utt_times[1]>utt.shape[0]:
+            utt_times[1]=utt.shape[0]
+            print utt_times[1],' vs ',utt.shape[0]
         utt = utt[utt_times[0]:utt_times[1],:]
         vector_return = []
         for i in range(len(feat_type)):
