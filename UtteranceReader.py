@@ -86,14 +86,16 @@ class UtteranceReader:
             return
         utt_times = self.GetTimesUtterance(utt_name,times)
         print utt_times
+        print utt_name
+        print times
         key = utt_name,np.array2string(utt_times)
         if self.utt_feature.has_key(key):
             return self.utt_feature[key]
         index = self.map_utt_idx[utt_name]
         utt = self.utt_data[index]
-        if utt_times[1]>utt.shape[0]:
-            utt_times[1]=utt.shape[0]
-            print utt_times[1],' vs ',utt.shape[0]
+        #if utt_times[1]>utt.shape[0]:
+        #    utt_times[1]=utt.shape[0]
+        #    print utt_times[1],' vs ',utt.shape[0]
         utt = utt[utt_times[0]:utt_times[1],:]
         vector_return = []
         for i in range(len(feat_type)):
