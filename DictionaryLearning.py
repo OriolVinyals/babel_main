@@ -30,9 +30,6 @@ if __name__ == '__main__':
     logging.info('Extracting features...')
     Xp_a1 = conv.process_dataset(babel, as_2d = True)
     
-    '''Pipeline that just gets the score'''
-    Xp_score = np.asmatrix(babel._features).T
-    
     '''An example for posterior features'''
     posting_file = './data/word.kwlist.alignment.csv'
     list_file = './data/post_list_files.scp'
@@ -86,3 +83,24 @@ if __name__ == '__main__':
     logging.info('LogReg Accuracy is %f' % (accu_logreg))
     logging.info('Negated LL is %f' % (neg_ll))
     logging.info('Prior is %f' % (mpi.COMM.allreduce((Ytrain==0).sum())/float(mpi.COMM.allreduce(len(Ytrain)))))
+    
+    '''Full forward pass on the whole dataset'''
+    list_file = './data/list_files.scp'
+    babel_full = BabelDataset.BabelDataset(list_file, feat_range, posting_file, perc_pos=0.0, keep_full_utt=True)
+    Xp_a1 = conv.process_dataset(babel_full, as_2d = True)
+    Xp_score = np.asmatrix(babel_full._features).T
+    list_file = './data/post_list_files.scp'
+    babel_post_full = BabelDataset.BabelDataset(list_file, feat_range, posting_file, perc_pos=0.0, keep_full_utt=True,posting_sampler=babel_full.posting_sampler)
+    babel_post_full.GetLocalFeatures(feat_type=['entropy','duration'])
+    babel_post_full.GetGlobalFeatures(feat_type=['entropy','entropy'])
+    babel_post_full.GetUtteranceFeatures(feat_type=['entropy','entropy'])
+    Xp_entropy = np.asmatrix(babel_post_full._local_features)
+    Xp_entropy_glob = np.asmatrix(babel_post_full._glob_features)
+    Xp_entropy_utt = np.asmatrix(babel_post_full._utt_features)
+    Xfull_dict = {'Audio':Xp_a1, 'Local':Xp_entropy, 'Global':Xp_entropy_glob, 'Score':Xp_score, 'Utterance':Xp_entropy_utt}
+    prob = lr_classifier.get_predictions_logreg(Xfull_dict)
+    print prob.shape
+    babel_full.DumpScoresXML(prob,'./data/test.xml')
+    
+    
+

@@ -39,6 +39,7 @@ class BabelDataset(datasets.ImageSet):
             self._features = []
             self._utt_id = []
             self._times = []
+            self._keyword = []
             for i in range(len(self.posting_sampler.negative_data)):
                 if utt_reader.map_utt_idx.has_key(self.posting_sampler.negative_data[i]['file']):
                     if self.posting_sampler.negative_data[i]['sys_bt'] == '':
@@ -55,6 +56,7 @@ class BabelDataset(datasets.ImageSet):
                     self._features.append(sys_sc)
                     self._utt_id.append(self.posting_sampler.negative_data[i]['file'])
                     self._times.append((sys_bt,sys_et))
+                    self._keyword.append(self.posting_sampler.negative_data[i]['termid'])
                 else:
                     pass
             for i in range(len(self.posting_sampler.positive_data)):
@@ -77,6 +79,7 @@ class BabelDataset(datasets.ImageSet):
                     self._features.append(sys_sc)
                     self._utt_id.append(self.posting_sampler.positive_data[i]['file'])
                     self._times.append((sys_bt,sys_et))
+                    self._keyword.append(self.posting_sampler.positive_data[i]['termid'])
                 else:
                     pass
             
@@ -87,11 +90,13 @@ class BabelDataset(datasets.ImageSet):
             self._features = None
             self._utt_id = None
             self._times = None
+            self._keyword = None
         self._data = mpi.distribute_list(self._data)
         self._label = mpi.distribute(self._label)
         self._features = mpi.distribute_list(self._features)
         self._utt_id = mpi.distribute_list(self._utt_id)
         self._times = mpi.distribute_list(self._times)
+        self._keyword = mpi.distribute_list(self._keyword)
         if self.keep_full_utt == True:
             self.utt_reader = utt_reader
         
@@ -135,6 +140,38 @@ class BabelDataset(datasets.ImageSet):
         for i in range(len(self._utt_id)):
             self._utt_features.append(self.utt_reader.GetUtteranceFeature(self._utt_id[i], self._times[i], feat_type=feat_type))
             
+    def DumpScoresXML(self,fname,scores=None):
+        out_str = ''
+        '''Header'''
+        out_str += '<kwslist kwlist_filename="blah" language="vietnamese" system_id="blah">\n'
+        self.KeywordSortedScores(scores)
+        for keyword in self.keyword_scores.keys():
+            out_str += '<detected_kwlist kwid="' + keyword + '" search_time="1" oov_count="0">\n'
+            out_str += self.keyword_scores[keyword]
+            out_str += '</detected_kwlist>\n'
+        f = open(fname, 'w')
+        f.write(out_str)
+        f.close()
+        return
+    
+    def KeywordSortedScores(self,scores=None):
+        self.keyword_scores = {}
+        for i in range(len(self._keyword)):
+            kw_id=self._keyword[i]
+            file=self._utt_id[i]
+            times=self._times[i]
+            if scores==None:
+                score=self._features[i]
+            else:
+                score=scores[i][0]
+            decision = 'YES'
+            if self.keyword_scores.has_key(kw_id):
+                self.keyword_scores[kw_id]+='<kw file="' + file + '" channel="1" tbeg="' + str(times[0]) + '" dur="' + str(times[1]-times[0]) + '" score="' + str(score) + '" decision="' + decision + '"/>\n'
+            else:
+                self.keyword_scores[kw_id]='<kw file="' + file + '" channel="1" tbeg="' + str(times[0]) + '" dur="' + str(times[1]-times[0]) + '" score="' + str(score) + '" decision="' + decision + '"/>\n'
+
+
+            
 if __name__ == '__main__':
     list_file = './data/list_files.scp'
     feat_range = [0,1,2,5,6,7,69,74]
@@ -149,4 +186,4 @@ if __name__ == '__main__':
     babel.ConvertFeatures(range(30))
     print babel._data[0].shape
     print babel._utt_id[0]
-            
+    babel.DumpScoresXML('./data/unittest.xml')
