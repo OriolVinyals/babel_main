@@ -149,6 +149,7 @@ class BabelDataset(datasets.ImageSet):
             out_str += '<detected_kwlist kwid="' + keyword + '" search_time="1" oov_count="0">\n'
             out_str += self.keyword_scores[keyword]
             out_str += '</detected_kwlist>\n'
+        out_str += '</kwslist>'
         f = open(fname, 'w')
         f.write(out_str)
         f.close()
