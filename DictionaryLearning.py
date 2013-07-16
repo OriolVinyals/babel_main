@@ -100,7 +100,7 @@ if __name__ == '__main__':
     Xfull_dict = {'Audio':Xp_a1, 'Local':Xp_entropy, 'Global':Xp_entropy_glob, 'Score':Xp_score, 'Utterance':Xp_entropy_utt}
     prob = lr_classifier.get_predictions_logreg(Xfull_dict)
     print prob.shape
-    babel_full.DumpScoresXML(prob,'./data/test.xml')
+    babel_full.DumpScoresXML('./data/test.xml',prob[:,1])
     
     
 

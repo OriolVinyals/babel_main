@@ -163,7 +163,7 @@ class BabelDataset(datasets.ImageSet):
             if scores==None:
                 score=self._features[i]
             else:
-                score=scores[i][0]
+                score=scores[i]
             decision = 'YES'
             if self.keyword_scores.has_key(kw_id):
                 self.keyword_scores[kw_id]+='<kw file="' + file + '" channel="1" tbeg="' + str(times[0]) + '" dur="' + str(times[1]-times[0]) + '" score="' + str(score) + '" decision="' + decision + '"/>\n'
