@@ -12,7 +12,7 @@ if __name__ == '__main__':
     list_file = './data/20130307.dev.untightened.scp'
     feat_range = None
     posting_file = './data/word.kwlist.alignment.csv'
-    perc_pos = 0.2
+    perc_pos = 0.0
     babel = BabelDataset.BabelDataset(list_file, feat_range, posting_file, perc_pos)
     
     list_file = './data/20130307.dev.post.untightened.scp'
