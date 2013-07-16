@@ -60,4 +60,4 @@ if __name__ == '__main__':
     print 'Test Prior is ',np.sum(Ytest==0)/float(len(Ytest))
     
     babel_eval.DumpScoresXML('./data/eval.scoreonly.xml',prob[:,1])
-    babel_eval.DumpScoresXML('./data/evalrawscore.xml',np.asarray(Xp_t_score))
+    babel_eval.DumpScoresXML('./data/evalrawscore.xml',np.asarray(Xp_t_score).squeeze())
