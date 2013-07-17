@@ -86,7 +86,7 @@ class BabelDataset(datasets.ImageSet):
                 else:
                     pass
             
-            print 'I skipped ',skipped,' entries\n'
+            print 'I skipped ',skipped,' entries'
             
             self._label = np.array(self._label)
         else:
