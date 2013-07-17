@@ -14,7 +14,7 @@ if __name__ == '__main__':
     feat_range = None
     posting_file = './data/word.kwlist.alignment.csv'
     perc_pos = 0.0
-    babel = BabelDataset.BabelDataset(list_file, feat_range, posting_file, perc_pos)
+    babel = BabelDataset.BabelDataset(list_file, feat_range, posting_file, perc_pos,min_dur=0.0)
     
     list_file = './data/20130307.dev.post.untightened.scp'
     feat_range = None
@@ -23,7 +23,7 @@ if __name__ == '__main__':
     list_file = './data/20130307.eval.untightened.scp'
     posting_file = './data/eval_part1.alignment.csv'
     perc_pos = 0.0
-    babel_eval = BabelDataset.BabelDataset(list_file, feat_range, posting_file, perc_pos)
+    babel_eval = BabelDataset.BabelDataset(list_file, feat_range, posting_file, perc_pos,min_dur=0.0)
     
     list_file = './data/20130307.eval.post.untightened.scp'
     feat_range = None
