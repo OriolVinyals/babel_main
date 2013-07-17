@@ -40,6 +40,7 @@ class BabelDataset(datasets.ImageSet):
             self._utt_id = []
             self._times = []
             self._keyword = []
+            skipped = 0
             for i in range(len(self.posting_sampler.negative_data)):
                 if utt_reader.map_utt_idx.has_key(self.posting_sampler.negative_data[i]['file']):
                     if self.posting_sampler.negative_data[i]['sys_bt'] == '':
@@ -49,6 +50,7 @@ class BabelDataset(datasets.ImageSet):
                     sys_et = float(self.posting_sampler.negative_data[i]['sys_et'])
                     sys_sc = float(self.posting_sampler.negative_data[i]['sys_score'])
                     if(sys_et-sys_bt < self.min_dur):
+                        skipped += 1
                         continue
                     self._data.append(utt_reader.GetUtterance(self.posting_sampler.negative_data[i]['file'],
                                                               sys_bt, sys_et))
@@ -72,6 +74,7 @@ class BabelDataset(datasets.ImageSet):
                         sys_et = float(self.posting_sampler.positive_data[i]['sys_et'])
                         sys_sc = float(self.posting_sampler.positive_data[i]['sys_score'])
                         if(sys_et-sys_bt < self.min_dur):
+                            skipped += 1
                             continue
                     self._data.append(utt_reader.GetUtterance(self.posting_sampler.positive_data[i]['file'],
                                                               sys_bt, sys_et))
@@ -82,6 +85,8 @@ class BabelDataset(datasets.ImageSet):
                     self._keyword.append(self.posting_sampler.positive_data[i]['termid'])
                 else:
                     pass
+            
+            print 'I skipped ',skipped,' entries\n'
             
             self._label = np.array(self._label)
         else:
