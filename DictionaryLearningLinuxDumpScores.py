@@ -17,7 +17,7 @@ if __name__ == '__main__':
     
     list_file = './data/20130307.dev.post.untightened.scp'
     feat_range = None
-    babel_post = BabelDataset.BabelDataset(list_file, feat_range, posting_file, perc_pos, keep_full_utt=True, posting_sampler=babel.posting_sampler)
+    babel_post = BabelDataset.BabelDataset(list_file, feat_range, posting_file, perc_pos, keep_full_utt=True, posting_sampler=babel.posting_sampler,min_dur=0.0)
     
     list_file = './data/20130307.eval.untightened.scp'
     posting_file = './data/eval_part1.alignment.csv'
@@ -26,7 +26,7 @@ if __name__ == '__main__':
     
     list_file = './data/20130307.eval.post.untightened.scp'
     feat_range = None
-    babel_eval_post = BabelDataset.BabelDataset(list_file, feat_range, posting_file, perc_pos, keep_full_utt=True, posting_sampler=babel_eval.posting_sampler)
+    babel_eval_post = BabelDataset.BabelDataset(list_file, feat_range, posting_file, perc_pos, keep_full_utt=True, posting_sampler=babel_eval.posting_sampler,min_dur=0.0)
     
     '''Pipeline that just gets the score'''
     Xp_score = np.asmatrix(babel._features).T

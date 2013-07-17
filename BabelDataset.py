@@ -15,7 +15,7 @@ class BabelDataset(datasets.ImageSet):
     # some  Babel constants
     
     #def __init__(self, utt_reader,posting_sampler):
-    def __init__(self, list_file, feat_range, posting_file, perc_pos, keep_full_utt=False, posting_sampler=None):
+    def __init__(self, list_file, feat_range, posting_file, perc_pos, keep_full_utt=False, posting_sampler=None, min_dur=0.2):
         '''TODO: Read pieces of utterance from the CSV file instead to save memory. It would be nice to index thse by utt_id (by now I do a map).'''
         super(BabelDataset, self).__init__()
         utt_reader = UtteranceReader.UtteranceReader(list_file)
@@ -28,7 +28,7 @@ class BabelDataset(datasets.ImageSet):
             self.posting_sampler.SampleData(perc_pos)
         else:
             self.posting_sampler = posting_sampler
-        
+        self.min_dur = min_dur
         self._data_all = None
         self._dim = False
         self._channels = 1
@@ -48,7 +48,7 @@ class BabelDataset(datasets.ImageSet):
                     sys_bt = float(self.posting_sampler.negative_data[i]['sys_bt'])
                     sys_et = float(self.posting_sampler.negative_data[i]['sys_et'])
                     sys_sc = float(self.posting_sampler.negative_data[i]['sys_score'])
-                    if(sys_et-sys_bt < 0.2):
+                    if(sys_et-sys_bt < self.min_dur):
                         continue
                     self._data.append(utt_reader.GetUtterance(self.posting_sampler.negative_data[i]['file'],
                                                               sys_bt, sys_et))
@@ -71,7 +71,7 @@ class BabelDataset(datasets.ImageSet):
                         sys_bt = float(self.posting_sampler.positive_data[i]['sys_bt'])
                         sys_et = float(self.posting_sampler.positive_data[i]['sys_et'])
                         sys_sc = float(self.posting_sampler.positive_data[i]['sys_score'])
-                        if(sys_et-sys_bt < 0.2):
+                        if(sys_et-sys_bt < self.min_dur):
                             continue
                     self._data.append(utt_reader.GetUtterance(self.posting_sampler.positive_data[i]['file'],
                                                               sys_bt, sys_et))
