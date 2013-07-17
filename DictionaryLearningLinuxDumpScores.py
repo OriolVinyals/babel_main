@@ -77,7 +77,7 @@ if __name__ == '__main__':
     t_file = '/u/drspeech/projects/swordfish/IndusDB/IndusDB.latest/babel104b-v0.4bY_conv-eval.kwlist2.xml'
     opts = '-o -b -O -B -c'
     out_dir = 'data/eval.scoreonly.decision'
-    cmd = eval_bin + ' -e ' + gt_file + ' -r ' + rttm_file + ' -t ' + t_file + ' ' + opts + ' ' + ' -f ' + out_dir + ' s ' + decision_out_file
+    cmd = eval_bin + ' -e ' + gt_file + ' -r ' + rttm_file + ' -t ' + t_file + ' ' + opts + ' ' + ' -f ' + out_dir + ' -s ' + decision_out_file
     print 'Running ',cmd
     os.system(cmd)
     
