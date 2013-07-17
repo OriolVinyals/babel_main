@@ -170,7 +170,7 @@ class BabelDataset(datasets.ImageSet):
                 score=self._features[i]
             else:
                 score=scores[i]
-            if score>0.5:
+            if score>=0.5:
                 decision = 'YES'
             else:
                 decision= 'NO'
