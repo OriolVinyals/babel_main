@@ -179,6 +179,15 @@ class BabelDataset(datasets.ImageSet):
             else:
                 self.keyword_scores[kw_id]='<kw file="' + file + '" channel="1" tbeg="' + str(times[0]) + '" dur="' + str(times[1]-times[0]) + '" score="' + str(score) + '" decision="' + decision + '"/>\n'
 
+    def GetScoresXML(self,fname):
+        from xml.dom import minidom
+        xmldoc = minidom.parse(fname)
+        itemlist = xmldoc.getElementsByTagName('detected_kwlist')
+        itemlist[0].attributes['kwid'].value
+        itemlist[0].childNodes[1].attributes['file'].value
+        itemlist[0].childNodes[1].nodeType
+        itemlist[0].childNodes[1].ELEMENT_NODE
+        return
 
             
 if __name__ == '__main__':
@@ -196,3 +205,4 @@ if __name__ == '__main__':
     print babel._data[0].shape
     print babel._utt_id[0]
     babel.DumpScoresXML('./data/unittest.xml')
+    babel.GetScoresXML('./data/word.cut_down_evalpart1.kwlist.raw.xml')
