@@ -202,8 +202,6 @@ class BabelDataset(datasets.ImageSet):
                     score = itemlist[i].childNodes[j].attributes['score'].value
                     key = keyword + '_' + utterance + '_' + repr(times) 
                     self._kw_utt_times_hash[key] = float(score)
-        return
-
             
 if __name__ == '__main__':
     list_file = './data/list_files.scp'
