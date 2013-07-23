@@ -125,6 +125,7 @@ class BabelDataset(datasets.ImageSet):
                     vector_return.append(np.average(aux))
                 if feat_type[j] == 'duration':
                     vector_return.append(self._data[i].shape[0]/float(100))
+                if feat_type[j] == 'score':
             self._local_features.append(vector_return)
             
     def GetGlobalFeatures(self, feat_type=['entropy','entropy']):
@@ -183,10 +184,16 @@ class BabelDataset(datasets.ImageSet):
         from xml.dom import minidom
         xmldoc = minidom.parse(fname)
         itemlist = xmldoc.getElementsByTagName('detected_kwlist')
-        itemlist[0].attributes['kwid'].value
-        itemlist[0].childNodes[1].attributes['file'].value
-        itemlist[0].childNodes[1].nodeType
-        itemlist[0].childNodes[1].ELEMENT_NODE
+        self._kw_utt_hash = {}
+        for i in range(len(itemlist)):
+            keyword = itemlist[i].attributes['kwid'].value
+            for j in range(len(itemlist[i].childNodes)):
+                if itemlist[i].childNodes[j].nodeType == itemlist[i].childNodes[j].ELEMENT_NODE:
+                    utterance = itemlist[i].childNodes[j].attributes['file'].value
+                    tbeg = itemlist[i].childNodes[j].attributes['tbeg'].value
+                    dur = itemlist[i].childNodes[j].attributes['dur'].value
+                    times = (tbeg,tbeg+dur)
+                    score = itemlist[i].childNodes[j].attributes['score'].value
         return
 
             
