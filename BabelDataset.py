@@ -130,7 +130,6 @@ class BabelDataset(datasets.ImageSet):
                     self.GetScoresXML(fname_xml)
                     key = self._keyword[i] + '_' + self._utt_id[i] + '_' + repr(self._times[i])
                     vector_return.append(self._kw_utt_times_hash[key])
-                    pass
             self._local_features.append(vector_return)
             
     def GetGlobalFeatures(self, feat_type=['entropy','entropy']):
