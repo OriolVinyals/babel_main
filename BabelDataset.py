@@ -199,7 +199,7 @@ class BabelDataset(datasets.ImageSet):
                     utterance = itemlist[i].childNodes[j].attributes['file'].value
                     tbeg = itemlist[i].childNodes[j].attributes['tbeg'].value
                     dur = itemlist[i].childNodes[j].attributes['dur'].value
-                    times = (float(tbeg),float(tbeg)+float(dur))
+                    times = (round(float(tbeg),2),round(float(tbeg)+float(dur),2))
                     score = itemlist[i].childNodes[j].attributes['score'].value
                     key = keyword + '_' + utterance + '_' + repr(times) 
                     self._kw_utt_times_hash[key] = float(score)
