@@ -62,7 +62,7 @@ if __name__ == '__main__':
     Xtrain_dict = {'Local':Xp_entropy}
     Ytrain = babel.labels().astype(np.int)
 
-    Xp_t_a1 = conv.process_dataset(babel_eval, as_2d = True)
+#     Xp_t_a1 = conv.process_dataset(babel_eval, as_2d = True)
     babel_eval_post.GetLocalFeatures(feat_type=['score'],fname_xml='./data/word.cut_down_evalpart1.kwlist.raw.xml')
 #     babel_eval_post.GetGlobalFeatures(feat_type=['entropy'])
 #     babel_eval_post.GetUtteranceFeatures(feat_type=['entropy'])
