@@ -22,7 +22,7 @@ if __name__ == '__main__':
     babel_post = BabelDataset.BabelDataset(list_file, feat_range, posting_file, perc_pos, keep_full_utt=True, posting_sampler=babel.posting_sampler,min_dur=min_dur)
     
     list_file = './data/20130307.eval.untightened.scp'
-    posting_file = './data/eval_part1.alignment.csv'
+    posting_file = './data/word.cut_down_evalpart1.decision.kwlist.alignment.csv'
     perc_pos = 0.0
     babel_eval = BabelDataset.BabelDataset(list_file, feat_range, posting_file, perc_pos,min_dur=min_dur)
     
