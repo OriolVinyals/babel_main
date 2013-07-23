@@ -95,9 +95,9 @@ if __name__ == '__main__':
     print 'Test Prior is ',np.sum(Ytest==0)/float(len(Ytest))
     
     babel_eval.DumpScoresXML('./data/eval.local.xml',prob[:,1])
-    babel_eval.DumpScoresXML('./data/eval.rawscore.xml',np.asarray(Xp_t_score).squeeze())
+    babel_eval.DumpScoresXML('./data/eval.rawscore.xml',np.asarray(Xp_t_entropy).squeeze())
     
-    score_file = '/u/vinyals/projects/swordfish/src/python/babel_main/data/eval.all.xml'
+    score_file = '/u/vinyals/projects/swordfish/src/python/babel_main/data/eval.local.xml'
 
     thresh_bin = '/u/swegmann/work/std/kws/score_norm/thresh.pl'
     gt_file = '/u/drspeech/projects/swordfish/IndusDB/IndusDB.latest/babel104b-v0.4bY_conv-evalpart1.ecf.xml'
@@ -116,8 +116,20 @@ if __name__ == '__main__':
     print 'Running ',cmd
     os.system(cmd)
     
+    score_file = '/u/vinyals/projects/swordfish/src/python/babel_main/data/eval.rawscore.xml'
+  
+    gt_file = '/u/drspeech/projects/swordfish/IndusDB/IndusDB.latest/babel104b-v0.4bY_conv-evalpart1.ecf.xml'
+    decision_out_file = '/u/vinyals/projects/swordfish/src/python/babel_main/data/eval.rawscore.decision.xml'
+    cmd = thresh_bin + ' ' + gt_file + ' ' + score_file + ' > ' + decision_out_file
+    print 'Running ',cmd
+    os.system(cmd)    
+    
+    gt_file = '/u/drspeech/projects/swordfish/IndusDB/IndusDB.latest/babel104b-v0.4bY_conv-evalpart1/babel104b-v0.4bY_conv-evalpart1.scoring.ecf.xml'
+    rttm_file = '/u/drspeech/projects/swordfish/IndusDB/IndusDB.latest/babel104b-v0.4bY_conv-evalpart1/babel104b-v0.4bY_conv-evalpart1.mitllfa3.rttm'
+    t_file = '/u/drspeech/projects/swordfish/IndusDB/IndusDB.latest/babel104b-v0.4bY_conv-eval.kwlist2.xml'
+    opts = '-o -b -O -B -c'
     out_dir = '/u/vinyals/projects/swordfish/src/python/babel_main/data/eval.rawscore.decision'
-    cmd = eval_bin + ' -e ' + gt_file + ' -r ' + rttm_file + ' -t ' + t_file + ' ' + opts + ' ' + ' -f ' + out_dir + ' -s ' + '/u/vinyals/projects/swordfish/src/python/babel_main/data/eval.rawscore.xml'
+    cmd = eval_bin + ' -e ' + gt_file + ' -r ' + rttm_file + ' -t ' + t_file + ' ' + opts + ' ' + ' -f ' + out_dir + ' -s ' + decision_out_file
     print 'Running ',cmd
     os.system(cmd)
     
