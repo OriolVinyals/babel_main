@@ -111,9 +111,9 @@ class UtteranceReader:
         utt_times = np.asarray(self.list_times_utt[utt_name])
         if np.any(utt_times==time_ind):
             #time_ind =+ 2
-            print utt_times
-            print times
-            print utt_name
+            print 'Warn: ',repr(utt_times)
+            print 'Warn: ',repr(times)
+            print 'Warn: ',utt_name
         return np.squeeze(np.asarray(utt_times[np.nonzero(np.sum(time_ind<utt_times,axis=1)>0)[0][0]]))
                 
 
