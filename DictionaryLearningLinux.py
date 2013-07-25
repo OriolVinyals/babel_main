@@ -18,7 +18,6 @@ if __name__ == '__main__':
     list_file = './data/20130307.dev.post.untightened.scp'
     feat_range = None
     babel_post = BabelDataset.BabelDataset(list_file, feat_range, posting_file, perc_pos, keep_full_utt=True, posting_sampler=babel.posting_sampler)
-    babel_post.GetUtteranceFeatures(feat_type=['entropy'])
     
     list_file = './data/20130307.eval.untightened.scp'
     posting_file = './data/word.cut_down_evalpart1.decision.kwlist.alignment.csv'
@@ -49,6 +48,7 @@ if __name__ == '__main__':
     '''An example for posterior features'''
     babel_post.GetLocalFeatures(feat_type=['entropy'])
     babel_post.GetGlobalFeatures(feat_type=['entropy'])
+    babel_post.GetUtteranceFeatures(feat_type=['entropy'])
     Xp_entropy = np.asmatrix(babel_post._local_features)
     Xp_entropy_glob = np.asmatrix(babel_post._glob_features)
     Xp_entropy_utt = np.asmatrix(babel_post._utt_features)
