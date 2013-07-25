@@ -109,8 +109,11 @@ class UtteranceReader:
     def GetTimesUtterance(self, utt_name, times):
         time_ind = (times[0]+times[1])/(2*self.samp_period)
         utt_times = np.asarray(self.list_times_utt[utt_name])
-        #if np.any(utt_times==time_ind):
-        #    time_ind =+ 2
+        if np.any(utt_times==time_ind):
+            #time_ind =+ 2
+            print utt_times
+            print times
+            print utt_name
         return np.squeeze(np.asarray(utt_times[np.nonzero(np.sum(time_ind<utt_times,axis=1)>0)[0][0]]))
                 
 
