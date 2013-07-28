@@ -12,9 +12,10 @@ class LatticeReader:
         self.list_file = list_file
         self.list_files = self.ParseListScp(list_file)
         self.lat_data = []
+        self.utt_data = []
         self.num_utt = len(self.list_files)
-        self.map_utt_idx = {}
         self.samp_period = 100
+        self.map_utt_idx = {}
          
     def ReadAllLatices(self):        
         for i in range(len(self.list_files)):
@@ -30,12 +31,22 @@ class LatticeReader:
         index = self.map_utt_idx[utt_name]
         return self.lat_data[index]
     
+    def GetUtterance(self, utt_name, t_ini=0, t_end=None):
+        index = self.map_utt_idx[utt_name]
+        t_ini = t_ini/self.samp_period
+        if t_end==None:
+            t_end=self.utt_data[index].shape[0]
+        else:
+            t_end=t_end/self.samp_period
+        #compute something with lat_data[index] and the times and return it
+        return 0
+    
     def ParseListScp(self, list_file):
         list_files = []
         self.list_times_utt = {}
         with open(list_file) as f:
             for line in f:
-                list_files.append(line)
+                list_files.append(line.strip())
                 times=[]
                 times.append(line.strip().split('_')[-2])
                 times.append(line.strip().split('_')[-1].split('.')[0])

@@ -6,6 +6,7 @@ from iceberk import datasets, mpi
 import numpy as np
 import os
 import UtteranceReader
+import LatticeReader
 import PostingParser
 import Sampler
 
@@ -18,8 +19,14 @@ class BabelDataset(datasets.ImageSet):
     def __init__(self, list_file, feat_range, posting_file, perc_pos, keep_full_utt=False, posting_sampler=None, min_dur=0.2):
         '''TODO: Read pieces of utterance from the CSV file instead to save memory. It would be nice to index thse by utt_id (by now I do a map).'''
         super(BabelDataset, self).__init__()
-        utt_reader = UtteranceReader.UtteranceReader(list_file)
-        utt_reader.ReadAllUtterances(feat_range)
+        if (list_file.strip().split('.')[-1] == 'list'):
+            self.is_lattice = True
+            utt_reader = LatticeReader.LatticeReader(list_file)
+            utt_reader.ReadAllLatices()
+        else:
+            self.is_lattice = False
+            utt_reader = UtteranceReader.UtteranceReader(list_file)
+            utt_reader.ReadAllUtterances(feat_range)
         if posting_sampler == None:
             testParser = PostingParser.PostingParser(posting_file)
             self.posting_sampler = Sampler.Sampler(testParser)
@@ -204,10 +211,12 @@ class BabelDataset(datasets.ImageSet):
                     self._kw_utt_times_hash[key] = float(score)
             
 if __name__ == '__main__':
-    list_file = './data/list_files.scp'
     feat_range = [0,1,2,5,6,7,69,74]
     posting_file = './data/word.kwlist.alignment.csv'
     perc_pos = 0.2
+    list_file = './data/lat.debug.list'
+    babel_lat = BabelDataset(list_file, None, posting_file, perc_pos)
+    list_file = './data/list_files.scp'
     babel = BabelDataset(list_file, None, posting_file, perc_pos)
     babel.GetLocalFeatures(feat_type=['score'],fname_xml='./data/word.kwlist.raw.xml')
     print babel._data[0].shape
