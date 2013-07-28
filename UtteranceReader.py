@@ -61,6 +61,8 @@ class UtteranceReader:
                     self.list_times_utt[utt_id]=[]
                     self.list_times_utt[utt_id].append((float(times[0]),float(times[1])))
         list_files = set(list_files)
+        for key in self.list_times_utt.keys():
+            self.list_times_utt[key].sort(key=lambda x: x[0])
         return [n for n in list_files]
     
     def GetGlobFeature(self, utt_name, feat_type='entropy'):
