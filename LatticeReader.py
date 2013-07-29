@@ -22,7 +22,7 @@ class LatticeReader:
          
     def ReadAllLatices(self):        
         for i in range(len(self.list_files)):
-            utt_id = string.join(string.split(list_files[-1],'/')[-1].split('_')[0:-2],'_')
+            utt_id = string.join(string.split(self.list_files[-1],'/')[-1].split('_')[0:-2],'_')
             utt_id_times = string.split(self.list_files[i],'/')[-1].split('.')[0]
             #TODO
             #np_data = lattice.Dag(htk_file=self.list_files[i])
