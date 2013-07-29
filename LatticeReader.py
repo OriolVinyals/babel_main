@@ -6,6 +6,7 @@ Created on Jun 18, 2013
 
 from external import lattice
 import string
+import numpy as np
 
 class LatticeReader:
     def __init__(self,list_file):
@@ -19,10 +20,10 @@ class LatticeReader:
          
     def ReadAllLatices(self):        
         for i in range(len(self.list_files)):
-            utt_id = string.split(self.list_files[i],'/')[-1].split('.')[0]
+            utt_id_times = string.split(self.list_files[i],'/')[-1].split('.')[0]
             np_data = lattice.Dag(htk_file=self.list_files[i])
             self.lat_data.append(np_data)
-            self.map_utt_idx[utt_id] = i
+            self.map_utt_idx[utt_id_times] = i
             
     def GetLattice(self, utt_name):
         if self.utt_data == []:
@@ -31,13 +32,15 @@ class LatticeReader:
         index = self.map_utt_idx[utt_name]
         return self.lat_data[index]
     
-    def GetUtterance(self, utt_name, t_ini=0, t_end=None):
-        index = self.map_utt_idx[utt_name]
-        t_ini = t_ini/self.samp_period
-        if t_end==None:
-            t_end=self.utt_data[index].shape[0]
-        else:
-            t_end=t_end/self.samp_period
+    def GetUtterance(self, utt_name, t_ini, t_end):
+        # times in seconds
+        times = self.GetTimesUtterance(utt_name, (t_ini,t_end))
+        utt_id_times = utt_name + '_' + '%07d' % (times[0],) + '_' + '%07d' % (times[1],)
+        index = self.map_utt_idx[utt_id_times]
+        lattice_data = self.lat_data[index]
+        rel_t_ini = t_ini - times[0]/self.samp_period
+        rel_t_end = t_end - times[0]/self.samp_period
+
         #compute something with lat_data[index] and the times and return it
         return 0
     
@@ -72,6 +75,8 @@ class LatticeReader:
                 
 
 if __name__ == '__main__':
-    list_files = './data/lat.list'
+    list_files = './data/lat.debug.list'
     lat_reader = LatticeReader(list_files)  
     lat_reader.ReadAllLatices()
+    lat_reader.GetUtterance('BABEL_BP_104_85455_20120310_210107_outLine', 573.4, 573.84)
+    # BABEL_BP_104_04221_20120310_194031_inLine_0000133_0000572
