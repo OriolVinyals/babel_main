@@ -121,7 +121,7 @@ class BabelDataset(datasets.ImageSet):
         for i in range(len(self._data_all)):
             self._data.append(self._data_all[i][:,feat_range])
             
-    def GetLocalFeatures(self, feat_type=['entropy','entropy'],fname_xml=None):
+    def GetLocalFeatures(self, feat_type=['entropy','entropy'],fname_xml=None,feat_range=None):
         '''Computes local features. Each mpi node computes its own'''
         self._local_features = []
         for i in range(len(self._data)):
@@ -137,12 +137,17 @@ class BabelDataset(datasets.ImageSet):
                     self.GetScoresXML(fname_xml)
                     key = self._keyword[i] + '_' + self._utt_id[i] + '_' + repr(self._times[i])
                     vector_return.append(self._kw_utt_times_hash[key])
+                if feat_type[j] == 'raw': #useful for lattices
+                    if feat_range==None:
+                        vector_return.append(self._data[i])
+                    else:
+                        vector_return.append(self._data[i][feat_range])
             self._local_features.append(vector_return)
             
     def GetGlobalFeatures(self, feat_type=['entropy','entropy']):
         '''Computes global features. Each mpi node computes its own'''
-        if self.keep_full_utt == False:
-            print 'Error, we need to keep full utterance to compute global (per utterance) features!'
+        if self.keep_full_utt == False or self.is_lattice:
+            print 'Error, we need to keep full utterance to compute global (per utterance) features! Or Lattice doesnt have global features!'
             exit(0)
         self._glob_features = []
         for i in range(len(self._utt_id)):
