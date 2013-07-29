@@ -53,9 +53,6 @@ if __name__ == '__main__':
     Xp_entropy = np.asmatrix(babel_post._local_features)
 #     Xp_entropy_glob = np.asmatrix(babel_post._glob_features)
 #     Xp_entropy_utt = np.asmatrix(babel_post._utt_features)
-    
-#     '''Pipeline that just gets the score'''
-#     Xp_score = np.asmatrix(babel._features).T
 
     '''Constructing Dictionary of Features'''    
 #     Xtrain_dict = {'Audio':Xp_a1, 'Local':Xp_entropy, 'Global':Xp_entropy_glob, 'Score':Xp_score, 'Utterance':Xp_entropy_utt}
