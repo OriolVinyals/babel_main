@@ -21,6 +21,13 @@ if __name__ == '__main__':
     feat_range = None
     babel_post = BabelDataset.BabelDataset(list_file, feat_range, posting_file, perc_pos, keep_full_utt=True, posting_sampler=babel.posting_sampler,min_dur=min_dur)
     
+    list_file = './data/lat.list'
+    babel_lat = BabelDataset.BabelDataset(list_file, feat_range, posting_file, perc_pos, keep_full_utt=True, posting_sampler=babel.posting_sampler,min_dur=min_dur)
+    
+    #reassign utterances
+    babel_post.utt_reader.list_times_utt = babel_lat.utt_reader.list_times_utt
+
+    
     list_file = './data/20130307.eval.untightened.scp'
     posting_file = './data/word.cut_down_evalpart1.decision.kwlist.alignment.csv'
     perc_pos = 0.0
@@ -29,6 +36,12 @@ if __name__ == '__main__':
     list_file = './data/20130307.eval.post.untightened.scp'
     feat_range = None
     babel_eval_post = BabelDataset.BabelDataset(list_file, feat_range, posting_file, perc_pos, keep_full_utt=True, posting_sampler=babel_eval.posting_sampler,min_dur=min_dur)
+    
+    list_file = './data/lat.eval.list'
+    babel_eval_lat = BabelDataset.BabelDataset(list_file, feat_range, posting_file, perc_pos, keep_full_utt=True, posting_sampler=babel_eval.posting_sampler,min_dur=min_dur)
+    
+    #reassign utterances
+    babel_eval_post.utt_reader.list_times_utt = babel_eval_lat.utt_reader.list_times_utt
     
 #     '''An example audio pipeline to extract features'''
 #     conv = pipeline.ConvLayer([
@@ -49,30 +62,30 @@ if __name__ == '__main__':
     '''An example for posterior features'''
     babel_post.GetLocalFeatures(feat_type=['score'],fname_xml='./data/word.kwlist.raw.xml')
 #     babel_post.GetGlobalFeatures(feat_type=['entropy'])
-#     babel_post.GetUtteranceFeatures(feat_type=['entropy'])
+    babel_post.GetUtteranceFeatures(feat_type=['entropy'])
     Xp_entropy = np.asmatrix(babel_post._local_features)
 #     Xp_entropy_glob = np.asmatrix(babel_post._glob_features)
-#     Xp_entropy_utt = np.asmatrix(babel_post._utt_features)
+    Xp_entropy_utt = np.asmatrix(babel_post._utt_features)
 
     '''Constructing Dictionary of Features'''    
 #     Xtrain_dict = {'Audio':Xp_a1, 'Local':Xp_entropy, 'Global':Xp_entropy_glob, 'Score':Xp_score, 'Utterance':Xp_entropy_utt}
-    Xtrain_dict = {'Local':Xp_entropy}
+    Xtrain_dict = {'Local':Xp_entropy, 'Utterance':Xp_entropy_utt}
     Ytrain = babel.labels().astype(np.int)
 
 #     Xp_t_a1 = conv.process_dataset(babel_eval, as_2d = True)
     babel_eval_post.GetLocalFeatures(feat_type=['score'],fname_xml='./data/word.cut_down_evalpart1.kwlist.raw.xml')
 #     babel_eval_post.GetGlobalFeatures(feat_type=['entropy'])
-#     babel_eval_post.GetUtteranceFeatures(feat_type=['entropy'])
+    babel_eval_post.GetUtteranceFeatures(feat_type=['entropy'])
     Xp_t_entropy = np.asmatrix(babel_eval_post._local_features)
 #     Xp_t_entropy_glob = np.asmatrix(babel_eval_post._glob_features)
-#     Xp_t_entropy_utt = np.asmatrix(babel_eval_post._utt_features)
+    Xp_t_entropy_utt = np.asmatrix(babel_eval_post._utt_features)
 #     Xtest_dict = {'Audio':Xp_t_a1, 'Local':Xp_t_entropy, 'Global':Xp_t_entropy_glob, 'Score':Xp_t_score, 'Utterance':Xp_t_entropy_utt}
-    Xtest_dict = {'Local':Xp_t_entropy}
+    Xtest_dict = {'Local':Xp_t_entropy, 'Utterance':Xp_t_entropy_utt}
     Ytest = babel_eval.labels().astype(np.int)
 
     lr_classifier = Classifier.Classifier(Xtrain_dict, Ytrain)
     '''Classifier stage'''
-    feat_list=['Local']
+    feat_list=['Local','Utterance']
     w, b = lr_classifier.Train(feat_list=feat_list,type='logreg',gamma=0.0)
     accu = lr_classifier.Accuracy(Xtrain_dict, Ytrain)
     neg_ll = lr_classifier.loss_multiclass_logreg(Xtrain_dict, Ytrain)
