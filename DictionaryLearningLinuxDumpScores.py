@@ -66,7 +66,6 @@ if __name__ == '__main__':
     Xp_t_entropy = np.asmatrix(babel_eval_post._local_features)
 #     Xp_t_entropy_glob = np.asmatrix(babel_eval_post._glob_features)
 #     Xp_t_entropy_utt = np.asmatrix(babel_eval_post._utt_features)
-#     Xp_t_score = np.asmatrix(babel_eval._features).T
 #     Xtest_dict = {'Audio':Xp_t_a1, 'Local':Xp_t_entropy, 'Global':Xp_t_entropy_glob, 'Score':Xp_t_score, 'Utterance':Xp_t_entropy_utt}
     Xtest_dict = {'Local':Xp_t_entropy}
     Ytest = babel_eval.labels().astype(np.int)
