@@ -14,6 +14,7 @@ class LatticeReader:
         self.list_files = self.ParseListScp(list_file)
         self.lat_data = []
         self.utt_data = []
+        self.utt_feature = {}
         self.num_utt = len(self.list_files)
         self.samp_period = 100
         self.map_utt_idx = {}
@@ -21,7 +22,9 @@ class LatticeReader:
     def ReadAllLatices(self):        
         for i in range(len(self.list_files)):
             utt_id_times = string.split(self.list_files[i],'/')[-1].split('.')[0]
+            #TODO
             np_data = lattice.Dag(htk_file=self.list_files[i])
+            #ENDTODO
             self.lat_data.append(np_data)
             self.map_utt_idx[utt_id_times] = i
             
@@ -63,6 +66,22 @@ class LatticeReader:
         for key in self.list_times_utt.keys():
             self.list_times_utt[key].sort(key=lambda x: x[0])
         return [n for n in list_files]
+    
+    def GetUtteranceFeature(self, utt_name, times, feat_type='somefeature'):
+        utt_times = self.GetTimesUtterance(utt_name, times) #convert in utterance times to boundary utterance times
+        utt_id_times = utt_name + '_' + '%07d' % (utt_times[0],) + '_' + '%07d' % (utt_times[1],)
+        if self.utt_feature.has_key(utt_id_times):
+            return self.utt_feature[utt_id_times]
+        index = self.map_utt_idx[utt_id_times]
+        lattice_data = self.lat_data[index]
+        vector_return = []
+        for i in range(len(feat_type)):
+            if feat_type[i] == 'somefeature':
+                pass
+                #do something with lattice_data
+        self.utt_feature[utt_id_times] = vector_return
+        return self.utt_feature[utt_id_times]
+
     
     def GetTimesUtterance(self, utt_name, times):
         time_ind = (times[0]+times[1])/(2*self.samp_period)
