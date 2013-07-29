@@ -23,7 +23,8 @@ class LatticeReader:
         for i in range(len(self.list_files)):
             utt_id_times = string.split(self.list_files[i],'/')[-1].split('.')[0]
             #TODO
-            np_data = lattice.Dag(htk_file=self.list_files[i])
+            #np_data = lattice.Dag(htk_file=self.list_files[i])
+            np_data = 0
             #ENDTODO
             self.lat_data.append(np_data)
             self.map_utt_idx[utt_id_times] = i
