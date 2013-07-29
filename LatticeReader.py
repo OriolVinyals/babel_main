@@ -27,13 +27,6 @@ class LatticeReader:
             #ENDTODO
             self.lat_data.append(np_data)
             self.map_utt_idx[utt_id_times] = i
-            
-    def GetLattice(self, utt_name):
-        if self.utt_data == []:
-            print 'We need to read utterances first'
-            return
-        index = self.map_utt_idx[utt_name]
-        return self.lat_data[index]
     
     def GetUtterance(self, utt_name, t_ini, t_end):
         # times in seconds
