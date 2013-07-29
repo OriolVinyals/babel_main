@@ -60,8 +60,11 @@ if __name__ == '__main__':
 #     Xp_a1 = conv.process_dataset(babel, as_2d = True)
     
     '''An example for posterior features'''
+    logging.info('Getting Local Features')
     babel_post.GetLocalFeatures(feat_type=['score'],fname_xml='./data/word.kwlist.raw.xml')
+#     logging.info('Getting Global Features')
 #     babel_post.GetGlobalFeatures(feat_type=['entropy'])
+    logging.info('Getting Utterance Features')
     babel_post.GetUtteranceFeatures(feat_type=['entropy'])
     Xp_entropy = np.asmatrix(babel_post._local_features)
 #     Xp_entropy_glob = np.asmatrix(babel_post._glob_features)
@@ -73,8 +76,11 @@ if __name__ == '__main__':
     Ytrain = babel.labels().astype(np.int)
 
 #     Xp_t_a1 = conv.process_dataset(babel_eval, as_2d = True)
+    logging.info('Getting Eval Local Features')
     babel_eval_post.GetLocalFeatures(feat_type=['score'],fname_xml='./data/word.cut_down_evalpart1.kwlist.raw.xml')
+#     logging.info('Getting Eval Global Features')
 #     babel_eval_post.GetGlobalFeatures(feat_type=['entropy'])
+    logging.info('Getting Eval Utterance Features')
     babel_eval_post.GetUtteranceFeatures(feat_type=['entropy'])
     Xp_t_entropy = np.asmatrix(babel_eval_post._local_features)
 #     Xp_t_entropy_glob = np.asmatrix(babel_eval_post._glob_features)
