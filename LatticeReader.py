@@ -88,11 +88,23 @@ class LatticeReader:
         #    print 'Warn: ',repr(times)
         #    print 'Warn: ',utt_name
         return np.squeeze(np.asarray(utt_times[np.nonzero(np.sum(time_ind<utt_times,axis=1)>0)[0][0]]))
-                
+    
+    def LoadMappingHescii(self, fname):
+        self.map_keyword = {}
+        self.map_hescii = {}
+        from xml.dom import minidom
+        xmldoc = minidom.parse(fname)
+        itemlist = xmldoc.getElementsByTagName('kw')
+        for i in range(len(itemlist)):
+            keyword = itemlist[i].attributes['kwid'].value
+            keyword_hescii = itemlist[i].childNodes[1].childNodes[0].nodeValue
+            self.map_keyword[keyword] = keyword_hescii
+            self.map_hescii[keyword_hescii] = keyword                
 
 if __name__ == '__main__':
     list_files = './data/lat.debug.list'
     lat_reader = LatticeReader(list_files)  
     lat_reader.ReadAllLatices()
+    lat_reader.LoadMappingHescii('./data/hescii_babel104b-v0.4bY_conv-eval.kwlist2.xml')
     lat_reader.GetUtterance('BABEL_BP_104_85455_20120310_210107_outLine', 573.4, 573.84)
     # BABEL_BP_104_04221_20120310_194031_inLine_0000133_0000572
