@@ -140,7 +140,7 @@ class BabelDataset(datasets.ImageSet):
                 if feat_type[j] == 'duration':
                     vector_return.append(self._data[i].shape[0]/float(100))
                 if feat_type[j] == 'score':
-                    self.GetScoresXML2(fname_xml)
+                    self.GetScoresXML(fname_xml)
                     key = self._keyword[i] + '_' + self._utt_id[i] + '_' + repr(self._times[i])
                     vector_return.append(self._kw_utt_times_hash[key])
                 if feat_type[j] == 'raw': #useful for lattices
