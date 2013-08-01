@@ -92,12 +92,12 @@ class LatticeReader:
     def LoadMappingHescii(self, fname):
         self.map_keyword = {}
         self.map_hescii = {}
-        from xml.dom import minidom
-        xmldoc = minidom.parse(fname)
-        itemlist = xmldoc.getElementsByTagName('kw')
-        for i in range(len(itemlist)):
-            keyword = itemlist[i].attributes['kwid'].value
-            keyword_hescii = itemlist[i].childNodes[1].childNodes[0].nodeValue
+        import xml.etree.cElementTree as ET
+        tree = ET.parse(fname)
+        root = tree.getroot()
+        for i in range(len(root)):
+            keyword = root[i].attrib['kwid']
+            keyword_hescii = root[i][0].text
             self.map_keyword[keyword] = keyword_hescii
             self.map_hescii[keyword_hescii] = keyword                
 

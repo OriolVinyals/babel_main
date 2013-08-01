@@ -140,7 +140,7 @@ class BabelDataset(datasets.ImageSet):
                 if feat_type[j] == 'duration':
                     vector_return.append(self._data[i].shape[0]/float(100))
                 if feat_type[j] == 'score':
-                    self.GetScoresXML(fname_xml)
+                    self.GetScoresXML2(fname_xml)
                     key = self._keyword[i] + '_' + self._utt_id[i] + '_' + repr(self._times[i])
                     vector_return.append(self._kw_utt_times_hash[key])
                 if feat_type[j] == 'raw': #useful for lattices
@@ -202,7 +202,7 @@ class BabelDataset(datasets.ImageSet):
             else:
                 self.keyword_scores[kw_id]='<kw file="' + file + '" channel="1" tbeg="' + str(times[0]) + '" dur="' + str(times[1]-times[0]) + '" score="' + str(score) + '" decision="' + decision + '"/>\n'
 
-    def GetScoresXML(self,fname):
+    def GetScoresXML_slow(self,fname):
         # We get every single entry so that we can pickle and load (since this is quite slow)
         # TODO: Pickle it!
         if len(self._kw_utt_times_hash) > 0:
@@ -222,6 +222,26 @@ class BabelDataset(datasets.ImageSet):
                     score = itemlist[i].childNodes[j].attributes['score'].value
                     key = keyword + '_' + utterance + '_' + repr(times) 
                     self._kw_utt_times_hash[key] = float(score)
+                    
+    def GetScoresXML(self,fname):
+        # We get every single entry so that we can pickle and load (since this is quite slow)
+        # TODO: Pickle it!
+        if len(self._kw_utt_times_hash) > 0:
+            return
+        import xml.etree.cElementTree as ET
+        tree = ET.parse(fname)
+        root = tree.getroot()
+        
+        for i in range(len(root)):
+            keyword = root[i].attrib['kwid']
+            for j in range(len(root[i])):
+                utterance = root[i][j].attrib['file']
+                tbeg = root[i][j].attrib['tbeg']
+                dur = root[i][j].attrib['dur']
+                times = (round(float(tbeg),2),round(float(tbeg)+float(dur),2))
+                score = root[i][j].attrib['score']
+                key = keyword + '_' + utterance + '_' + repr(times) 
+                self._kw_utt_times_hash[key] = float(score)
             
 if __name__ == '__main__':
     feat_range = [0,1,2,5,6,7,69,74]
