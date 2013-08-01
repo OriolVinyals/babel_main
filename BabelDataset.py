@@ -160,7 +160,7 @@ class BabelDataset(datasets.ImageSet):
             self._glob_features.append(self.utt_reader.GetGlobFeature(self._utt_id[i], feat_type=feat_type))
             
     def GetUtteranceFeatures(self, feat_type=['entropy','entropy']):
-        '''Computes global features. Each mpi node computes its own'''
+        '''Computes utterance features. Each mpi node computes its own'''
         if self.keep_full_utt == False:
             print 'Error, we need to keep full utterance to compute utterance features!'
             exit(0)
@@ -204,6 +204,7 @@ class BabelDataset(datasets.ImageSet):
 
     def GetScoresXML(self,fname):
         # We get every single entry so that we can pickle and load (since this is quite slow)
+        # TODO: Pickle it!
         if len(self._kw_utt_times_hash) > 0:
             return
         from xml.dom import minidom
