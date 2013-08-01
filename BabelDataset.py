@@ -16,17 +16,23 @@ class BabelDataset(datasets.ImageSet):
     # some  Babel constants
     
     #def __init__(self, utt_reader,posting_sampler):
-    def __init__(self, list_file, feat_range, posting_file, perc_pos, keep_full_utt=False, posting_sampler=None, min_dur=0.2):
+    def __init__(self, list_file, feat_range, posting_file, perc_pos, keep_full_utt=False, posting_sampler=None, min_dur=0.2, reader_type='utterance'):
         '''TODO: Read pieces of utterance from the CSV file instead to save memory. It would be nice to index thse by utt_id (by now I do a map).'''
         super(BabelDataset, self).__init__()
-        if (list_file.strip().split('.')[-1] == 'list'):
+        if reader_type=='lattice':
             self.is_lattice = True
             utt_reader = LatticeReader.LatticeReader(list_file)
             utt_reader.ReadAllLatices()
-        else:
+        elif reader_type=='utterance':
             self.is_lattice = False
             utt_reader = UtteranceReader.UtteranceReader(list_file)
             utt_reader.ReadAllUtterances(feat_range)
+        elif reader_type=='snr':
+            self.is_lattice = False
+            utt_reader = 0
+        else:
+            print 'Reader not implemented!'
+            exit(0)
         if posting_sampler == None:
             testParser = PostingParser.PostingParser(posting_file)
             self.posting_sampler = Sampler.Sampler(testParser)
@@ -220,9 +226,9 @@ if __name__ == '__main__':
     posting_file = './data/word.kwlist.alignment.csv'
     perc_pos = 0.2
     list_file = './data/lat.debug.list'
-    babel_lat = BabelDataset(list_file, None, posting_file, perc_pos)
+    babel_lat = BabelDataset(list_file, None, posting_file, perc_pos, reader_type='lattice')
     list_file = './data/list_files.scp'
-    babel = BabelDataset(list_file, None, posting_file, perc_pos)
+    babel = BabelDataset(list_file, None, posting_file, perc_pos, reader_type='utterance')
     babel.GetLocalFeatures(feat_type=['score'],fname_xml='./data/word.kwlist.raw.xml')
     print babel._data[0].shape
     babel.ConvertFeatures([0,1,3])

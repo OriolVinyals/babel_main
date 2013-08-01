@@ -22,7 +22,8 @@ if __name__ == '__main__':
     babel_post = BabelDataset.BabelDataset(list_file, feat_range, posting_file, perc_pos, keep_full_utt=True, posting_sampler=babel.posting_sampler,min_dur=min_dur)
     
     list_file = './data/lat.list'
-    babel_lat = BabelDataset.BabelDataset(list_file, feat_range, posting_file, perc_pos, keep_full_utt=True, posting_sampler=babel.posting_sampler,min_dur=min_dur)
+    babel_lat = BabelDataset.BabelDataset(list_file, feat_range, posting_file, perc_pos, keep_full_utt=True, 
+                                          posting_sampler=babel.posting_sampler,min_dur=min_dur,reader_type='lattice')
     
     #reassign utterances
     babel_post.utt_reader.list_times_utt = babel_lat.utt_reader.list_times_utt
@@ -38,7 +39,8 @@ if __name__ == '__main__':
     babel_eval_post = BabelDataset.BabelDataset(list_file, feat_range, posting_file, perc_pos, keep_full_utt=True, posting_sampler=babel_eval.posting_sampler,min_dur=min_dur)
     
     list_file = './data/lat.eval.list'
-    babel_eval_lat = BabelDataset.BabelDataset(list_file, feat_range, posting_file, perc_pos, keep_full_utt=True, posting_sampler=babel_eval.posting_sampler,min_dur=min_dur)
+    babel_eval_lat = BabelDataset.BabelDataset(list_file, feat_range, posting_file, perc_pos, keep_full_utt=True, 
+                                               posting_sampler=babel_eval.posting_sampler,min_dur=min_dur,reader_type='lattice')
     
     #reassign utterances
     babel_eval_post.utt_reader.list_times_utt = babel_eval_lat.utt_reader.list_times_utt
