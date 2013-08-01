@@ -203,6 +203,7 @@ class BabelDataset(datasets.ImageSet):
                 self.keyword_scores[kw_id]='<kw file="' + file + '" channel="1" tbeg="' + str(times[0]) + '" dur="' + str(times[1]-times[0]) + '" score="' + str(score) + '" decision="' + decision + '"/>\n'
 
     def GetScoresXML(self,fname):
+        # We get every single entry so that we can pickle and load (since this is quite slow)
         if len(self._kw_utt_times_hash) > 0:
             return
         from xml.dom import minidom
