@@ -14,16 +14,15 @@ def secondsToStr(t):
     rediv = lambda ll,b : list(divmod(ll[0],b)) + ll[1:]
     return "%d:%02d:%02d.%03d" % tuple(reduce(rediv,[[t*1000,],1000,60,60]))
 
-
 class SNRReader:
-    def __init__(self,list_file):
+    def __init__(self,list_file,pickle_fname='./test.pickle'):
         self.list_file = list_file
         self.list_files = self.ParseListScp(list_file)
         self.utt_feature = {}
         self.num_utt = len(self.list_files)
         self.samp_period = 100
         self.map_utt_idx = {}
-        self.pickle_fname = './test.pickle'
+        self.pickle_fname = pickle_fname
          
     def ReadAllSNR(self):        
         #VERY time expensive. Computes Utterance and Global features (but no local features unlike Lat/UTTReader)

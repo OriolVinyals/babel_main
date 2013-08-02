@@ -7,6 +7,7 @@ import numpy as np
 import os
 import UtteranceReader
 import LatticeReader
+import SNRReader
 import PostingParser
 import Sampler
 
@@ -16,7 +17,7 @@ class BabelDataset(datasets.ImageSet):
     # some  Babel constants
     
     #def __init__(self, utt_reader,posting_sampler):
-    def __init__(self, list_file, feat_range, posting_file, perc_pos, keep_full_utt=False, posting_sampler=None, min_dur=0.2, reader_type='utterance'):
+    def __init__(self, list_file, feat_range, posting_file, perc_pos, keep_full_utt=False, posting_sampler=None, min_dur=0.2, reader_type='utterance', pickle_fname='./test.pickle'):
         '''TODO: Read pieces of utterance from the CSV file instead to save memory. It would be nice to index thse by utt_id (by now I do a map).'''
         super(BabelDataset, self).__init__()
         if reader_type=='lattice':
@@ -29,7 +30,8 @@ class BabelDataset(datasets.ImageSet):
             utt_reader.ReadAllUtterances(feat_range)
         elif reader_type=='snr':
             self.is_lattice = False
-            utt_reader = 0
+            utt_reader = SNRReader.SNRReader(list_files,pickle_fname=pickle_fname)
+            utt_reader.ReadAllSNR()
         else:
             print 'Reader not implemented!'
             exit(0)
@@ -247,6 +249,8 @@ if __name__ == '__main__':
     feat_range = [0,1,2,5,6,7,69,74]
     posting_file = './data/word.kwlist.alignment.csv'
     perc_pos = 0.2
+    list_file = './data/audio.debug.list'
+    babel_snr = BabelDataset(list_file, None, posting_file, perc_pos, reader_type='snr')
     list_file = './data/lat.debug.list'
     babel_lat = BabelDataset(list_file, None, posting_file, perc_pos, reader_type='lattice')
     list_file = './data/list_files.scp'
