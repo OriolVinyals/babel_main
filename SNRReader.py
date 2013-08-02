@@ -30,7 +30,6 @@ class SNRReader:
                 cmd += '-start ' + repr(t_beg) + ' -end ' + repr(t_end) + ' -disp 0'
                 p = subprocess.Popen(cmd.split(' '), stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd='/u/vinyals/projects/swordfish/src/snreval/')
                 out, err = p.communicate()
-                print out
                 for line in out.split('\n'):
                     if line.find('STNR')>-1:
                         self.utt_feature[utt_id_times] = float(line.split(' ')[3])
@@ -102,4 +101,4 @@ if __name__ == '__main__':
     list_files = './data/audio.debug.list'
     snr_reader = SNRReader(list_files)  
     snr_reader.ReadAllSNR()
-    print 'Utterance Feature ',repr(snr_reader.GetUtteranceFeature('BABEL_BP_104_35756_20120311_223543_inLine',(294,295)))
+    print 'Utterance Feature ' + repr(snr_reader.GetUtteranceFeature('BABEL_BP_104_35756_20120311_223543_inLine',(294,295)))
