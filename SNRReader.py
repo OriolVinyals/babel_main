@@ -51,7 +51,7 @@ class SNRReader:
                 self.glob_feature=pickle.load(fp)
                 self.map_utt_idx=pickle.load(fp)
         except:
-            num_utt = len(self.list_times_utt.values())
+            num_utt = len(self.list_times_utt.values()) + len(self.list_files)
             avg_iter = 0
             curr_utt = 0
             curr_dir = os.getcwd()
@@ -71,8 +71,16 @@ class SNRReader:
                     print 'Iteration ' + repr(curr_utt) + ' out of ' + repr(num_utt)
                     print 'Time per iteration ' + '%.2f' % (avg_iter)
                     print 'ETA ' + secondsToStr(avg_iter*(num_utt-curr_utt))
+                t1 = time.time()
                 self.cmdChunk('./temp.sph', audio_chunk)
                 self.glob_feature[utt_id] = self.cmdSNR(curr_dir+'/temp.sph')
+                ellapsed = time.time() - t1
+                avg_iter = avg_iter + (ellapsed-avg_iter)/(curr_utt+1)
+                curr_utt += 1
+                audio_chunk += self.list_files[i] + ' ' + repr(t_beg) + ' ' + repr(t_end) + '\n'
+                print 'Iteration ' + repr(curr_utt) + ' out of ' + repr(num_utt)
+                print 'Time per iteration ' + '%.2f' % (avg_iter)
+                print 'ETA ' + secondsToStr(avg_iter*(num_utt-curr_utt))
 
             self.map_utt_idx[utt_id] = i
             with open(self.pickle_fname,'wb') as fp:
