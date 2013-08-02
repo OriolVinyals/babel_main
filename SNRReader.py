@@ -36,6 +36,7 @@ class SNRReader:
             curr_utt = 0
             for i in range(len(self.list_files)):
                 utt_id = string.split(self.list_files[i],'/')[-1].split('.')[0]
+                audio_chunk = ''
                 for times in self.list_times_utt[utt_id]:
                     t1 = time.time()
                     t_beg = times[0]/self.samp_period
@@ -52,9 +53,23 @@ class SNRReader:
                     ellapsed = time.time() - t1
                     avg_iter = avg_iter + (ellapsed-avg_iter)/(curr_utt+1)
                     curr_utt += 1
+                    audio_chunk += self.list_files[i] + ' ' + t_beg + ' ' + t_end + '\n'
                     print 'Iteration ' + repr(curr_utt) + ' out of ' + repr(num_utt)
                     print 'Time per iteration ' + '%.2f' % (avg_iter)
                     print 'ETA ' + secondsToStr(avg_iter*(num_utt-curr_utt))
+                print audio_chunk
+                cmd = 'iajoin temp.sph'
+                p = subprocess.Popen(cmd.split(' '), stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
+                p.communicate(audio_chunk)
+                cmd = '/u/vinyals/projects/swordfish/src/snreval/run_snreval_prj.sh ' + 'temp.sph'
+                cmd += ' -disp 0'
+                p = subprocess.Popen(cmd.split(' '), stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd='/u/vinyals/projects/swordfish/src/snreval/')
+                out, err = p.communicate()
+                for line in out.split('\n'):
+                    if line.find('STNR')>-1:
+                        #self.utt_feature[utt_id_times] = float(line.split(' ')[3])
+                        print line.split(' ')[3]
+
             self.map_utt_idx[utt_id] = i
             with open(self.pickle_fname,'wb') as fp:
                     pickle.dump(self.utt_feature,fp)
