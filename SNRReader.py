@@ -51,7 +51,7 @@ class SNRReader:
                     for line in out.split('\n'):
                         if line.find('STNR')>-1:
                             self.utt_feature[utt_id_times] = float(line.split(' ')[3])
-                            #print line.split(' ')[3]
+                            print line.split(' ')[3]
                     ellapsed = time.time() - t1
                     avg_iter = avg_iter + (ellapsed-avg_iter)/(curr_utt+1)
                     curr_utt += 1
@@ -59,7 +59,7 @@ class SNRReader:
                     print 'Iteration ' + repr(curr_utt) + ' out of ' + repr(num_utt)
                     print 'Time per iteration ' + '%.2f' % (avg_iter)
                     print 'ETA ' + secondsToStr(avg_iter*(num_utt-curr_utt))
-                print audio_chunk
+                #print audio_chunk
                 cmd = 'iajoin ./temp.sph'
                 p = subprocess.Popen(cmd.split(' '), stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
                 p.communicate(audio_chunk)
@@ -67,8 +67,8 @@ class SNRReader:
                 cmd += ' -disp 0'
                 p = subprocess.Popen(cmd.split(' '), stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd='/u/vinyals/projects/swordfish/src/snreval/')
                 out, err = p.communicate()
-                print out
-                print err
+                #print out
+                #print err
                 for line in out.split('\n'):
                     if line.find('STNR')>-1:
                         #self.utt_feature[utt_id_times] = float(line.split(' ')[3])
