@@ -30,6 +30,7 @@ class SNRReader:
         try:
             with open(self.pickle_fname,'rb') as fp:
                 self.utt_feature=pickle.load(fp)
+                self.glob_feature=pickle.load(fp)
                 self.map_utt_idx=pickle.load(fp)
         except:
             num_utt = len(self.list_times_utt.values())
@@ -51,7 +52,7 @@ class SNRReader:
                     for line in out.split('\n'):
                         if line.find('STNR')>-1:
                             self.utt_feature[utt_id_times] = float(line.split(' ')[3])
-                            print line.split(' ')[3]
+                            #print line.split(' ')[3]
                     ellapsed = time.time() - t1
                     avg_iter = avg_iter + (ellapsed-avg_iter)/(curr_utt+1)
                     curr_utt += 1
@@ -71,12 +72,13 @@ class SNRReader:
                 #print err
                 for line in out.split('\n'):
                     if line.find('STNR')>-1:
-                        #self.utt_feature[utt_id_times] = float(line.split(' ')[3])
-                        print line.split(' ')[3]
+                        self.glob_feature[utt_id] = float(line.split(' ')[3])
+                        #print line.split(' ')[3]
 
             self.map_utt_idx[utt_id] = i
             with open(self.pickle_fname,'wb') as fp:
                     pickle.dump(self.utt_feature,fp)
+                    pickle.dump(self.glob_feature,fp)
                     pickle.dump(self.map_utt_idx,fp)
         
     def GetUtterance(self, utt_name, t_ini, t_end):
@@ -104,22 +106,11 @@ class SNRReader:
         return [n for n in list_files]
     
     def GetGlobFeature(self, utt_name, feat_type='entropy'):
-        #TODO
-        if self.utt_data == []:
-            print 'We need to read utterances first'
-            return
         if self.glob_feature.has_key(utt_name):
             return self.glob_feature[utt_name]
-        index = self.map_utt_idx[utt_name]
-        utt = self.utt_data[index]
-        vector_return = []
-        for i in range(len(feat_type)):
-            if feat_type[i] == 'entropy':
-                aux = utt*np.log(utt)
-                aux = np.sum(aux,1)
-                vector_return.append(np.average(aux))
-        self.glob_feature[utt_name] = vector_return
-        return self.glob_feature[utt_name]
+        else:
+            print 'Global Feature should have been precomputed!'
+            exit(0)
     
     def GetUtteranceFeature(self, utt_name, times):
         utt_times = self.GetTimesUtterance(utt_name, times) #convert in utterance times to boundary utterance times
@@ -127,7 +118,7 @@ class SNRReader:
         if self.utt_feature.has_key(utt_id_times):
             return self.utt_feature[utt_id_times]
         else:
-            print 'This should have been precomputed!'
+            print 'Utterance Feature should have been precomputed!'
             exit(0)
 
     
@@ -145,3 +136,4 @@ if __name__ == '__main__':
     snr_reader = SNRReader(list_files)  
     snr_reader.ReadAllSNR()
     print 'Utterance Feature ' + repr(snr_reader.GetUtteranceFeature('BABEL_BP_104_35756_20120311_223543_inLine',(294,295)))
+    print 'Global Feature ' + repr(snr_reader.GetGlobFeature('BABEL_BP_104_35756_20120311_223543_inLine'))
