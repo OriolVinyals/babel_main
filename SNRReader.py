@@ -35,8 +35,9 @@ class SNRReader:
                                      stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                 out, err = p.communicate()
                 for line in out.split('\n'):
-                    print 'Line: ' + line
-            #ENDTODO
+                    if line.find('STNR')>-1:
+                        print line.split(' ')[3]
+                    
             self.lat_data.append(np_data)
             self.map_utt_idx[utt_id] = i
             self.map_utt_times_idx[utt_id_times] = i
