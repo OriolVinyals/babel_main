@@ -7,6 +7,7 @@ Created on Jun 18, 2013
 import string
 import numpy as np
 import subprocess
+import os
 import cPickle as pickle
 import time
 
@@ -34,6 +35,7 @@ class SNRReader:
             num_utt = len(self.list_times_utt.values())
             avg_iter = 0
             curr_utt = 0
+            curr_dir = os.getcwd()
             for i in range(len(self.list_files)):
                 utt_id = string.split(self.list_files[i],'/')[-1].split('.')[0]
                 audio_chunk = ''
@@ -61,7 +63,7 @@ class SNRReader:
                 cmd = 'iajoin ./temp.sph'
                 p = subprocess.Popen(cmd.split(' '), stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
                 p.communicate(audio_chunk)
-                cmd = '/u/vinyals/projects/swordfish/src/snreval/run_snreval_prj.sh ' + './temp.sph'
+                cmd = '/u/vinyals/projects/swordfish/src/snreval/run_snreval_prj.sh ' + os.curr_dir + '/temp.sph'
                 cmd += ' -disp 0'
                 p = subprocess.Popen(cmd.split(' '), stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd='/u/vinyals/projects/swordfish/src/snreval/')
                 out, err = p.communicate()
