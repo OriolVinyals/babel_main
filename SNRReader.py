@@ -63,7 +63,7 @@ class SNRReader:
                 cmd = 'iajoin ./temp.sph'
                 p = subprocess.Popen(cmd.split(' '), stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
                 p.communicate(audio_chunk)
-                cmd = '/u/vinyals/projects/swordfish/src/snreval/run_snreval_prj.sh ' + os.curr_dir + '/temp.sph'
+                cmd = '/u/vinyals/projects/swordfish/src/snreval/run_snreval_prj.sh ' + curr_dir + '/temp.sph'
                 cmd += ' -disp 0'
                 p = subprocess.Popen(cmd.split(' '), stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd='/u/vinyals/projects/swordfish/src/snreval/')
                 out, err = p.communicate()
