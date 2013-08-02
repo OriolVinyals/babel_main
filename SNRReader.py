@@ -27,8 +27,14 @@ class SNRReader:
                 self.utt_feature=pickle.load(fp)
                 self.map_utt_idx=pickle.load(fp)
         except:
+            from progressbar import *               # just a simple progress bar
+            widgets = ['Test: ', Percentage(), ' ', Bar(marker='0',left='[',right=']'),
+                       ' ', ETA(), ' ', FileTransferSpeed()] #see docs for other options
+            pbar = ProgressBar(widgets=widgets, maxval=len(self.list_files))
+            pbar.start()
             for i in range(len(self.list_files)):
                 utt_id = string.split(self.list_files[i],'/')[-1].split('.')[0]
+                pbar.update(i)
                 for times in self.list_times_utt[utt_id]:
                     t_beg = times[0]/self.samp_period
                     t_end = times[1]/self.samp_period
@@ -41,6 +47,7 @@ class SNRReader:
                         if line.find('STNR')>-1:
                             self.utt_feature[utt_id_times] = float(line.split(' ')[3])
                             print line.split(' ')[3]
+            pbar.finish()
             self.map_utt_idx[utt_id] = i
             with open(self.pickle_fname,'wb') as fp:
                     pickle.dump(self.utt_feature,fp)
