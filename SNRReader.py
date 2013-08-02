@@ -28,8 +28,9 @@ class SNRReader:
                 utt_id_times = utt_id + '_' + '%07d' % (times[0],) + '_' + '%07d' % (times[1],)
                 cmd = '/u/vinyals/projects/swordfish/src/snreval/run_snreval_prj.sh ' + self.list_files[i] + ' '
                 cmd += '-start ' + repr(t_beg) + ' -end ' + repr(t_end) + ' -disp 0'
-                p = subprocess.Popen(cmd.split(' '), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                p = subprocess.Popen(cmd.split(' '), stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd='/u/vinyals/projects/swordfish/src/snreval/')
                 out, err = p.communicate()
+                print out
                 for line in out.split('\n'):
                     if line.find('STNR')>-1:
                         self.utt_feature[utt_id_times] = float(line.split(' ')[3])
