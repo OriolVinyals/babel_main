@@ -13,8 +13,6 @@ class SNRReader:
     def __init__(self,list_file):
         self.list_file = list_file
         self.list_files = self.ParseListScp(list_file)
-        self.lat_data = []
-        self.utt_data = []
         self.utt_feature = {}
         self.num_utt = len(self.list_files)
         self.samp_period = 100
@@ -37,10 +35,7 @@ class SNRReader:
                     if line.find('STNR')>-1:
                         self.utt_feature[utt_id_times] = float(line.split(' ')[3])
                         print line.split(' ')[3]
-                    
-            self.lat_data.append(np_data)
             self.map_utt_idx[utt_id] = i
-            self.map_utt_times_idx[utt_id_times] = i
     
     def GetUtterance(self, utt_name, t_ini, t_end):
         # No per frame / local feature for SNR!
