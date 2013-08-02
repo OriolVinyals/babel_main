@@ -8,6 +8,7 @@ import string
 import numpy as np
 import subprocess
 import cPickle as pickle
+from progressbar import *               # just a simple progress bar
 
 
 class SNRReader:
@@ -27,7 +28,6 @@ class SNRReader:
                 self.utt_feature=pickle.load(fp)
                 self.map_utt_idx=pickle.load(fp)
         except:
-            from progressbar import *               # just a simple progress bar
             widgets = ['Test: ', Percentage(), ' ', Bar(marker='0',left='[',right=']'),
                        ' ', ETA(), ' ', FileTransferSpeed()] #see docs for other options
             pbar = ProgressBar(widgets=widgets, maxval=len(self.list_files))
