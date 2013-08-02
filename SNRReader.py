@@ -50,8 +50,8 @@ class SNRReader:
                     avg_iter = avg_iter + (ellapsed-avg_iter)/(curr_utt+1)
                     curr_utt += 1
                     print 'Iteration ' + repr(curr_utt) + ' out of ' + repr(num_utt)
-                    print 'Time per iteration ' + repr(avg_iter)
-                    print 'ETA ' + repr(avg_iter*(num_utt-curr_utt))
+                    print 'Time per iteration ' + '%.2f' % (avg_iter)
+                    print 'ETA ' + '%.2f' % (avg_iter*(num_utt-curr_utt))
             self.map_utt_idx[utt_id] = i
             with open(self.pickle_fname,'wb') as fp:
                     pickle.dump(self.utt_feature,fp)
