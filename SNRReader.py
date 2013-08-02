@@ -17,7 +17,6 @@ class SNRReader:
         self.num_utt = len(self.list_files)
         self.samp_period = 100
         self.map_utt_idx = {}
-        self.map_utt_times_idx = {}
          
     def ReadAllSNR(self):        
         #VERY time expensive. Computes Utterance and Global features (but no local features unlike Lat/UTTReader)
@@ -62,6 +61,7 @@ class SNRReader:
         return [n for n in list_files]
     
     def GetGlobFeature(self, utt_name, feat_type='entropy'):
+        #TODO
         if self.utt_data == []:
             print 'We need to read utterances first'
             return
