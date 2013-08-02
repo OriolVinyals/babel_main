@@ -20,6 +20,7 @@ class SNRReader:
         self.list_file = list_file
         self.list_files = self.ParseListScp(list_file)
         self.utt_feature = {}
+        self.glob_feature = {}
         self.num_utt = len(self.list_files)
         self.samp_period = 100
         self.map_utt_idx = {}
@@ -69,16 +70,7 @@ class SNRReader:
                 cmd = 'iajoin ./temp.sph'
                 p = subprocess.Popen(cmd.split(' '), stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
                 p.communicate(audio_chunk)
-                cmd = '/u/vinyals/projects/swordfish/src/snreval/run_snreval_prj.sh ' + curr_dir + '/temp.sph'
-                cmd += ' -disp 0'
-                p = subprocess.Popen(cmd.split(' '), stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd='/u/vinyals/projects/swordfish/src/snreval/')
-                out, err = p.communicate()
-                #print out
-                #print err
-                for line in out.split('\n'):
-                    if line.find('STNR')>-1:
-                        self.glob_feature[utt_id] = float(line.split(' ')[3])
-                        #print line.split(' ')[3]
+                self.glob_feature[utt_id] = self.cmdSNR(curr_dir+'/temp.sph')
 
             self.map_utt_idx[utt_id] = i
             with open(self.pickle_fname,'wb') as fp:
