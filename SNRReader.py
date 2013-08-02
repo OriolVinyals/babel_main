@@ -53,7 +53,7 @@ class SNRReader:
                     ellapsed = time.time() - t1
                     avg_iter = avg_iter + (ellapsed-avg_iter)/(curr_utt+1)
                     curr_utt += 1
-                    audio_chunk += self.list_files[i] + ' ' + t_beg + ' ' + t_end + '\n'
+                    audio_chunk += self.list_files[i] + ' ' + repr(t_beg) + ' ' + repr(t_end) + '\n'
                     print 'Iteration ' + repr(curr_utt) + ' out of ' + repr(num_utt)
                     print 'Time per iteration ' + '%.2f' % (avg_iter)
                     print 'ETA ' + secondsToStr(avg_iter*(num_utt-curr_utt))
