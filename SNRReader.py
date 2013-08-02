@@ -34,7 +34,7 @@ class SNRReader:
                 p = subprocess.Popen(cmd.split(' '), 
                                      stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                 out, err = p.communicate()
-                for line in out:
+                for line in out.split('\n'):
                     print 'Line: ' + line
             #ENDTODO
             self.lat_data.append(np_data)
