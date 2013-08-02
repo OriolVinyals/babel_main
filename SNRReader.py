@@ -10,6 +10,10 @@ import subprocess
 import cPickle as pickle
 import time
 
+def secondsToStr(t):
+    rediv = lambda ll,b : list(divmod(ll[0],b)) + ll[1:]
+    return "%d:%02d:%02d.%03d" % tuple(reduce(rediv,[[t*1000,],1000,60,60]))
+
 
 class SNRReader:
     def __init__(self,list_file):
@@ -51,7 +55,7 @@ class SNRReader:
                     curr_utt += 1
                     print 'Iteration ' + repr(curr_utt) + ' out of ' + repr(num_utt)
                     print 'Time per iteration ' + '%.2f' % (avg_iter)
-                    print 'ETA ' + '%.2f' % (avg_iter*(num_utt-curr_utt))
+                    print 'ETA ' + secondsToStr(avg_iter*(num_utt-curr_utt))
             self.map_utt_idx[utt_id] = i
             with open(self.pickle_fname,'wb') as fp:
                     pickle.dump(self.utt_feature,fp)
