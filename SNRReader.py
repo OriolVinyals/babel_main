@@ -7,6 +7,7 @@ Created on Jun 18, 2013
 import string
 import numpy as np
 import subprocess
+import cPickle as pickle
 
 
 class SNRReader:
@@ -17,25 +18,34 @@ class SNRReader:
         self.num_utt = len(self.list_files)
         self.samp_period = 100
         self.map_utt_idx = {}
+        self.pickle_fname = './test.pickle'
          
     def ReadAllSNR(self):        
         #VERY time expensive. Computes Utterance and Global features (but no local features unlike Lat/UTTReader)
-        for i in range(len(self.list_files)):
-            utt_id = string.split(self.list_files[i],'/')[-1].split('.')[0]
-            for times in self.list_times_utt[utt_id]:
-                t_beg = times[0]/self.samp_period
-                t_end = times[1]/self.samp_period
-                utt_id_times = utt_id + '_' + '%07d' % (times[0],) + '_' + '%07d' % (times[1],)
-                cmd = '/u/vinyals/projects/swordfish/src/snreval/run_snreval_prj.sh ' + self.list_files[i] + ' '
-                cmd += '-start ' + repr(t_beg) + ' -end ' + repr(t_end) + ' -disp 0'
-                p = subprocess.Popen(cmd.split(' '), stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd='/u/vinyals/projects/swordfish/src/snreval/')
-                out, err = p.communicate()
-                for line in out.split('\n'):
-                    if line.find('STNR')>-1:
-                        self.utt_feature[utt_id_times] = float(line.split(' ')[3])
-                        print line.split(' ')[3]
+        try:
+            with open(self.pickle_fname,'rb') as fp:
+                self.utt_feature=pickle.load(fp)
+                self.map_utt_idx=pickle.load(fp)
+        except:
+            for i in range(len(self.list_files)):
+                utt_id = string.split(self.list_files[i],'/')[-1].split('.')[0]
+                for times in self.list_times_utt[utt_id]:
+                    t_beg = times[0]/self.samp_period
+                    t_end = times[1]/self.samp_period
+                    utt_id_times = utt_id + '_' + '%07d' % (times[0],) + '_' + '%07d' % (times[1],)
+                    cmd = '/u/vinyals/projects/swordfish/src/snreval/run_snreval_prj.sh ' + self.list_files[i] + ' '
+                    cmd += '-start ' + repr(t_beg) + ' -end ' + repr(t_end) + ' -disp 0'
+                    p = subprocess.Popen(cmd.split(' '), stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd='/u/vinyals/projects/swordfish/src/snreval/')
+                    out, err = p.communicate()
+                    for line in out.split('\n'):
+                        if line.find('STNR')>-1:
+                            self.utt_feature[utt_id_times] = float(line.split(' ')[3])
+                            print line.split(' ')[3]
             self.map_utt_idx[utt_id] = i
-    
+            with open(self.pickle_fname,'wb') as fp:
+                    pickle.dump(self.utt_feature,fp)
+                    pickle.dump(self.map_utt_idx,fp)
+        
     def GetUtterance(self, utt_name, t_ini, t_end):
         # No per frame / local feature for SNR!
         return 0
