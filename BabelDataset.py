@@ -30,7 +30,7 @@ class BabelDataset(datasets.ImageSet):
             utt_reader.ReadAllUtterances(feat_range)
         elif reader_type=='snr':
             self.is_lattice = False
-            utt_reader = SNRReader.SNRReader(list_files,pickle_fname=pickle_fname)
+            utt_reader = SNRReader.SNRReader(list_file,pickle_fname=pickle_fname)
             utt_reader.ReadAllSNR()
         else:
             print 'Reader not implemented!'
