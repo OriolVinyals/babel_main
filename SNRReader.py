@@ -6,7 +6,8 @@ Created on Jun 18, 2013
 
 import string
 import numpy as np
-import os
+import subprocess
+
 
 class SNRReader:
     def __init__(self,list_file):
@@ -22,20 +23,19 @@ class SNRReader:
          
     def ReadAllSNR(self):        
         #VERY time expensive. Computes Utterance and Global features (but no local features unlike Lat/UTTReader)
-        import subprocess
         for i in range(len(self.list_files)):
             utt_id = string.split(self.list_files[i],'/')[-1].split('.')[0]
             for times in self.list_times_utt[utt_id]:
                 t_beg = times[0]/self.samp_period
                 t_end = times[1]/self.samp_period
+                utt_id_times = utt_id + '_' + '%07d' % (times[0],) + '_' + '%07d' % (times[1],)
                 cmd = '/u/vinyals/projects/swordfish/src/snreval/run_snreval_prj.sh ' + self.list_files[i] + ' '
                 cmd += '-start ' + repr(t_beg) + ' -end ' + repr(t_end) + ' -disp 0'
-                #os.system(cmd)
-                p = subprocess.Popen(cmd.split(' '), 
-                                     stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                p = subprocess.Popen(cmd.split(' '), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                 out, err = p.communicate()
                 for line in out.split('\n'):
                     if line.find('STNR')>-1:
+                        self.utt_feature[utt_id_times] = float(line.split(' ')[3])
                         print line.split(' ')[3]
                     
             self.lat_data.append(np_data)
@@ -83,20 +83,14 @@ class SNRReader:
         self.glob_feature[utt_name] = vector_return
         return self.glob_feature[utt_name]
     
-    def GetUtteranceFeature(self, utt_name, times, feat_type='somefeature'):
+    def GetUtteranceFeature(self, utt_name, times):
         utt_times = self.GetTimesUtterance(utt_name, times) #convert in utterance times to boundary utterance times
         utt_id_times = utt_name + '_' + '%07d' % (utt_times[0],) + '_' + '%07d' % (utt_times[1],)
         if self.utt_feature.has_key(utt_id_times):
             return self.utt_feature[utt_id_times]
-        index = self.map_utt_times_idx[utt_id_times]
-        lattice_data = self.lat_data[index]
-        vector_return = []
-        for i in range(len(feat_type)):
-            if feat_type[i] == 'somefeature':
-                pass
-                #do something with lattice_data
-        self.utt_feature[utt_id_times] = vector_return
-        return self.utt_feature[utt_id_times]
+        else:
+            print 'This should have been precomputed!'
+            exit(0)
 
     
     def GetTimesUtterance(self, utt_name, times):
