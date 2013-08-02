@@ -66,6 +66,7 @@ class SNRReader:
                 p = subprocess.Popen(cmd.split(' '), stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd='/u/vinyals/projects/swordfish/src/snreval/')
                 out, err = p.communicate()
                 print out
+                print err
                 for line in out.split('\n'):
                     if line.find('STNR')>-1:
                         #self.utt_feature[utt_id_times] = float(line.split(' ')[3])
