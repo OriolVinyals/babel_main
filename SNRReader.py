@@ -31,7 +31,7 @@ class SNRReader:
                 cmd = '/u/vinyals/projects/swordfish/src/snreval/run_snreval_prj.sh ' + self.list_files[i] + ' '
                 cmd += '-start ' + repr(t_beg) + ' -end ' + repr(t_end) + ' -disp 0'
                 #os.system(cmd)
-                p = subprocess.Popen([cmd.split(' ')[0], string.join(cmd.split(' ')[1:],' ')], 
+                p = subprocess.Popen(cmd.split(' '), 
                                      stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                 out, err = p.communicate()
                 print out, err
