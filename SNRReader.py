@@ -37,6 +37,11 @@ class SNRReader:
         for line in out.split('\n'):
             if line.find('STNR')>-1:
                 return float(line.split(' ')[3])
+            
+    def cmdChunk(self, audio_file, input_string):
+        cmd = 'iajoin ' + audio_file
+        p = subprocess.Popen(cmd.split(' '), stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
+        p.communicate(input_string)
          
     def ReadAllSNR(self):        
         #VERY time expensive. Computes Utterance and Global features (but no local features unlike Lat/UTTReader)
@@ -66,10 +71,7 @@ class SNRReader:
                     print 'Iteration ' + repr(curr_utt) + ' out of ' + repr(num_utt)
                     print 'Time per iteration ' + '%.2f' % (avg_iter)
                     print 'ETA ' + secondsToStr(avg_iter*(num_utt-curr_utt))
-                #print audio_chunk
-                cmd = 'iajoin ./temp.sph'
-                p = subprocess.Popen(cmd.split(' '), stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
-                p.communicate(audio_chunk)
+                self.cmdChunk('./temp.sph', audio_chunk)
                 self.glob_feature[utt_id] = self.cmdSNR(curr_dir+'/temp.sph')
 
             self.map_utt_idx[utt_id] = i
