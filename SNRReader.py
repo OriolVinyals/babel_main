@@ -16,7 +16,7 @@ def secondsToStr(t):
     return "%d:%02d:%02d.%03d" % tuple(reduce(rediv,[[t*1000,],1000,60,60]))
 
 class SNRReader:
-    def __init__(self,list_file,pickle_fname='./test.pickle'):
+    def __init__(self,list_file,pickle_fname='./pickles/test.pickle'):
         self.list_file = list_file
         self.list_files = self.ParseListScp(list_file)
         self.utt_feature = {}
@@ -25,6 +25,11 @@ class SNRReader:
         self.samp_period = 100
         self.map_utt_idx = {}
         self.pickle_fname = pickle_fname
+        abs_path = os.path.abspath(pickle_fname)
+        try:
+            os.makedirs(os.path.dirname(abs_path))
+        except:
+            print 'Path exists or cant create'
         
     def cmdSNR(self, audio_file, t_beg=None, t_end=None):
         if t_beg == None:
