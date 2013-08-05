@@ -176,8 +176,8 @@ class SrateReader:
         return np.squeeze(np.asarray(utt_times[np.nonzero(np.sum(time_ind<utt_times,axis=1)>0)[0][0]]))              
 
 if __name__ == '__main__':
-    list_files = './data/audio.list'
-    srate_reader = SrateReader(list_files,pickle_fname='./pickles/full.srate.pickle')  
+    list_files = './data/audio.eval.list'
+    srate_reader = SrateReader(list_files,pickle_fname='./pickles/full.eval.srate.pickle')  
     srate_reader.ReadAllSrate()
     srate_reader.DumpAudioDiagnostics()
     diagnostics.print_histogram(srate_reader.glob_feature,'./data/plot_srate_glob.png')
