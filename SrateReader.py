@@ -16,7 +16,7 @@ def secondsToStr(t):
     return "%d:%02d:%02d.%03d" % tuple(reduce(rediv,[[t*1000,],1000,60,60]))
 
 class SrateReader:
-    def __init__(self,list_file,pickle_fname='./pickles/test.pickle'):
+    def __init__(self,list_file,pickle_fname='./pickles/test.srate.pickle'):
         self.list_file = list_file
         self.list_files = self.ParseListScp(list_file)
         self.utt_feature = {}
@@ -72,9 +72,10 @@ class SrateReader:
                     avg_iter = avg_iter + (ellapsed-avg_iter)/(curr_utt+1)
                     curr_utt += 1
                     audio_chunk += self.list_files[i] + ' ' + repr(t_beg) + ' ' + repr(t_end) + '\n'
-                    print 'Iteration ' + repr(curr_utt) + ' out of ' + repr(num_utt)
-                    print 'Time per iteration ' + '%.2f' % (avg_iter)
-                    print 'ETA ' + secondsToStr(avg_iter*(num_utt-curr_utt))
+                    if curr_utt%100 == 0:
+                        print 'Iteration ' + repr(curr_utt) + ' out of ' + repr(num_utt)
+                        print 'Time per iteration ' + '%.2f' % (avg_iter)
+                        print 'ETA ' + secondsToStr(avg_iter*(num_utt-curr_utt))
                 t1 = time.time()
                 self.cmdChunk('./temp.sph', audio_chunk)
                 self.glob_feature[utt_id] = self.cmdmrate(curr_dir+'/temp.sph')
@@ -143,8 +144,8 @@ class SrateReader:
         return np.squeeze(np.asarray(utt_times[np.nonzero(np.sum(time_ind<utt_times,axis=1)>0)[0][0]]))              
 
 if __name__ == '__main__':
-    list_files = './data/audio.debug.list'
-    srate_reader = SrateReader(list_files)  
+    list_files = './data/audio.list'
+    srate_reader = SrateReader(list_files,pickle_fname='./pickles/full.srate.pickle')  
     srate_reader.ReadAllSrate()
     print 'Utterance Feature ' + repr(srate_reader.GetUtteranceFeature('BABEL_BP_104_35756_20120311_223543_inLine',(294,295)))
     print 'Global Feature ' + repr(srate_reader.GetGlobFeature('BABEL_BP_104_35756_20120311_223543_inLine'))
