@@ -1,4 +1,5 @@
 import os
+import string
 
 def get_score(score_file):
     #score_file = '/u/vinyals/projects/swordfish/src/python/babel_main/data/eval.localutt.xml'

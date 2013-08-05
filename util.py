@@ -28,3 +28,14 @@ def cmdmrate(audio_file, t_beg=None, t_end=None):
     out, err = p.communicate()
     #print out.split('\n')[1]
     return float(out.split('\n')[1])
+
+def cmdconvert(in_audio_file,out_audio_file,t_beg=None,t_end=None,format='MSWAVE'):
+    if t_beg == None:
+        cmd = 'sndcat -op ' + format + ' ' + in_audio_file + ' -o ' + out_audio_file
+    else:
+        cmd = 'sndcat -op ' + format + ' -k ' + repr(t_beg) + ' -e ' + repr(t_end) + ' ' + in_audio_file + ' -o ' + out_audio_file
+    p = subprocess.Popen(cmd.split(' '), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    out, err = p.communicate()
+    print out
+    print err
+    return
