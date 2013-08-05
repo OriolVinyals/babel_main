@@ -6,7 +6,7 @@ Created on Jun 18, 2013
 
 import string
 import numpy as np
-import subprocess
+import util
 import os
 import cPickle as pickle
 import time
@@ -31,22 +31,6 @@ class SrateReader:
             os.makedirs(os.path.dirname(abs_path))
         except:
             print 'Path exists or cant create'
-        
-    def cmdmrate(self, audio_file, t_beg=None, t_end=None):
-        if t_beg == None:
-            cmd = '/u/vinyals/projects/swordfish/src/mrate/src/get_mrate -i ' + audio_file
-        else:
-            cmd = '/u/vinyals/projects/swordfish/src/mrate/src/get_mrate -i ' + audio_file + ' '
-            cmd += '-b ' + repr(t_beg) + ' -e ' + repr(t_end)
-        p = subprocess.Popen(cmd.split(' '), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        out, err = p.communicate()
-        #print out.split('\n')[1]
-        return float(out.split('\n')[1])
-            
-    def cmdChunk(self, audio_file, input_string):
-        cmd = 'iajoin ' + audio_file
-        p = subprocess.Popen(cmd.split(' '), stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
-        p.communicate(input_string)
          
     def ReadAllSrate(self):        
         #VERY time expensive. Computes Utterance and Global features (but no local features unlike Lat/UTTReader)
@@ -71,7 +55,7 @@ class SrateReader:
                     t_beg = times[0]/self.samp_period
                     t_end = times[1]/self.samp_period
                     utt_id_times = utt_id + '_' + '%07d' % (times[0],) + '_' + '%07d' % (times[1],)
-                    self.utt_feature[utt_id_times] = self.cmdmrate(self.list_files[i], t_beg, t_end)
+                    self.utt_feature[utt_id_times] = util.cmdmrate(self.list_files[i], t_beg, t_end)
                     ellapsed = time.time() - t1
                     avg_iter = avg_iter + (ellapsed-avg_iter)/(curr_utt+1)
                     curr_utt += 1
@@ -81,8 +65,8 @@ class SrateReader:
                         print 'Time per iteration ' + '%.2f' % (avg_iter)
                         print 'ETA ' + secondsToStr(avg_iter*(num_utt-curr_utt))
                 t1 = time.time()
-                self.cmdChunk('./temp.srate.sph', audio_chunk)
-                self.glob_feature[utt_id] = self.cmdmrate(curr_dir+'/temp.srate.sph')
+                util.cmdChunk('./temp.srate.sph', audio_chunk)
+                self.glob_feature[utt_id] = util.cmdmrate(curr_dir+'/temp.srate.sph')
                 ellapsed = time.time() - t1
                 avg_iter = avg_iter + (ellapsed-avg_iter)/(curr_utt+1)
                 curr_utt += 1
