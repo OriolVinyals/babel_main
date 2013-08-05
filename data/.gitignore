@@ -2,3 +2,7 @@
 /test.xml
 /unittest.xml
 /eval_part1.alignment.csv
+/plot_snr_glob.png
+/plot_snr_utt.png
+/plot_srate_glob.png
+/plot_srate_utt.png
