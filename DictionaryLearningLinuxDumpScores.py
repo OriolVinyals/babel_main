@@ -93,7 +93,7 @@ if __name__ == '__main__':
 
     lr_classifier = Classifier.Classifier(Xtrain_dict, Ytrain)
     '''Classifier stage'''
-    feat_list=['Local']
+    feat_list=['Local','Utterance']
     w, b = lr_classifier.Train(feat_list=feat_list,type='logreg',gamma=0.0)
     accu = lr_classifier.Accuracy(Xtrain_dict, Ytrain)
     neg_ll = lr_classifier.loss_multiclass_logreg(Xtrain_dict, Ytrain)
@@ -111,14 +111,14 @@ if __name__ == '__main__':
     print 'Test Neg LogLikelihood is ',neg_ll
     print 'Test Prior is ',np.sum(Ytest==0)/float(len(Ytest))
     
-    babel_eval.DumpScoresXML('./data/eval.local.xml',prob[:,1])
+    babel_eval.DumpScoresXML('./data/eval.localutt.xml',prob[:,1])
     babel_eval.DumpScoresXML('./data/eval.rawscore.xml',np.asarray(Xp_t_entropy).squeeze())
     
-    score_file = '/u/vinyals/projects/swordfish/src/python/babel_main/data/eval.local.xml'
+    score_file = '/u/vinyals/projects/swordfish/src/python/babel_main/data/eval.localutt.xml'
 
     thresh_bin = '/u/swegmann/work/std/kws/score_norm/thresh.pl'
     gt_file = '/u/drspeech/projects/swordfish/IndusDB/IndusDB.latest/babel104b-v0.4bY_conv-evalpart1.ecf.xml'
-    decision_out_file = '/u/vinyals/projects/swordfish/src/python/babel_main/data/eval.local.decision.xml'
+    decision_out_file = '/u/vinyals/projects/swordfish/src/python/babel_main/data/eval.localutt.decision.xml'
     cmd = thresh_bin + ' ' + gt_file + ' ' + score_file + ' > ' + decision_out_file
     print 'Running ',cmd
     os.system(cmd)
@@ -128,7 +128,7 @@ if __name__ == '__main__':
     rttm_file = '/u/drspeech/projects/swordfish/IndusDB/IndusDB.latest/babel104b-v0.4bY_conv-evalpart1/babel104b-v0.4bY_conv-evalpart1.mitllfa3.rttm'
     t_file = '/u/drspeech/projects/swordfish/IndusDB/IndusDB.latest/babel104b-v0.4bY_conv-eval.kwlist2.xml'
     opts = '-o -b -O -B -c'
-    out_dir = '/u/vinyals/projects/swordfish/src/python/babel_main/data/eval.local.decision'
+    out_dir = '/u/vinyals/projects/swordfish/src/python/babel_main/data/eval.localutt.decision'
     cmd = eval_bin + ' -e ' + gt_file + ' -r ' + rttm_file + ' -t ' + t_file + ' ' + opts + ' ' + ' -f ' + out_dir + ' -s ' + decision_out_file
     print 'Running ',cmd
     os.system(cmd)

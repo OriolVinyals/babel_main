@@ -85,12 +85,11 @@ class SrateReader:
                 ellapsed = time.time() - t1
                 avg_iter = avg_iter + (ellapsed-avg_iter)/(curr_utt+1)
                 curr_utt += 1
-                audio_chunk += self.list_files[i] + ' ' + repr(t_beg) + ' ' + repr(t_end) + '\n'
+                self.map_utt_idx[utt_id] = i
                 print 'Iteration ' + repr(curr_utt) + ' out of ' + repr(num_utt)
                 print 'Time per iteration ' + '%.2f' % (avg_iter)
                 print 'ETA ' + secondsToStr(avg_iter*(num_utt-curr_utt))
 
-            self.map_utt_idx[utt_id] = i
             with open(self.pickle_fname,'wb') as fp:
                     pickle.dump(self.utt_feature,fp)
                     pickle.dump(self.glob_feature,fp)
@@ -133,11 +132,13 @@ class SrateReader:
         if self.utt_feature.has_key(utt_id_times):
             #DEBUG
             if(utt_times[0]>times[0]*100):
-                print utt_times
-                print times
+                if(utt_times[0]-times[0]*100 > 40):
+                    print 'Muja'
+                print utt_times[0]-times[0]*100
             if(utt_times[1]<times[1]*100):
-                print utt_times
-                print times
+                if(times[1]*100-utt_times[1] > 40):
+                    print 'Muja2'
+                print times[1]*100-utt_times[1]
             #DEBUG
             return self.utt_feature[utt_id_times]
         else:
