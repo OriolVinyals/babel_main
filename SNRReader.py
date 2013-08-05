@@ -10,6 +10,7 @@ import subprocess
 import os
 import cPickle as pickle
 import time
+import diagnostics
 
 def secondsToStr(t):
     rediv = lambda ll,b : list(divmod(ll[0],b)) + ll[1:]
@@ -150,5 +151,7 @@ if __name__ == '__main__':
     list_files = './data/audio.list'
     snr_reader = SNRReader(list_files,pickle_fname='./pickles/full.snr.pickle')  
     snr_reader.ReadAllSNR()
+    diagnostics.print_histogram(snr_reader.glob_feature,'./data/plot_snr_glob.png')
+    diagnostics.print_histogram(snr_reader.utt_feature,'./data/plot_snr_utt.png')
     print 'Utterance Feature ' + repr(snr_reader.GetUtteranceFeature('BABEL_BP_104_35756_20120311_223543_inLine',(294,295)))
     print 'Global Feature ' + repr(snr_reader.GetGlobFeature('BABEL_BP_104_35756_20120311_223543_inLine'))
