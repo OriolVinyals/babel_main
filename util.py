@@ -37,6 +37,8 @@ def cmdconvert(in_audio_file,out_audio_file,t_beg=None,t_end=None,format='MSWAVE
         cmd = 'sndcat -f s -op ' + format + ' -k ' + repr(t_beg) + ' -e ' + repr(t_end) + ' ' + in_audio_file + ' -o ' + out_audio_file
     p = subprocess.Popen(cmd.split(' '), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     out, err = p.communicate()
-    print out
-    print err
+    rc = p.returncode
+    if(rc!=0):
+        print out
+        print err
     return
