@@ -56,7 +56,10 @@ class SNRReader:
                 self.glob_feature=pickle.load(fp)
                 self.map_utt_idx=pickle.load(fp)
         except:
-            num_utt = len(self.list_times_utt.values()) + len(self.list_files)
+            num_utt = len(self.list_files)
+            for i in range(len(self.list_files)):
+                utt_id = string.split(self.list_files[i],'/')[-1].split('.')[0]
+                num_utt += len(self.list_times_utt[utt_id])
             avg_iter = 0
             curr_utt = 0
             curr_dir = os.getcwd()
