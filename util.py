@@ -30,10 +30,11 @@ def cmdmrate(audio_file, t_beg=None, t_end=None):
     return float(out.split('\n')[1])
 
 def cmdconvert(in_audio_file,out_audio_file,t_beg=None,t_end=None,format='MSWAVE'):
+    #Note: we do convert samples to 16 bit encoding
     if t_beg == None:
-        cmd = 'sndcat -op ' + format + ' ' + in_audio_file + ' -o ' + out_audio_file
+        cmd = 'sndcat -f s -op ' + format + ' ' + in_audio_file + ' -o ' + out_audio_file
     else:
-        cmd = 'sndcat -op ' + format + ' -k ' + repr(t_beg) + ' -e ' + repr(t_end) + ' ' + in_audio_file + ' -o ' + out_audio_file
+        cmd = 'sndcat -f s -op ' + format + ' -k ' + repr(t_beg) + ' -e ' + repr(t_end) + ' ' + in_audio_file + ' -o ' + out_audio_file
     p = subprocess.Popen(cmd.split(' '), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     out, err = p.communicate()
     print out

@@ -136,10 +136,30 @@ class SrateReader:
         utt_largest = heapq.nlargest(top_k, self.utt_feature, key=self.utt_feature.get)
         for utt in utt_largest:
             utt_id = string.join(utt.split('_')[0:-2],'_')
+            t_beg = float(utt.split('_')[-2])/self.samp_period
+            t_end = float(utt.split('_')[-1])/self.samp_period
             file_id = self.list_files[self.map_utt_idx[utt_id]]
-            
+            out_file = './data/large_srate_' + os.path.basename(file_id)
+            util.cmdconvert(file_id, out_file, t_beg, t_end)
         utt_smallest = heapq.nsmallest(bot_k, self.utt_feature, key=self.utt_feature.get)
+        for utt in utt_smallest:
+            utt_id = string.join(utt.split('_')[0:-2],'_')
+            t_beg = float(utt.split('_')[-2])/self.samp_period
+            t_end = float(utt.split('_')[-1])/self.samp_period
+            file_id = self.list_files[self.map_utt_idx[utt_id]]
+            out_file = './data/small_srate_' + os.path.basename(file_id)
+            util.cmdconvert(file_id, out_file, t_beg, t_end)
         #glob level diag
+        glob_largest = heapq.nlargest(top_k, self.glob_feature, key=self.glob_feature.get)
+        for utt_id in glob_largest:
+            file_id = self.list_files[self.map_utt_idx[utt_id]]
+            out_file = './data/glob_large_srate_' + os.path.basename(file_id)
+            util.cmdconvert(file_id, out_file)
+        glob_smallest = heapq.nsmallest(top_k, self.glob_feature, key=self.glob_feature.get)
+        for utt_id in glob_smallest:
+            file_id = self.list_files[self.map_utt_idx[utt_id]]
+            out_file = './data/glob_small_srate_' + os.path.basename(file_id)
+            util.cmdconvert(file_id, out_file)
 
     
     def GetTimesUtterance(self, utt_name, times):

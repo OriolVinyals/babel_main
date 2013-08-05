@@ -119,6 +119,37 @@ class SNRReader:
         else:
             print 'Utterance Feature should have been precomputed!'
             exit(0)
+            
+    def DumpAudioDiagnostics(self,dir_name='./data/',top_k=10,bot_k=10):
+        #utterance level diag
+        import heapq
+        utt_largest = heapq.nlargest(top_k, self.utt_feature, key=self.utt_feature.get)
+        for utt in utt_largest:
+            utt_id = string.join(utt.split('_')[0:-2],'_')
+            t_beg = float(utt.split('_')[-2])/self.samp_period
+            t_end = float(utt.split('_')[-1])/self.samp_period
+            file_id = self.list_files[self.map_utt_idx[utt_id]]
+            out_file = './data/large_snr_' + os.path.basename(file_id)
+            util.cmdconvert(file_id, out_file, t_beg, t_end)
+        utt_smallest = heapq.nsmallest(bot_k, self.utt_feature, key=self.utt_feature.get)
+        for utt in utt_smallest:
+            utt_id = string.join(utt.split('_')[0:-2],'_')
+            t_beg = float(utt.split('_')[-2])/self.samp_period
+            t_end = float(utt.split('_')[-1])/self.samp_period
+            file_id = self.list_files[self.map_utt_idx[utt_id]]
+            out_file = './data/small_snr_' + os.path.basename(file_id)
+            util.cmdconvert(file_id, out_file, t_beg, t_end)
+        #glob level diag
+        glob_largest = heapq.nlargest(top_k, self.glob_feature, key=self.glob_feature.get)
+        for utt_id in glob_largest:
+            file_id = self.list_files[self.map_utt_idx[utt_id]]
+            out_file = './data/glob_large_snr_' + os.path.basename(file_id)
+            util.cmdconvert(file_id, out_file)
+        glob_smallest = heapq.nsmallest(top_k, self.glob_feature, key=self.glob_feature.get)
+        for utt_id in glob_smallest:
+            file_id = self.list_files[self.map_utt_idx[utt_id]]
+            out_file = './data/glob_small_snr_' + os.path.basename(file_id)
+            util.cmdconvert(file_id, out_file)
 
     
     def GetTimesUtterance(self, utt_name, times):
@@ -134,6 +165,7 @@ if __name__ == '__main__':
     list_files = './data/audio.list'
     snr_reader = SNRReader(list_files,pickle_fname='./pickles/full.snr.pickle')  
     snr_reader.ReadAllSNR()
+    snr_reader.DumpAudioDiagnostics()
     diagnostics.print_histogram(snr_reader.glob_feature,'./data/plot_snr_glob.png')
     diagnostics.print_histogram(snr_reader.utt_feature,'./data/plot_snr_utt.png')
     print 'Utterance Feature ' + repr(snr_reader.GetUtteranceFeature('BABEL_BP_104_35756_20120311_223543_inLine',(294,295)))
