@@ -73,13 +73,13 @@ class SNRReader:
                     avg_iter = avg_iter + (ellapsed-avg_iter)/(curr_utt+1)
                     curr_utt += 1
                     audio_chunk += self.list_files[i] + ' ' + repr(t_beg) + ' ' + repr(t_end) + '\n'
-                    if curr_utt%100 == 0:
+                    if curr_utt%10 == 0:
                         print 'Iteration ' + repr(curr_utt) + ' out of ' + repr(num_utt)
                         print 'Time per iteration ' + '%.2f' % (avg_iter)
                         print 'ETA ' + secondsToStr(avg_iter*(num_utt-curr_utt))
                 t1 = time.time()
-                self.cmdChunk('./temp.sph', audio_chunk)
-                self.glob_feature[utt_id] = self.cmdSNR(curr_dir+'/temp.sph')
+                self.cmdChunk('./temp.snr.sph', audio_chunk)
+                self.glob_feature[utt_id] = self.cmdSNR(curr_dir+'/temp.snr.sph')
                 ellapsed = time.time() - t1
                 avg_iter = avg_iter + (ellapsed-avg_iter)/(curr_utt+1)
                 curr_utt += 1

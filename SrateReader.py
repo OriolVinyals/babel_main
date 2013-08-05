@@ -39,7 +39,7 @@ class SrateReader:
             cmd += '-b ' + repr(t_beg) + ' -e ' + repr(t_end)
         p = subprocess.Popen(cmd.split(' '), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         out, err = p.communicate()
-        print out.split('\n')[1]
+        #print out.split('\n')[1]
         return float(out.split('\n')[1])
             
     def cmdChunk(self, audio_file, input_string):
@@ -77,8 +77,8 @@ class SrateReader:
                         print 'Time per iteration ' + '%.2f' % (avg_iter)
                         print 'ETA ' + secondsToStr(avg_iter*(num_utt-curr_utt))
                 t1 = time.time()
-                self.cmdChunk('./temp.sph', audio_chunk)
-                self.glob_feature[utt_id] = self.cmdmrate(curr_dir+'/temp.sph')
+                self.cmdChunk('./temp.srate.sph', audio_chunk)
+                self.glob_feature[utt_id] = self.cmdmrate(curr_dir+'/temp.srate.sph')
                 ellapsed = time.time() - t1
                 avg_iter = avg_iter + (ellapsed-avg_iter)/(curr_utt+1)
                 curr_utt += 1
