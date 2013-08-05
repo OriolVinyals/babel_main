@@ -129,6 +129,17 @@ class SrateReader:
         else:
             print 'Utterance Feature should have been precomputed!'
             exit(0)
+            
+    def DumpAudioDiagnostics(self,dir_name='./data/',top_k=10,bot_k=10):
+        #utterance level diag
+        import heapq
+        utt_largest = heapq.nlargest(top_k, self.utt_feature, key=self.utt_feature.get)
+        for utt in utt_largest:
+            utt_id = string.join(utt.split('_')[0:-2],'_')
+            file_id = self.list_files[self.map_utt_idx[utt_id]]
+            
+        utt_smallest = heapq.nsmallest(bot_k, self.utt_feature, key=self.utt_feature.get)
+        #glob level diag
 
     
     def GetTimesUtterance(self, utt_name, times):
@@ -142,8 +153,9 @@ class SrateReader:
 
 if __name__ == '__main__':
     list_files = './data/audio.list'
-    srate_reader = SrateReader(list_files,pickle_fname='./pickles/fullcrap.srate.pickle')  
+    srate_reader = SrateReader(list_files,pickle_fname='./pickles/full.srate.pickle')  
     srate_reader.ReadAllSrate()
+    srate_reader.DumpAudioDiagnostics()
     diagnostics.print_histogram(srate_reader.glob_feature,'./data/plot_srate_glob.png')
     diagnostics.print_histogram(srate_reader.utt_feature,'./data/plot_srate_utt.png')
     print 'Utterance Feature ' + repr(srate_reader.GetUtteranceFeature('BABEL_BP_104_35756_20120311_223543_inLine',(294,295)))
