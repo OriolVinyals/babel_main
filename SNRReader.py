@@ -132,7 +132,7 @@ class SNRReader:
 
 if __name__ == '__main__':
     list_files = './data/audio.list'
-    snr_reader = SNRReader(list_files,pickle_fname='./pickles/full.snr.pickle')  
+    snr_reader = SNRReader(list_files,pickle_fname='./pickles/fullcrap.snr.pickle')  
     snr_reader.ReadAllSNR()
     diagnostics.print_histogram(snr_reader.glob_feature,'./data/plot_snr_glob.png')
     diagnostics.print_histogram(snr_reader.utt_feature,'./data/plot_snr_utt.png')

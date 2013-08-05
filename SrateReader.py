@@ -142,7 +142,7 @@ class SrateReader:
 
 if __name__ == '__main__':
     list_files = './data/audio.list'
-    srate_reader = SrateReader(list_files,pickle_fname='./pickles/full.srate.pickle')  
+    srate_reader = SrateReader(list_files,pickle_fname='./pickles/fullcrap.srate.pickle')  
     srate_reader.ReadAllSrate()
     diagnostics.print_histogram(srate_reader.glob_feature,'./data/plot_srate_glob.png')
     diagnostics.print_histogram(srate_reader.utt_feature,'./data/plot_srate_utt.png')
