@@ -148,7 +148,7 @@ class SNRReader:
         return np.squeeze(np.asarray(utt_times[np.nonzero(np.sum(time_ind<utt_times,axis=1)>0)[0][0]]))              
 
 if __name__ == '__main__':
-    list_files = './data/audio.debug.list'
+    list_files = './data/audio.list'
     snr_reader = SNRReader(list_files,pickle_fname='./pickles/full.snr.pickle')  
     snr_reader.ReadAllSNR()
     print 'Utterance Feature ' + repr(snr_reader.GetUtteranceFeature('BABEL_BP_104_35756_20120311_223543_inLine',(294,295)))
