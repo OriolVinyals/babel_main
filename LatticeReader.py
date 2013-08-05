@@ -81,7 +81,7 @@ class LatticeReader:
 
     
     def GetTimesUtterance(self, utt_name, times):
-        time_ind = (times[0]+times[1])/(2*self.samp_period)
+        time_ind = (times[0]+times[1])/2*self.samp_period
         utt_times = np.asarray(self.list_times_utt[utt_name])
         #if np.any(utt_times==time_ind):
         #    print 'Warn: ',repr(utt_times)

@@ -121,14 +121,14 @@ class SNRReader:
             self.list_times_utt[key].sort(key=lambda x: x[0])
         return [n for n in list_files]
     
-    def GetGlobFeature(self, utt_name, feat_type='entropy'):
+    def GetGlobFeature(self, utt_name, feat_type='snr'):
         if self.glob_feature.has_key(utt_name):
             return self.glob_feature[utt_name]
         else:
             print 'Global Feature should have been precomputed!'
             exit(0)
     
-    def GetUtteranceFeature(self, utt_name, times):
+    def GetUtteranceFeature(self, utt_name, times, feat_type='snr'):
         utt_times = self.GetTimesUtterance(utt_name, times) #convert in utterance times to boundary utterance times
         utt_id_times = utt_name + '_' + '%07d' % (utt_times[0],) + '_' + '%07d' % (utt_times[1],)
         if self.utt_feature.has_key(utt_id_times):
@@ -139,7 +139,7 @@ class SNRReader:
 
     
     def GetTimesUtterance(self, utt_name, times):
-        time_ind = (times[0]+times[1])/(2*self.samp_period)
+        time_ind = (times[0]+times[1])/2*self.samp_period
         utt_times = np.asarray(self.list_times_utt[utt_name])
         #if np.any(utt_times==time_ind):
         #    print 'Warn: ',repr(utt_times)
