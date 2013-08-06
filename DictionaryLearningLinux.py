@@ -43,15 +43,15 @@ if __name__ == '__main__':
     logging.info('Training the pipeline...')
     conv.train(babel, 100000)
     logging.info('Extracting features...')
-    Xp_a1 = conv.process_dataset(babel, as_2d = True)
+    Xp_acoustic = conv.process_dataset(babel, as_2d = True)
     
     '''An example for posterior features'''
     babel_post.GetLocalFeatures(feat_type=['entropy'])
     babel_post.GetGlobalFeatures(feat_type=['entropy'])
     babel_post.GetUtteranceFeatures(feat_type=['entropy'])
-    Xp_entropy = np.asmatrix(babel_post._local_features)
-    Xp_entropy_glob = np.asmatrix(babel_post._glob_features)
-    Xp_entropy_utt = np.asmatrix(babel_post._utt_features)
+    Xp_post_local = np.asmatrix(babel_post._local_features)
+    Xp_post_glob = np.asmatrix(babel_post._glob_features)
+    Xp_post_utt = np.asmatrix(babel_post._utt_features)
     
     '''Pipeline that just gets the score'''
     Xp_score = np.asmatrix(babel._features).T
@@ -60,7 +60,7 @@ if __name__ == '__main__':
     #Xp_cheat = np.asmatrix(babel.labels().astype(np.int)).T
 
     '''Constructing Dictionary of Features'''    
-    Xtrain_dict = {'Audio':Xp_a1, 'Local':Xp_entropy, 'Global':Xp_entropy_glob, 'Score':Xp_score, 'Utterance':Xp_entropy_utt}
+    Xtrain_dict = {'Audio':Xp_acoustic, 'Local':Xp_post_local, 'Global':Xp_post_glob, 'Score':Xp_score, 'Utterance':Xp_post_utt}
     Ytrain = babel.labels().astype(np.int)
     Xp_t_a1 = conv.process_dataset(babel_eval, as_2d = True)
     babel_eval_post.GetLocalFeatures(feat_type=['entropy'])

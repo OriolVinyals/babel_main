@@ -116,14 +116,14 @@ class SrateReader:
         utt_id_times = utt_name + '_' + '%07d' % (utt_times[0],) + '_' + '%07d' % (utt_times[1],)
         if self.utt_feature.has_key(utt_id_times):
             #DEBUG
-            if(utt_times[0]>times[0]*100):
-                if(utt_times[0]-times[0]*100 > 40):
-                    print 'Muja'
-                print utt_times[0]-times[0]*100
-            if(utt_times[1]<times[1]*100):
-                if(times[1]*100-utt_times[1] > 40):
-                    print 'Muja2'
-                print times[1]*100-utt_times[1]
+#             if(utt_times[0]>times[0]*100):
+#                 if(utt_times[0]-times[0]*100 > 40):
+#                     print 'Muja'
+#                 print utt_times[0]-times[0]*100
+#             if(utt_times[1]<times[1]*100):
+#                 if(times[1]*100-utt_times[1] > 40):
+#                     print 'Muja2'
+#                 print times[1]*100-utt_times[1]
             #DEBUG
             return self.utt_feature[utt_id_times]
         else:

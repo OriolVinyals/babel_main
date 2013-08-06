@@ -28,7 +28,7 @@ if __name__ == '__main__':
     logging.info('Training the pipeline...')
     conv.train(babel, 1000)
     logging.info('Extracting features...')
-    Xp_a1 = conv.process_dataset(babel, as_2d = True)
+    Xp_acoustic = conv.process_dataset(babel, as_2d = True)
     
     '''An example for posterior features'''
     posting_file = './data/word.kwlist.alignment.csv'
@@ -38,9 +38,9 @@ if __name__ == '__main__':
     babel_post.GetLocalFeatures(feat_type=['entropy','duration'])
     babel_post.GetGlobalFeatures(feat_type=['entropy','entropy'])
     babel_post.GetUtteranceFeatures(feat_type=['entropy','entropy'])
-    Xp_entropy = np.asmatrix(babel_post._local_features)
-    Xp_entropy_glob = np.asmatrix(babel_post._glob_features)
-    Xp_entropy_utt = np.asmatrix(babel_post._utt_features)
+    Xp_post_local = np.asmatrix(babel_post._local_features)
+    Xp_post_glob = np.asmatrix(babel_post._glob_features)
+    Xp_post_utt = np.asmatrix(babel_post._utt_features)
     
     '''Pipeline that just gets the score'''
     Xp_score = np.asmatrix(babel._features).T
@@ -49,15 +49,15 @@ if __name__ == '__main__':
     #Xp_cheat = np.asmatrix(babel.labels().astype(np.int)).T
 
     '''Building appended features'''
-    print 'audio: ',Xp_a1.shape
-    print 'local entropy: ',Xp_entropy.shape
-    print 'global entropy: ',Xp_entropy_glob.shape
+    print 'audio: ',Xp_acoustic.shape
+    print 'local entropy: ',Xp_post_local.shape
+    print 'global entropy: ',Xp_post_glob.shape
     print 'score: ',Xp_score.shape
-    #Xtrain = np.hstack((Xp_a1,Xp_entropy,Xp_entropy_glob,Xp_score))
+    #Xtrain = np.hstack((Xp_acoustic,Xp_post_local,Xp_post_glob,Xp_score))
     #m, std = classifier.feature_meanstd(Xtrain)
     #Xtrain -= m
     #Xtrain /= std
-    Xtrain_dict = {'Audio':Xp_a1, 'Local':Xp_entropy, 'Global':Xp_entropy_glob, 'Score':Xp_score, 'Utterance':Xp_entropy_utt}
+    Xtrain_dict = {'Audio':Xp_acoustic, 'Local':Xp_post_local, 'Global':Xp_post_glob, 'Score':Xp_score, 'Utterance':Xp_post_utt}
     Ytrain = babel.labels().astype(np.int)
     '''Classifier stage'''
     feat_list=['Audio','Utterance','Score']
@@ -87,17 +87,17 @@ if __name__ == '__main__':
     '''Full forward pass on the whole dataset'''
     list_file = './data/list_files.scp'
     babel_full = BabelDataset.BabelDataset(list_file, feat_range, posting_file, perc_pos=0.0, keep_full_utt=True)
-    Xp_a1 = conv.process_dataset(babel_full, as_2d = True)
+    Xp_acoustic = conv.process_dataset(babel_full, as_2d = True)
     Xp_score = np.asmatrix(babel_full._features).T
     list_file = './data/post_list_files.scp'
     babel_post_full = BabelDataset.BabelDataset(list_file, feat_range, posting_file, perc_pos=0.0, keep_full_utt=True,posting_sampler=babel_full.posting_sampler)
     babel_post_full.GetLocalFeatures(feat_type=['entropy','duration'])
     babel_post_full.GetGlobalFeatures(feat_type=['entropy','entropy'])
     babel_post_full.GetUtteranceFeatures(feat_type=['entropy','entropy'])
-    Xp_entropy = np.asmatrix(babel_post_full._local_features)
-    Xp_entropy_glob = np.asmatrix(babel_post_full._glob_features)
-    Xp_entropy_utt = np.asmatrix(babel_post_full._utt_features)
-    Xfull_dict = {'Audio':Xp_a1, 'Local':Xp_entropy, 'Global':Xp_entropy_glob, 'Score':Xp_score, 'Utterance':Xp_entropy_utt}
+    Xp_post_local = np.asmatrix(babel_post_full._local_features)
+    Xp_post_glob = np.asmatrix(babel_post_full._glob_features)
+    Xp_post_utt = np.asmatrix(babel_post_full._utt_features)
+    Xfull_dict = {'Audio':Xp_acoustic, 'Local':Xp_post_local, 'Global':Xp_post_glob, 'Score':Xp_score, 'Utterance':Xp_post_utt}
     prob = lr_classifier.get_predictions_logreg(Xfull_dict)
     print prob.shape
     babel_full.DumpScoresXML('./data/test.xml',prob[:,1])
