@@ -10,9 +10,120 @@ if __name__ == '__main__':
     print 'Rank of this process is ',mpi.RANK
     mpi.root_log_level(logging.DEBUG)
     logging.info('Loading Babel data...')
+    
+########### TRAIN ###########
+    
+    perc_pos = 0.0
+    min_dur = 0.2
+    posting_sampler = None
+    feat_range = None
+    Xtrain_dict = {}
+    
+    acoustic=False
+    if(acoustic):
+        list_file = './data/20130307.dev.untightened.scp'
+        feat_range = None
+        posting_file = './data/word.kwlist.alignment.csv'
+        babel = BabelDataset.BabelDataset(list_file, feat_range, posting_file, perc_pos,min_dur=min_dur, posting_sampler=posting_sampler)
+        posting_sampler = babel.posting_sampler
+        '''An example audio pipeline to extract features'''
+        conv = pipeline.ConvLayer([
+                    pipeline.PatchExtractor([10,75], 1), # extracts patches
+                    pipeline.MeanvarNormalizer({'reg': 10}), # normalizes the patches
+                    pipeline.LinearEncoder({},
+                    trainer = pipeline.ZcaTrainer({'reg': 0.1})), # Does whitening
+                    pipeline.ThresholdEncoder({'alpha': 0.25, 'twoside': True},
+                        trainer = pipeline.OMPTrainer(
+                                {'k': 500, 'max_iter':100})), # does encoding
+                    pipeline.SpatialPooler({'grid': (1,1), 'method': 'ave'})
+                    ])
+        logging.info('Training the pipeline...')
+        conv.train(babel, 100000)
+        logging.info('Extracting features...')
+        Xp_acoustic = conv.process_dataset(babel, as_2d = True)
+        Xtrain_dict['Acoustic'] = Xp_acoustic
+        
+    lattice=False
+    if(lattice):
+        list_file = './data/lat.list'
+        posting_file = './data/word.kwlist.alignment.csv'
+        babel_lat = BabelDataset.BabelDataset(list_file, feat_range, posting_file, perc_pos, keep_full_utt=True, 
+                                          posting_sampler=posting_sampler,min_dur=min_dur,reader_type='lattice')
+        posting_sampler = babel_lat.posting_sampler
+        Xtrain_dict['Lattice'] = 0
+    
+    posterior=False
+    if(posterior):
+        list_file = './data/20130307.dev.post.untightened.scp'
+        posting_file = './data/word.kwlist.alignment.csv'
+        feat_range = None
+        babel_post = BabelDataset.BabelDataset(list_file, feat_range, posting_file, perc_pos, keep_full_utt=True, posting_sampler=posting_sampler,min_dur=min_dur)
+        posting_sampler = babel_post.posting_sampler
+        #reassign utterances (hack because the scp files are wrong)
+        babel_post.utt_reader.list_times_utt = babel_lat.utt_reader.list_times_utt
+        '''An example for posterior features'''
+        logging.info('Getting Local Features')
+        babel_post.GetLocalFeatures(feat_type=['score'],fname_xml='./data/word.kwlist.raw.xml')
+        logging.info('Getting Global Features')
+        babel_post.GetGlobalFeatures(feat_type=['entropy'])
+        logging.info('Getting Utterance Features')
+        babel_post.GetUtteranceFeatures(feat_type=['entropy'])
+        Xp_post_local = np.asmatrix(babel_post._local_features)
+        Xp_post_glob = np.asmatrix(babel_post._glob_features)
+        Xp_post_utt = np.asmatrix(babel_post._utt_features)
+        Xtrain_dict['Posterior_Local'] = Xp_post_local
+        Xtrain_dict['Posterior_Global'] = Xp_post_glob
+        Xtrain_dict['Posterior_Utt'] = Xp_post_utt
+        
+    srate=True
+    if(srate):
+        list_file = './data/audio.list'
+        posting_file = './data/word.kwlist.alignment.csv'
+        babel_srate = BabelDataset.BabelDataset(list_file, None, posting_file, perc_pos, keep_full_utt=True, reader_type='srate',pickle_fname='./pickles/full.srate.pickle',
+                                   posting_sampler=posting_sampler,min_dur=min_dur)
+        posting_sampler = babel_srate.posting_sampler
+        babel_srate.GetUtteranceFeatures('srate')
+        babel_srate.GetGlobalFeatures('srate')
+        babel_srate.GetLocalFeatures(feat_type=['score'],fname_xml='./data/word.kwlist.raw.xml')
+        Xp_srate_glob=np.asmatrix(babel_srate._glob_features)
+        Xp_srate_utt=np.asmatrix(babel_srate._utt_features)
+        Xp_score_local=np.asmatrix(babel_srate._local_features)
+        Xtrain_dict['Srate_Global'] = Xp_srate_glob
+        Xtrain_dict['Srate_Utt'] = Xp_srate_utt
+        Xtrain_dict['Score_Local'] = Xp_score_local #May want to put this in a different class so I can do score utterance and global features
+        
+    snr=True
+    if(snr):
+        list_file = './data/audio.list'
+        posting_file = './data/word.kwlist.alignment.csv'
+        babel_snr = BabelDataset.BabelDataset(list_file, None, posting_file, perc_pos, keep_full_utt=True, reader_type='snr',pickle_fname='./pickles/full.snr.pickle',
+                                 posting_sampler=posting_sampler,min_dur=min_dur)
+        posting_sampler = babel_snr.posting_sampler
+        babel_snr.GetUtteranceFeatures('snr')
+        babel_snr.GetGlobalFeatures('snr')
+        Xp_snr_glob=np.asmatrix(babel_snr._glob_features)
+        Xp_snr_utt=np.asmatrix(babel_snr._utt_features)
+        Xtrain_dict['SNR_Global'] = Xp_snr_glob
+        Xtrain_dict['SNR_Utt'] = Xp_snr_utt
+
+    '''Labels'''    
+    Ytrain = babel_srate.labels().astype(np.int)
+    
+    correlation=True
+    if(correlation):
+        print np.corrcoef(Ytrain, Xp_score_local.T)
+        print np.corrcoef(Ytrain, Xp_snr_glob)
+        print np.corrcoef(Ytrain, Xp_snr_utt)
+        print np.corrcoef(Ytrain, Xp_srate_glob)
+        print np.corrcoef(Ytrain, Xp_srate_utt)
+        exit(0)
+
+########### EVAL ###########
 
     perc_pos = 0.0
     min_dur = 0.2
+    posting_sampler = None
+    feat_range = None
 
     eval=False
     if(eval):
@@ -30,107 +141,7 @@ if __name__ == '__main__':
         
         #reassign utterances
         babel_eval_post.utt_reader.list_times_utt = babel_eval_lat.utt_reader.list_times_utt
-    
-    perc_pos = 0.0
-    min_dur = 0.2
-    
-    acoustic=False
-    if(acoustic):
-        list_file = './data/20130307.dev.untightened.scp'
-        feat_range = None
-        posting_file = './data/word.kwlist.alignment.csv'
-        babel = BabelDataset.BabelDataset(list_file, feat_range, posting_file, perc_pos,min_dur=min_dur)
-        '''An example audio pipeline to extract features'''
-        conv = pipeline.ConvLayer([
-                    pipeline.PatchExtractor([10,75], 1), # extracts patches
-                    pipeline.MeanvarNormalizer({'reg': 10}), # normalizes the patches
-                    pipeline.LinearEncoder({},
-                    trainer = pipeline.ZcaTrainer({'reg': 0.1})), # Does whitening
-                    pipeline.ThresholdEncoder({'alpha': 0.25, 'twoside': True},
-                        trainer = pipeline.OMPTrainer(
-                                {'k': 500, 'max_iter':100})), # does encoding
-                    pipeline.SpatialPooler({'grid': (1,1), 'method': 'ave'})
-                    ])
-        logging.info('Training the pipeline...')
-        conv.train(babel, 100000)
-        logging.info('Extracting features...')
-        Xp_acoustic = conv.process_dataset(babel, as_2d = True)
         
-    lattice=False
-    if(lattice):
-        list_file = './data/lat.list'
-        posting_file = './data/word.kwlist.alignment.csv'
-        try:
-            posting_sampler = babel.posting_sampler
-        except:
-            posting_sampler = None
-        babel_lat = BabelDataset.BabelDataset(list_file, feat_range, posting_file, perc_pos, keep_full_utt=True, 
-                                          posting_sampler=posting_sampler,min_dur=min_dur,reader_type='lattice')
-    
-    posterior=False
-    if(posterior):
-        list_file = './data/20130307.dev.post.untightened.scp'
-        posting_file = './data/word.kwlist.alignment.csv'
-        feat_range = None
-        try:
-            posting_sampler = babel.posting_sampler
-        except:
-            posting_sampler = None
-        babel_post = BabelDataset.BabelDataset(list_file, feat_range, posting_file, perc_pos, keep_full_utt=True, posting_sampler=posting_sampler,min_dur=min_dur)
-        #reassign utterances (hack because the scp files are wrong)
-        babel_post.utt_reader.list_times_utt = babel_lat.utt_reader.list_times_utt
-        '''An example for posterior features'''
-        logging.info('Getting Local Features')
-        babel_post.GetLocalFeatures(feat_type=['score'],fname_xml='./data/word.kwlist.raw.xml')
-        logging.info('Getting Global Features')
-        babel_post.GetGlobalFeatures(feat_type=['entropy'])
-        logging.info('Getting Utterance Features')
-        babel_post.GetUtteranceFeatures(feat_type=['entropy'])
-        Xp_post_local = np.asmatrix(babel_post._local_features)
-        Xp_post_glob = np.asmatrix(babel_post._glob_features)
-        Xp_post_utt = np.asmatrix(babel_post._utt_features)
-        
-    srate=True
-    if(srate):
-        list_file = './data/audio.list'
-        posting_file = './data/word.kwlist.alignment.csv'
-        try:
-            posting_sampler = babel.posting_sampler
-        except:
-            posting_sampler = None
-        babel_srate = BabelDataset.BabelDataset(list_file, None, posting_file, perc_pos, keep_full_utt=True, reader_type='srate',pickle_fname='./pickles/full.srate.pickle',
-                                   posting_sampler=posting_sampler,min_dur=min_dur)
-        babel_srate.GetUtteranceFeatures('srate')
-        babel_srate.GetGlobalFeatures('srate')
-        babel_srate.GetLocalFeatures(feat_type=['score'],fname_xml='./data/word.kwlist.raw.xml')
-        Xp_srate_glob=np.asmatrix(babel_srate._glob_features)
-        Xp_srate_utt=np.asmatrix(babel_srate._utt_features)
-        Xp_score_local=np.asmatrix(babel_srate._local_features)
-        
-    snr=True
-    if(snr):
-        list_file = './data/audio.list'
-        posting_file = './data/word.kwlist.alignment.csv'
-        try:
-            posting_sampler = babel_srate.posting_sampler
-        except:
-            posting_sampler = None
-        babel_snr = BabelDataset.BabelDataset(list_file, None, posting_file, perc_pos, keep_full_utt=True, reader_type='snr',pickle_fname='./pickles/full.snr.pickle',
-                                 posting_sampler=posting_sampler,min_dur=min_dur)
-        babel_snr.GetUtteranceFeatures('snr')
-        babel_snr.GetGlobalFeatures('snr')
-        Xp_snr_glob=np.asmatrix(babel_snr._glob_features)
-        Xp_snr_utt=np.asmatrix(babel_snr._utt_features)
-
-    '''Constructing Dictionary of Features'''    
-#     Xtrain_dict = {'Audio':Xp_acoustic, 'Local':Xp_post_local, 'Global':Xp_post_glob, 'Score':Xp_score, 'Utterance':Xp_post_utt}
-    # Xtrain_dict = {'Local':Xp_post_local, 'Utterance':Xp_post_utt}
-    Ytrain = babel_srate.labels().astype(np.int)
-    
-    correlation=True
-    if(correlation):
-        print np.corrcoef(Ytrain, Xp_score_local)
-
 #     Xp_t_a1 = conv.process_dataset(babel_eval, as_2d = True)
     logging.info('Getting Eval Local Features')
     babel_eval_post.GetLocalFeatures(feat_type=['score'],fname_xml='./data/word.cut_down_evalpart1.kwlist.raw.xml')
@@ -144,6 +155,8 @@ if __name__ == '__main__':
 #     Xtest_dict = {'Audio':Xp_t_a1, 'Local':Xp_t_entropy, 'Global':Xp_t_entropy_glob, 'Score':Xp_t_score, 'Utterance':Xp_t_entropy_utt}
     Xtest_dict = {'Local':Xp_t_entropy, 'Utterance':Xp_t_entropy_utt}
     Ytest = babel_eval.labels().astype(np.int)
+
+########### CLASSIFIER ###########
 
     lr_classifier = Classifier.Classifier(Xtrain_dict, Ytrain)
     '''Classifier stage'''
