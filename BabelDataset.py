@@ -10,6 +10,7 @@ import LatticeReader
 import SNRReader
 import SrateReader
 import PostingParser
+import ScoreReader
 import Sampler
 
 class BabelDataset(datasets.ImageSet):
@@ -37,6 +38,9 @@ class BabelDataset(datasets.ImageSet):
             self.is_lattice = False
             utt_reader = SrateReader.SrateReader(list_file,pickle_fname=pickle_fname)
             utt_reader.ReadAllSrate()
+        elif reader_type=='score':
+            self.is_lattice = False
+            utt_reader = ScoreReader.ScoreReader(list_file)
         else:
             print 'Reader not implemented!'
             exit(0)
@@ -73,8 +77,8 @@ class BabelDataset(datasets.ImageSet):
                     if(sys_et-sys_bt < self.min_dur):
                         skipped += 1
                         continue
-                    self._data.append(utt_reader.GetUtterance(self.posting_sampler.negative_data[i]['file'],
-                                                              sys_bt, sys_et))
+                    self._data.append(utt_reader.GetKeywordData(self.posting_sampler.negative_data[i]['file'],
+                                                              sys_bt, sys_et,kw=self.posting_sampler.negative_data[i]['termid']))
                     self._label.append(0)
                     self._features.append(sys_sc)
                     self._utt_id.append(self.posting_sampler.negative_data[i]['file'])
@@ -97,8 +101,8 @@ class BabelDataset(datasets.ImageSet):
                         if(sys_et-sys_bt < self.min_dur):
                             skipped += 1
                             continue
-                    self._data.append(utt_reader.GetUtterance(self.posting_sampler.positive_data[i]['file'],
-                                                              sys_bt, sys_et))
+                    self._data.append(utt_reader.GetKeywordData(self.posting_sampler.positive_data[i]['file'],
+                                                              sys_bt, sys_et,kw=self.posting_sampler.positive_data[i]['termid']))
                     self._label.append(1)
                     self._features.append(sys_sc)
                     self._utt_id.append(self.posting_sampler.positive_data[i]['file'])
@@ -208,27 +212,6 @@ class BabelDataset(datasets.ImageSet):
                 self.keyword_scores[kw_id]+='<kw file="' + file + '" channel="1" tbeg="' + str(times[0]) + '" dur="' + str(times[1]-times[0]) + '" score="' + str(score) + '" decision="' + decision + '"/>\n'
             else:
                 self.keyword_scores[kw_id]='<kw file="' + file + '" channel="1" tbeg="' + str(times[0]) + '" dur="' + str(times[1]-times[0]) + '" score="' + str(score) + '" decision="' + decision + '"/>\n'
-
-    def GetScoresXML_slow(self,fname):
-        # We get every single entry so that we can pickle and load (since this is quite slow)
-        # TODO: Pickle it!
-        if len(self._kw_utt_times_hash) > 0:
-            return
-        from xml.dom import minidom
-        xmldoc = minidom.parse(fname)
-        itemlist = xmldoc.getElementsByTagName('detected_kwlist')
-        
-        for i in range(len(itemlist)):
-            keyword = itemlist[i].attributes['kwid'].value
-            for j in range(len(itemlist[i].childNodes)):
-                if itemlist[i].childNodes[j].nodeType == itemlist[i].childNodes[j].ELEMENT_NODE:
-                    utterance = itemlist[i].childNodes[j].attributes['file'].value
-                    tbeg = itemlist[i].childNodes[j].attributes['tbeg'].value
-                    dur = itemlist[i].childNodes[j].attributes['dur'].value
-                    times = (round(float(tbeg),2),round(float(tbeg)+float(dur),2))
-                    score = itemlist[i].childNodes[j].attributes['score'].value
-                    key = keyword + '_' + utterance + '_' + repr(times) 
-                    self._kw_utt_times_hash[key] = float(score)
                     
     def GetScoresXML(self,fname):
         # We get every single entry so that we can pickle and load (since this is quite slow)

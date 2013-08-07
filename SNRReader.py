@@ -80,7 +80,7 @@ class SNRReader:
                     pickle.dump(self.glob_feature,fp)
                     pickle.dump(self.map_utt_idx,fp)
         
-    def GetUtterance(self, utt_name, t_ini, t_end):
+    def GetKeywordData(self, utt_name, t_ini, t_end, kw=''):
         # No per frame / local feature for SNR!
         return 0
     

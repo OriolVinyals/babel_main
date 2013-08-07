@@ -35,7 +35,7 @@ class UtteranceReader:
             self.utt_data.append(np_data)
             self.map_utt_idx[utt_id] = i
             
-    def GetUtterance(self, utt_name, t_ini=0, t_end=None):
+    def GetKeywordData(self, utt_name, t_ini=0, t_end=None, kw=''):
         if self.utt_data == []:
             print 'We need to read utterances first'
             return

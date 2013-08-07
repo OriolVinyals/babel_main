@@ -32,7 +32,7 @@ class LatticeReader:
             self.map_utt_idx[utt_id] = i
             self.map_utt_times_idx[utt_id_times] = i
     
-    def GetUtterance(self, utt_name, t_ini, t_end):
+    def GetKeywordData(self, utt_name, t_ini, t_end, kw=''):
         # times in seconds
         times = self.GetTimesUtterance(utt_name, (t_ini,t_end))
         utt_id_times = utt_name + '_' + '%07d' % (times[0],) + '_' + '%07d' % (times[1],)
@@ -106,5 +106,5 @@ if __name__ == '__main__':
     lat_reader = LatticeReader(list_files)  
     lat_reader.ReadAllLatices()
     lat_reader.LoadMappingHescii('./data/hescii_babel104b-v0.4bY_conv-eval.kwlist2.xml')
-    lat_reader.GetUtterance('BABEL_BP_104_85455_20120310_210107_outLine', 573.4, 573.84)
+    lat_reader.GetKeywordData('BABEL_BP_104_85455_20120310_210107_outLine', 573.4, 573.84)
     # BABEL_BP_104_04221_20120310_194031_inLine_0000133_0000572

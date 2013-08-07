@@ -84,13 +84,13 @@ if __name__ == '__main__':
         posting_sampler = babel_srate.posting_sampler
         babel_srate.GetUtteranceFeatures('srate')
         babel_srate.GetGlobalFeatures('srate')
-        babel_srate.GetLocalFeatures(feat_type=['score'],fname_xml='./data/word.kwlist.raw.xml')
+        #babel_srate.GetLocalFeatures(feat_type=['score'],fname_xml='./data/word.kwlist.raw.xml')
         Xp_srate_glob=np.asmatrix(babel_srate._glob_features)
         Xp_srate_utt=np.asmatrix(babel_srate._utt_features)
-        Xp_score_local=np.asmatrix(babel_srate._local_features)
+        #Xp_score_local=np.asmatrix(babel_srate._local_features)
         Xtrain_dict['Srate_Global'] = Xp_srate_glob
         Xtrain_dict['Srate_Utt'] = Xp_srate_utt
-        Xtrain_dict['Score_Local'] = Xp_score_local #May want to put this in a different class so I can do score utterance and global features
+        #Xtrain_dict['Score_Local'] = Xp_score_local #May want to put this in a different class so I can do score utterance and global features
         
     snr=True
     if(snr):
@@ -105,6 +105,16 @@ if __name__ == '__main__':
         Xp_snr_utt=np.asmatrix(babel_snr._utt_features)
         Xtrain_dict['SNR_Global'] = Xp_snr_glob
         Xtrain_dict['SNR_Utt'] = Xp_snr_utt
+        
+    score=True
+    if(score):
+        list_file = './data/word.kwlist.raw.xml'
+        babel_score = BabelDataset.BabelDataset(list_file, None, posting_file, perc_pos, keep_full_utt=True, reader_type='score',
+                                 posting_sampler=posting_sampler,min_dur=min_dur)
+        posting_sampler = babel_score.posting_sampler
+        babel_snr.GetLocalFeatures('raw')
+        Xp_score_local=np.asmatrix(babel_score._local_features)
+        Xtrain_dict['Score_Local'] = Xp_score_local
 
     '''Labels'''    
     Ytrain = babel_srate.labels().astype(np.int)
