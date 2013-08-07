@@ -65,14 +65,14 @@ class ScoreReader:
         else:
             return ret
     
-    def GetGlobFeature(self, utt_name, feat_type='avg'):
+    def GetGlobFeature(self, utt_name, feat_type=['avg']):
         if self.glob_feature.has_key(utt_name):
             return self.glob_feature[utt_name]
         else:
             print 'Global Feature should have been precomputed!'
             exit(0)
     
-    def GetUtteranceFeature(self, utt_name, times, feat_type='avg'):
+    def GetUtteranceFeature(self, utt_name, times, feat_type=['avg']):
         utt_times = self.GetTimesUtterance(utt_name, times) #convert in utterance times to boundary utterance times
         utt_id_times = utt_name + '_' + '%07d' % (utt_times[0],) + '_' + '%07d' % (utt_times[1],)
         if self.utt_feature.has_key(utt_id_times):
@@ -96,9 +96,3 @@ if __name__ == '__main__':
     print 'Should be 0.005'
     print 'Should produce error'
     print score_reader.GetKeywordData('muja!', 310.87, 311.17, 'KW104-0055')
-    #score_reader.ReadAllSrate()
-    #score_reader.DumpAudioDiagnostics()
-    #diagnostics.print_histogram(srate_reader.glob_feature,'./data/plot_srate_glob.png')
-    #diagnostics.print_histogram(srate_reader.utt_feature,'./data/plot_srate_utt.png')
-    #print 'Utterance Feature ' + repr(srate_reader.GetUtteranceFeature('BABEL_BP_104_35756_20120311_223543_inLine',(294,295)))
-    #print 'Global Feature ' + repr(srate_reader.GetGlobFeature('BABEL_BP_104_35756_20120311_223543_inLine'))

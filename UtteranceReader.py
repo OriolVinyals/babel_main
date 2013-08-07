@@ -65,7 +65,7 @@ class UtteranceReader:
             self.list_times_utt[key].sort(key=lambda x: x[0])
         return [n for n in list_files]
     
-    def GetGlobFeature(self, utt_name, feat_type='entropy'):
+    def GetGlobFeature(self, utt_name, feat_type=['entropy']):
         if self.utt_data == []:
             print 'We need to read utterances first'
             return
@@ -82,7 +82,7 @@ class UtteranceReader:
         self.glob_feature[utt_name] = vector_return
         return self.glob_feature[utt_name]
     
-    def GetUtteranceFeature(self, utt_name, times, feat_type='entropy'):
+    def GetUtteranceFeature(self, utt_name, times, feat_type=['entropy']):
         if self.utt_data == []:
             print 'We need to read utterances first'
             return

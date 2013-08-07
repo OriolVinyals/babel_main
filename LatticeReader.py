@@ -64,7 +64,7 @@ class LatticeReader:
             self.list_times_utt[key].sort(key=lambda x: x[0])
         return [n for n in list_files]
     
-    def GetUtteranceFeature(self, utt_name, times, feat_type='somefeature'):
+    def GetUtteranceFeature(self, utt_name, times, feat_type=['somefeature']):
         utt_times = self.GetTimesUtterance(utt_name, times) #convert in utterance times to boundary utterance times
         utt_id_times = utt_name + '_' + '%07d' % (utt_times[0],) + '_' + '%07d' % (utt_times[1],)
         if self.utt_feature.has_key(utt_id_times):

@@ -57,7 +57,6 @@ class BabelDataset(datasets.ImageSet):
         self._dim = False
         self._channels = 1
         self.keep_full_utt = keep_full_utt
-        self._kw_utt_times_hash = {}
         if mpi.is_root():
             self._data = []
             self._label = []
@@ -138,7 +137,7 @@ class BabelDataset(datasets.ImageSet):
         for i in range(len(self._data_all)):
             self._data.append(self._data_all[i][:,feat_range])
             
-    def GetLocalFeatures(self, feat_type=['entropy','entropy'],fname_xml=None,feat_range=None):
+    def GetLocalFeatures(self, feat_type=['entropy','entropy'],feat_range=None):
         '''Computes local features. Each mpi node computes its own'''
         self._local_features = []
         for i in range(len(self._data)):
@@ -150,10 +149,6 @@ class BabelDataset(datasets.ImageSet):
                     vector_return.append(np.average(aux))
                 if feat_type[j] == 'duration':
                     vector_return.append(self._data[i].shape[0]/float(100))
-                if feat_type[j] == 'score':
-                    self.GetScoresXML(fname_xml)
-                    key = self._keyword[i] + '_' + self._utt_id[i] + '_' + repr(self._times[i])
-                    vector_return.append(self._kw_utt_times_hash[key])
                 if feat_type[j] == 'raw': #useful for lattices
                     if feat_range==None:
                         vector_return.append(self._data[i])
@@ -212,26 +207,7 @@ class BabelDataset(datasets.ImageSet):
                 self.keyword_scores[kw_id]+='<kw file="' + file + '" channel="1" tbeg="' + str(times[0]) + '" dur="' + str(times[1]-times[0]) + '" score="' + str(score) + '" decision="' + decision + '"/>\n'
             else:
                 self.keyword_scores[kw_id]='<kw file="' + file + '" channel="1" tbeg="' + str(times[0]) + '" dur="' + str(times[1]-times[0]) + '" score="' + str(score) + '" decision="' + decision + '"/>\n'
-                    
-    def GetScoresXML(self,fname):
-        # We get every single entry so that we can pickle and load (since this is quite slow)
-        # TODO: Pickle it!
-        if len(self._kw_utt_times_hash) > 0:
-            return
-        import xml.etree.cElementTree as ET
-        tree = ET.parse(fname)
-        root = tree.getroot()
-        
-        for i in range(len(root)):
-            keyword = root[i].attrib['kwid']
-            for j in range(len(root[i])):
-                utterance = root[i][j].attrib['file']
-                tbeg = root[i][j].attrib['tbeg']
-                dur = root[i][j].attrib['dur']
-                times = (round(float(tbeg),2),round(float(tbeg)+float(dur),2))
-                score = root[i][j].attrib['score']
-                key = keyword + '_' + utterance + '_' + repr(times) 
-                self._kw_utt_times_hash[key] = float(score)
+            
             
 if __name__ == '__main__':
     feat_range = [0,1,2,5,6,7,69,74]
@@ -245,7 +221,7 @@ if __name__ == '__main__':
     babel_lat = BabelDataset(list_file, None, posting_file, perc_pos, reader_type='lattice')
     list_file = './data/list_files.scp'
     babel = BabelDataset(list_file, None, posting_file, perc_pos, reader_type='utterance')
-    babel.GetLocalFeatures(feat_type=['score'],fname_xml='./data/word.kwlist.raw.xml')
+    #babel.GetLocalFeatures(feat_type=['score'],fname_xml='./data/word.kwlist.raw.xml')
     print babel._data[0].shape
     babel.ConvertFeatures([0,1,3])
     print babel._data[0].shape
