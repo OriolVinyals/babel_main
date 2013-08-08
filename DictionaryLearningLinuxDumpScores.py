@@ -237,8 +237,8 @@ if __name__ == '__main__':
     print 'Test Neg LogLikelihood is ',neg_ll
     print 'Test Prior is ',np.sum(Ytest==0)/float(len(Ytest))
     
-    babel_eval.DumpScoresXML('./data/eval.sratesnr.xml',prob[:,1])
-    babel_eval.DumpScoresXML('./data/eval.rawscore.xml',np.asarray(Xp_t_entropy).squeeze())
+    babel_eval_score.DumpScoresXML('./data/eval.sratesnr.xml',prob[:,1])
+    babel_eval_score.DumpScoresXML('./data/eval.rawscore.xml',np.asarray(Xp_t_entropy).squeeze())
     
     kws_scorer.get_score('./data/eval.localutt.xml')
     kws_scorer.get_score('./data/eval.rawscore.xml')

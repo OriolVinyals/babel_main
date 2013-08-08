@@ -23,3 +23,4 @@ def get_score(score_file):
     cmd = eval_bin + ' -e ' + gt_file + ' -r ' + rttm_file + ' -t ' + t_file + ' ' + opts + ' ' + ' -f ' + out_dir + ' -s ' + decision_out_file
     print 'Running ',cmd
     os.system(cmd)
+    #TODO return the ATWV!
