@@ -84,8 +84,8 @@ if __name__ == '__main__':
         babel_srate.GetGlobalFeatures(feat_type=['srate'])
         Xp_srate_glob=np.asmatrix(babel_srate._glob_features)
         Xp_srate_utt=np.asmatrix(babel_srate._utt_features)
-        Xtrain_dict['Srate_Global'] = Xp_srate_glob
-        Xtrain_dict['Srate_Utt'] = Xp_srate_utt
+        Xtrain_dict['Srate_Global'] = Xp_srate_glob.T
+        Xtrain_dict['Srate_Utt'] = Xp_srate_utt.T
         
     snr=True
     if(snr):
@@ -99,8 +99,8 @@ if __name__ == '__main__':
         babel_snr.GetGlobalFeatures(feat_type=['snr'])
         Xp_snr_glob=np.asmatrix(babel_snr._glob_features)
         Xp_snr_utt=np.asmatrix(babel_snr._utt_features)
-        Xtrain_dict['SNR_Global'] = Xp_snr_glob
-        Xtrain_dict['SNR_Utt'] = Xp_snr_utt
+        Xtrain_dict['SNR_Global'] = Xp_snr_glob.T
+        Xtrain_dict['SNR_Utt'] = Xp_snr_utt.T
         
     score=True
     if(score):
@@ -112,13 +112,13 @@ if __name__ == '__main__':
         posting_sampler = babel_score.posting_sampler
         babel_score.GetLocalFeatures(feat_type=['raw'])
         Xp_score_local=np.asmatrix(babel_score._local_features)
-        Xtrain_dict['Score_Local'] = Xp_score_local.T
+        Xtrain_dict['Score_Local'] = Xp_score_local
 
     '''Labels''' 
     feat_list= Xtrain_dict.keys()   
     Ytrain = babel_score.labels().astype(np.int)
     
-    correlation=True
+    correlation=False
     if(correlation):
         print np.corrcoef(Ytrain, Xp_score_local.T)
         print np.corrcoef(Ytrain, Xp_snr_glob)
@@ -185,8 +185,8 @@ if __name__ == '__main__':
             babel_eval_srate.GetGlobalFeatures(feat_type=['srate'])
             Xp_eval_srate_glob=np.asmatrix(babel_eval_srate._glob_features)
             Xp_eval_srate_utt=np.asmatrix(babel_eval_srate._utt_features)
-            Xtest_dict['Srate_Global'] = Xp_eval_srate_glob
-            Xtest_dict['Srate_Utt'] = Xp_eval_srate_utt
+            Xtest_dict['Srate_Global'] = Xp_eval_srate_glob.T
+            Xtest_dict['Srate_Utt'] = Xp_eval_srate_utt.T
             
         if(snr):
             logging.info('****SNR Testing****')
@@ -199,8 +199,8 @@ if __name__ == '__main__':
             babel_eval_snr.GetGlobalFeatures(feat_type=['snr'])
             Xp_eval_snr_glob=np.asmatrix(babel_eval_snr._glob_features)
             Xp_eval_snr_utt=np.asmatrix(babel_eval_snr._utt_features)
-            Xtest_dict['SNR_Global'] = Xp_eval_snr_glob
-            Xtest_dict['SNR_Utt'] = Xp_eval_snr_utt
+            Xtest_dict['SNR_Global'] = Xp_eval_snr_glob.T
+            Xtest_dict['SNR_Utt'] = Xp_eval_snr_utt.T
             
         if(score):
             logging.info('****Score Testing****')
@@ -211,7 +211,7 @@ if __name__ == '__main__':
             posting_sampler = babel_eval_score.posting_sampler
             babel_eval_score.GetLocalFeatures(feat_type=['raw'])
             Xp_eval_score_local=np.asmatrix(babel_eval_score._local_features)
-            Xtest_dict['Score_Local'] = Xp_eval_score_local.T
+            Xtest_dict['Score_Local'] = Xp_eval_score_local
 
         Ytest = babel_eval_score.labels().astype(np.int)
 

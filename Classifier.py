@@ -13,7 +13,7 @@ class Classifier:
         self.feat_list=feat_list
         self._gamma=gamma
         self._type=type
-        Xtrain_feats=np.hstack((self._Xtrain[feat_list[i]] for i in range(len(feat_list))))
+        Xtrain_feats=np.hstack((self._Xtrain[feat] for feat in feat_list))
         self.m, self.std = classifier.feature_meanstd(Xtrain_feats)
         Xtrain_feats -= self.m
         Xtrain_feats /= self.std
