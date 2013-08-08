@@ -72,7 +72,7 @@ if __name__ == '__main__':
         Xtrain_dict['Posterior_Global'] = Xp_post_glob.T
         Xtrain_dict['Posterior_Utt'] = Xp_post_utt.T
         
-    srate=True
+    srate=False
     if(srate):
         logging.info('****Srate Training****')
         list_file = './data/audio.list'
@@ -87,7 +87,7 @@ if __name__ == '__main__':
         Xtrain_dict['Srate_Global'] = Xp_srate_glob.T
         Xtrain_dict['Srate_Utt'] = Xp_srate_utt.T
         
-    snr=True
+    snr=False
     if(snr):
         logging.info('****SNR Training****')
         list_file = './data/audio.list'
@@ -116,6 +116,7 @@ if __name__ == '__main__':
 
     '''Labels''' 
     feat_list= Xtrain_dict.keys()   
+    print 'Features: ' + ' '.join(feat_list)
     Ytrain = babel_score.labels().astype(np.int)
     
     correlation=False
@@ -237,7 +238,7 @@ if __name__ == '__main__':
     print 'Test Neg LogLikelihood is ',neg_ll
     print 'Test Prior is ',np.sum(Ytest==0)/float(len(Ytest))
     
-    babel_eval_score.DumpScoresXML('./data/eval.sratesnr.xml',prob[:,1])
+    babel_eval_score.DumpScoresXML('./data/eval.'+''.join(feat_list)+'.xml',prob[:,1])
     babel_eval_score.DumpScoresXML('./data/eval.rawscore.xml',np.asarray(Xp_eval_score_local).squeeze())
     
     print 'ATWV system:',kws_scorer.get_score('./data/eval.sratesnr.xml')
