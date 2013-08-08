@@ -85,13 +85,13 @@ class ScoreReader:
     def GetTimesUtterance(self, utt_name, times):
         time_ind = (times[0]+times[1])/2*self.samp_period
         #utt_times = np.asarray(self.list_times_utt[utt_name])
-        utt_times = np.asarray(self.list_times_utt_np[utt_name])
+        utt_times = self.list_times_utt_np[utt_name]
         #if np.any(utt_times==time_ind):
         #    print 'Warn: ',repr(utt_times)
         #    print 'Warn: ',repr(times)
         #    print 'Warn: ',utt_name
         #return np.squeeze(np.asarray(utt_times[np.nonzero(np.sum(time_ind<utt_times,axis=1)>0)[0][0]]))              
-        return utt_times[np.nonzero(np.sum(time_ind<utt_times,axis=1)>0)[0][0]]          
+        return utt_times[np.nonzero(np.sum(time_ind<utt_times,axis=1)>0)[0][0]]        
 
 if __name__ == '__main__':
     score_reader = ScoreReader('./data/word.kwlist.raw.xml')

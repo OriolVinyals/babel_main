@@ -69,8 +69,8 @@ if __name__ == '__main__':
         babel_post.GetUtteranceFeatures(feat_type=['entropy'])
         Xp_post_glob = np.asmatrix(babel_post._glob_features)
         Xp_post_utt = np.asmatrix(babel_post._utt_features)
-        Xtrain_dict['Posterior_Global'] = Xp_post_glob
-        Xtrain_dict['Posterior_Utt'] = Xp_post_utt
+        Xtrain_dict['Posterior_Global'] = Xp_post_glob.T
+        Xtrain_dict['Posterior_Utt'] = Xp_post_utt.T
         
     srate=True
     if(srate):
@@ -171,8 +171,8 @@ if __name__ == '__main__':
             babel_eval_post.GetUtteranceFeatures(feat_type=['entropy'])
             Xp_eval_post_glob = np.asmatrix(babel_eval_post._glob_features)
             Xp_eval_post_utt = np.asmatrix(babel_eval_post._utt_features)
-            Xtest_dict['Posterior_Global'] = Xp_eval_post_glob
-            Xtest_dict['Posterior_Utt'] = Xp_eval_post_utt
+            Xtest_dict['Posterior_Global'] = Xp_eval_post_glob.T
+            Xtest_dict['Posterior_Utt'] = Xp_eval_post_utt.T
             
         if(srate):
             logging.info('****Srate Testing****')
