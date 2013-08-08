@@ -13,7 +13,7 @@ if __name__ == '__main__':
     
 ########### TRAIN ###########
     
-    perc_pos = 0.0
+    perc_pos = 0.2
     min_dur = 0.2
     posting_sampler = None
     feat_range = None
