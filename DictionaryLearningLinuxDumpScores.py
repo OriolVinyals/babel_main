@@ -112,13 +112,13 @@ if __name__ == '__main__':
         posting_sampler = babel_score.posting_sampler
         babel_score.GetLocalFeatures(feat_type=['raw'])
         Xp_score_local=np.asmatrix(babel_score._local_features)
-        Xtrain_dict['Score_Local'] = Xp_score_local
+        Xtrain_dict['Score_Local'] = Xp_score_local.T
 
     '''Labels''' 
     feat_list= Xtrain_dict.keys()   
     Ytrain = babel_score.labels().astype(np.int)
     
-    correlation=True
+    correlation=False
     if(correlation):
         print np.corrcoef(Ytrain, Xp_score_local.T)
         print np.corrcoef(Ytrain, Xp_snr_glob)
@@ -211,7 +211,7 @@ if __name__ == '__main__':
             posting_sampler = babel_eval_score.posting_sampler
             babel_eval_score.GetLocalFeatures(feat_type=['raw'])
             Xp_eval_score_local=np.asmatrix(babel_eval_score._local_features)
-            Xtest_dict['Score_Local'] = Xp_eval_score_local
+            Xtest_dict['Score_Local'] = Xp_eval_score_local.T
 
         Ytest = babel_eval_score.labels().astype(np.int)
 

@@ -26,7 +26,7 @@ class AutoVivification(dict):
             return value
 
 class ScoreReader:
-    def __init__(self,score_file,pickle_fname='./pickles/test.score.pickle'):
+    def __init__(self,score_file,pickle_fname='./pickles/test.score.pickle',list_times_utt_np=list_times_utt_np):
         self.score_file = score_file
         self.map_utt_idx = {}
         self.GetScoresXML(score_file)
@@ -34,6 +34,7 @@ class ScoreReader:
         self.glob_feature = {}
         #self.num_utt = len(self.list_files)
         self.samp_period = 100
+        self.list_times_utt_np = list_times_utt_np
             
     def GetScoresXML(self,fname):
         # We get every single entry so that we can pickle and load (since this is quite slow)
@@ -83,12 +84,14 @@ class ScoreReader:
     
     def GetTimesUtterance(self, utt_name, times):
         time_ind = (times[0]+times[1])/2*self.samp_period
-        utt_times = np.asarray(self.list_times_utt[utt_name])
+        #utt_times = np.asarray(self.list_times_utt[utt_name])
+        utt_times = np.asarray(self.list_times_utt_np[utt_name])
         #if np.any(utt_times==time_ind):
         #    print 'Warn: ',repr(utt_times)
         #    print 'Warn: ',repr(times)
         #    print 'Warn: ',utt_name
-        return np.squeeze(np.asarray(utt_times[np.nonzero(np.sum(time_ind<utt_times,axis=1)>0)[0][0]]))              
+        #return np.squeeze(np.asarray(utt_times[np.nonzero(np.sum(time_ind<utt_times,axis=1)>0)[0][0]]))              
+        return utt_times[np.nonzero(np.sum(time_ind<utt_times,axis=1)>0)[0][0]]          
 
 if __name__ == '__main__':
     score_reader = ScoreReader('./data/word.kwlist.raw.xml')

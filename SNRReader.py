@@ -87,6 +87,7 @@ class SNRReader:
     def ParseListScp(self, list_file):
         list_files = []
         self.list_times_utt = {}
+        self.list_times_utt_np = {}
         with open(list_file) as f:
             for line in f:
                 list_files.append(string.join(line.strip().split('_')[0:-2],'_') + '.sph')
@@ -102,6 +103,7 @@ class SNRReader:
         list_files = set(list_files)
         for key in self.list_times_utt.keys():
             self.list_times_utt[key].sort(key=lambda x: x[0])
+            self.list_times_utt_np[key] = np.asarray(self.list_times_utt[key])
         return [n for n in list_files]
     
     def GetGlobFeature(self, utt_name, feat_type=['snr']):
@@ -158,12 +160,14 @@ class SNRReader:
     
     def GetTimesUtterance(self, utt_name, times):
         time_ind = (times[0]+times[1])/2*self.samp_period
-        utt_times = np.asarray(self.list_times_utt[utt_name])
+        #utt_times = np.asarray(self.list_times_utt[utt_name])
+        utt_times = np.asarray(self.list_times_utt_np[utt_name])
         #if np.any(utt_times==time_ind):
         #    print 'Warn: ',repr(utt_times)
         #    print 'Warn: ',repr(times)
         #    print 'Warn: ',utt_name
-        return np.squeeze(np.asarray(utt_times[np.nonzero(np.sum(time_ind<utt_times,axis=1)>0)[0][0]]))              
+        #return np.squeeze(np.asarray(utt_times[np.nonzero(np.sum(time_ind<utt_times,axis=1)>0)[0][0]]))              
+        return utt_times[np.nonzero(np.sum(time_ind<utt_times,axis=1)>0)[0][0]]          
 
 if __name__ == '__main__':
     list_files = './data/audio.eval.list'
