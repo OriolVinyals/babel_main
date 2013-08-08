@@ -118,7 +118,7 @@ if __name__ == '__main__':
     feat_list= Xtrain_dict.keys()   
     Ytrain = babel_score.labels().astype(np.int)
     
-    correlation=False
+    correlation=True
     if(correlation):
         print np.corrcoef(Ytrain, Xp_score_local.T)
         print np.corrcoef(Ytrain, Xp_snr_glob)
