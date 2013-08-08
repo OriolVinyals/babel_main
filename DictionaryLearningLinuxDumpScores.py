@@ -240,5 +240,5 @@ if __name__ == '__main__':
     babel_eval_score.DumpScoresXML('./data/eval.sratesnr.xml',prob[:,1])
     babel_eval_score.DumpScoresXML('./data/eval.rawscore.xml',np.asarray(Xp_eval_score_local).squeeze())
     
-    kws_scorer.get_score('./data/eval.sratesnr.xml')
-    kws_scorer.get_score('./data/eval.rawscore.xml')
+    print 'ATWV system:',kws_scorer.get_score('./data/eval.sratesnr.xml')
+    print 'ATWV baseline:',kws_scorer.get_score('./data/eval.rawscore.xml')
