@@ -12,7 +12,7 @@ def get_score(score_file):
     #decision_out_file = '/u/vinyals/projects/swordfish/src/python/babel_main/data/eval.localutt.decision.xml'
     cmd = thresh_bin + ' ' + gt_file + ' ' + score_file
     #print 'Running ',cmd
-    f = open(decision_out_file)
+    f = open(decision_out_file,'w')
     p = subprocess.Popen(cmd.split(' '), stdout=f, stderr=subprocess.PIPE)
     err = p.communicate()
     f.close()
