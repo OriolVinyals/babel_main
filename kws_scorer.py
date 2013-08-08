@@ -11,7 +11,7 @@ def get_score(score_file):
     decision_out_file = string.join(score_file.split('.')[0:-1],'.') + '.decision.xml'
     #decision_out_file = '/u/vinyals/projects/swordfish/src/python/babel_main/data/eval.localutt.decision.xml'
     cmd = thresh_bin + ' ' + gt_file + ' ' + score_file + ' > ' + decision_out_file
-    #print 'Running ',cmd
+    print 'Running ',cmd
     p = subprocess.Popen(cmd.split(' '), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     out, err = p.communicate()
     print out
