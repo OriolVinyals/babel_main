@@ -12,8 +12,10 @@ def get_score(score_file):
     #decision_out_file = '/u/vinyals/projects/swordfish/src/python/babel_main/data/eval.localutt.decision.xml'
     cmd = thresh_bin + ' ' + gt_file + ' ' + score_file
     #print 'Running ',cmd
-    p = subprocess.Popen(cmd.split(' '), stdout=decision_out_file, stderr=subprocess.PIPE)
+    f = open(decision_out_file)
+    p = subprocess.Popen(cmd.split(' '), stdout=f, stderr=subprocess.PIPE)
     err = p.communicate()
+    f.close()
     
     eval_bin = 'perl5.14.2 /u/drspeech/projects/swordfish/ThirdParty/F4DE/bin/KWSEval'
     gt_file = '/u/drspeech/projects/swordfish/IndusDB/IndusDB.latest/babel104b-v0.4bY_conv-evalpart1/babel104b-v0.4bY_conv-evalpart1.scoring.ecf.xml'
