@@ -9,7 +9,7 @@ import string
 import numpy as np
 
 class UtteranceReader:
-    def __init__(self,list_file):
+    def __init__(self,list_file,pickle_fname=None):
         self.list_file = list_file
         self.list_files = self.ParseListScp(list_file)
         self.utt_data = []
@@ -21,6 +21,7 @@ class UtteranceReader:
         self.num_utt = len(self.list_files)
         self.samp_period = file_htk.sampPeriod/(1e9/100)
         self.map_utt_idx = {}
+        self.pickle_fname = pickle_fname
          
     def ReadAllUtterances(self, feat_range=None):
         if feat_range == None:

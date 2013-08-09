@@ -26,9 +26,10 @@ class AutoVivification(dict):
             return value
 
 class ScoreReader:
-    def __init__(self,score_file,pickle_fname='./pickles/test.score.pickle',list_times_utt_np=None):
+    def __init__(self,score_file,pickle_fname=None,list_times_utt_np=None):
         self.score_file = score_file
         self.map_utt_idx = {}
+        self.pickle_fname = pickle_fname
         self.GetScoresXML(score_file)
         self.utt_feature = {}
         self.glob_feature = {}

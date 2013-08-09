@@ -11,6 +11,21 @@ if __name__ == '__main__':
     mpi.root_log_level(logging.DEBUG)
     logging.info('Loading Babel data...')
     
+########### GRID SEARCH SETUP ###########
+    
+    #GENERAL
+    #perc_pos
+    #feature_set
+    #svm/logreg (can't do without other threshold)
+    #reg
+    
+    #ACOUSTIC
+    #dict size
+    #normalization
+    #alpha
+    #patchsize
+    #pool_method
+    
 ########### TRAIN ###########
     
     perc_pos = 0.2
@@ -19,7 +34,7 @@ if __name__ == '__main__':
     feat_range = None
     Xtrain_dict = {}
     
-    acoustic=False
+    acoustic=True
     if(acoustic):
         logging.info('****Acoustic Training****')
         list_file = './data/20130307.dev.untightened.scp'
@@ -38,8 +53,17 @@ if __name__ == '__main__':
                                 {'k': 500, 'max_iter':100})), # does encoding
                     pipeline.SpatialPooler({'grid': (1,1), 'method': 'ave'})
                     ])
+        normalizer = True
+        zca = True
+        if normalizer==False:
+            del conv[1]
+            if zca==False:
+                del conv[1]
+        else:
+            if zca==False:
+                del conv[2]
         logging.info('Training the pipeline...')
-        conv.train(babel, 100000)
+        conv.train(babel, 200000)
         logging.info('Extracting features...')
         Xp_acoustic = conv.process_dataset(babel, as_2d = True)
         Xtrain_dict['Acoustic'] = Xp_acoustic
@@ -54,7 +78,7 @@ if __name__ == '__main__':
         posting_sampler = babel_lat.posting_sampler
         Xtrain_dict['Lattice'] = 0
     
-    posterior=False
+    posterior=True
     if(posterior):
         logging.info('****Posterior Training****')
         list_file = './data/20130307.dev.post.untightened.scp'
@@ -72,7 +96,7 @@ if __name__ == '__main__':
         Xtrain_dict['Posterior_Global'] = Xp_post_glob.T
         Xtrain_dict['Posterior_Utt'] = Xp_post_utt.T
         
-    srate=False
+    srate=True
     if(srate):
         logging.info('****Srate Training****')
         list_file = './data/audio.list'
@@ -87,7 +111,7 @@ if __name__ == '__main__':
         Xtrain_dict['Srate_Global'] = Xp_srate_glob.T
         Xtrain_dict['Srate_Utt'] = Xp_srate_utt.T
         
-    snr=False
+    snr=True
     if(snr):
         logging.info('****SNR Training****')
         list_file = './data/audio.list'
