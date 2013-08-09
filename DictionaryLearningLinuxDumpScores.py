@@ -69,7 +69,7 @@ if __name__ == '__main__':
         Xp_acoustic = conv.process_dataset(babel, as_2d = True)
         Xtrain_dict['Acoustic'] = Xp_acoustic
         
-    lattice=False
+    lattice=True
     if(lattice):
         logging.info('****Lattice Training****')
         list_file = './data/lat.list'
@@ -77,7 +77,7 @@ if __name__ == '__main__':
         babel_lat = BabelDataset.BabelDataset(list_file, feat_range, posting_file, perc_pos, keep_full_utt=True, 
                                           posting_sampler=posting_sampler,min_dur=min_dur,reader_type='lattice')
         posting_sampler = babel_lat.posting_sampler
-        Xtrain_dict['Lattice'] = 0
+        #Xtrain_dict['Lattice'] = 0
     
     posterior=True
     if(posterior):
