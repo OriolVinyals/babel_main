@@ -155,14 +155,11 @@ def run():
         print feat,Xtrain_dict[feat].shape
     Ytrain = babel_score.labels().astype(np.int)
     
-    correlation=False
+    correlation=True
     if(correlation):
-        print np.corrcoef(Ytrain, Xp_score_local.T)
-        print np.corrcoef(Ytrain, Xp_snr_glob)
-        print np.corrcoef(Ytrain, Xp_snr_utt)
-        print np.corrcoef(Ytrain, Xp_srate_glob)
-        print np.corrcoef(Ytrain, Xp_srate_utt)
-        exit(0)
+        for feat in feat_list:
+            print feat, np.corrcoef(Ytrain, Xtrain_dict[feat].T)[1,1]
+        #exit(0)
 
 ########### EVAL ###########
 
