@@ -36,6 +36,7 @@ class SrateReader:
         #VERY time expensive. Computes Utterance and Global features (but no local features unlike Lat/UTTReader)
         try:
             with open(self.pickle_fname,'rb') as fp:
+                print 'Reading data from file',self.pickle_fname
                 self.utt_feature=pickle.load(fp)
                 self.glob_feature=pickle.load(fp)
                 self.map_utt_idx=pickle.load(fp)
