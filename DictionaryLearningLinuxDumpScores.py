@@ -158,7 +158,7 @@ def run():
     correlation=True
     if(correlation):
         for feat in feat_list:
-            print feat, np.corrcoef(Ytrain, Xtrain_dict[feat].T)[1,1]
+            print feat, np.corrcoef(Ytrain, Xtrain_dict[feat].T)[0,1]
         #exit(0)
 
 ########### EVAL ###########
@@ -171,11 +171,11 @@ def run():
 
     eval=True
     if(eval):
+        posting_file = './data/word.cut_down_evalpart1.decision.kwlist.alignment.csv'
         if(acoustic):
             logging.info('****Acoustic Testing****')
             list_file = './data/20130307.eval.untightened.scp'
             feat_range = None
-            posting_file = './data/word.cut_down_evalpart1.decision.kwlist.alignment.csv'
             babel_eval = BabelDataset.BabelDataset(list_file, feat_range, posting_file, perc_pos,min_dur=min_dur, posting_sampler=posting_sampler)
             posting_sampler = babel_eval.posting_sampler
             '''An example audio pipeline to extract features'''
@@ -185,7 +185,6 @@ def run():
         if(lattice):
             logging.info('****Lattice Testing****')
             list_file = './data/lat.eval.list'
-            posting_file = './data/word.cut_down_evalpart1.decision.kwlist.alignment.csv'
             babel_eval_lat = BabelDataset.BabelDataset(list_file, feat_range, posting_file, perc_pos, keep_full_utt=True, 
                                               posting_sampler=posting_sampler,min_dur=min_dur,reader_type='lattice')
             posting_sampler = babel_eval_lat.posting_sampler
@@ -194,7 +193,6 @@ def run():
         if(posterior):
             logging.info('****Posterior Testing****')
             list_file = './data/20130307.eval.post.untightened.scp'
-            posting_file = './data/word.cut_down_evalpart1.decision.kwlist.alignment.csv'
             feat_range = None
             babel_eval_post = BabelDataset.BabelDataset(list_file, feat_range, posting_file, perc_pos, keep_full_utt=True, posting_sampler=posting_sampler,min_dur=min_dur)
             posting_sampler = babel_eval_post.posting_sampler
@@ -211,7 +209,6 @@ def run():
         if(srate):
             logging.info('****Srate Testing****')
             list_file = './data/audio.eval.list'
-            posting_file = './data/word.cut_down_evalpart1.decision.kwlist.alignment.csv'
             babel_eval_srate = BabelDataset.BabelDataset(list_file, None, posting_file, perc_pos, keep_full_utt=True, reader_type='srate',
                                        pickle_fname='./pickles/full.eval.srate.pickle', posting_sampler=posting_sampler,min_dur=min_dur)
             posting_sampler = babel_eval_srate.posting_sampler
@@ -225,7 +222,6 @@ def run():
         if(snr):
             logging.info('****SNR Testing****')
             list_file = './data/audio.eval.list'
-            posting_file = './data/word.cut_down_evalpart1.decision.kwlist.alignment.csv'
             babel_eval_snr = BabelDataset.BabelDataset(list_file, None, posting_file, perc_pos, keep_full_utt=True, reader_type='snr',
                                      pickle_fname='./pickles/full.eval.snr.pickle', posting_sampler=posting_sampler,min_dur=min_dur)
             posting_sampler = babel_eval_snr.posting_sampler
@@ -239,7 +235,6 @@ def run():
         if(score):
             logging.info('****Score Testing****')
             list_file = './data/word.cut_down_evalpart1.kwlist.raw.xml'
-            posting_file = './data/word.cut_down_evalpart1.decision.kwlist.alignment.csv'
             babel_eval_score = BabelDataset.BabelDataset(list_file, None, posting_file, perc_pos, keep_full_utt=True, reader_type='score',
                                      posting_sampler=posting_sampler,min_dur=min_dur)
             posting_sampler = babel_eval_score.posting_sampler
@@ -248,6 +243,89 @@ def run():
             Xtest_dict['Score_Local'] = Xp_eval_score_local
 
         Ytest = babel_eval_score.labels().astype(np.int)
+        
+########### DEV ###########
+
+    perc_pos = 0.0
+    min_dur = 0.2
+    posting_sampler = None
+    feat_range = None
+    Xdev_dict = {}
+
+    dev=True
+    if(dev):
+        posting_file = './data/word.kwlist.alignment.csv'
+        if(acoustic):
+            logging.info('****Acoustic Dev****')
+            list_file = './data/20130307.dev.untightened.scp'
+            feat_range = None
+            babel_dev = BabelDataset.BabelDataset(list_file, feat_range, posting_file, perc_pos,min_dur=min_dur, posting_sampler=posting_sampler)
+            posting_sampler = babel_dev.posting_sampler
+            '''An example audio pipeline to extract features'''
+            Xp_dev_acoustic = conv.process_dataset(babel_dev, as_2d = True)
+            Xdev_dict['Acoustic'] = Xp_dev_acoustic
+            
+        if(lattice):
+            logging.info('****Lattice Testing****')
+            list_file = './data/lat.list'
+            babel_dev_lat = BabelDataset.BabelDataset(list_file, feat_range, posting_file, perc_pos, keep_full_utt=True, 
+                                              posting_sampler=posting_sampler,min_dur=min_dur,reader_type='lattice')
+            posting_sampler = babel_dev_lat.posting_sampler
+            Xdev_dict['Lattice'] = 0
+        
+        if(posterior):
+            logging.info('****Posterior Testing****')
+            list_file = './data/20130307.dev.post.untightened.scp'
+            feat_range = None
+            babel_dev_post = BabelDataset.BabelDataset(list_file, feat_range, posting_file, perc_pos, keep_full_utt=True, posting_sampler=posting_sampler,min_dur=min_dur)
+            posting_sampler = babel_dev_post.posting_sampler
+            #reassign utterances (hack because the scp files are wrong)
+            babel_dev_post.utt_reader.list_times_utt = babel_dev_lat.utt_reader.list_times_utt
+            '''An example for posterior features'''
+            babel_dev_post.GetGlobalFeatures(feat_type=['entropy'])
+            babel_dev_post.GetUtteranceFeatures(feat_type=['entropy'])
+            Xp_dev_post_glob = np.asmatrix(babel_dev_post._glob_features)
+            Xp_dev_post_utt = np.asmatrix(babel_dev_post._utt_features)
+            Xdev_dict['Posterior_Global'] = Xp_dev_post_glob
+            Xdev_dict['Posterior_Utt'] = Xp_dev_post_utt
+            
+        if(srate):
+            logging.info('****Srate Testing****')
+            list_file = './data/audio.list'
+            babel_dev_srate = BabelDataset.BabelDataset(list_file, None, posting_file, perc_pos, keep_full_utt=True, reader_type='srate',
+                                       pickle_fname='./pickles/full.srate.pickle', posting_sampler=posting_sampler,min_dur=min_dur)
+            posting_sampler = babel_dev_srate.posting_sampler
+            babel_dev_srate.GetUtteranceFeatures(feat_type=['srate'])
+            babel_dev_srate.GetGlobalFeatures(feat_type=['srate'])
+            Xp_dev_srate_glob=np.asmatrix(babel_dev_srate._glob_features)
+            Xp_dev_srate_utt=np.asmatrix(babel_dev_srate._utt_features)
+            Xdev_dict['Srate_Global'] = Xp_dev_srate_glob.T
+            Xdev_dict['Srate_Utt'] = Xp_dev_srate_utt.T
+            
+        if(snr):
+            logging.info('****SNR Testing****')
+            list_file = './data/audio.list'
+            babel_dev_snr = BabelDataset.BabelDataset(list_file, None, posting_file, perc_pos, keep_full_utt=True, reader_type='snr',
+                                     pickle_fname='./pickles/full.snr.pickle', posting_sampler=posting_sampler,min_dur=min_dur)
+            posting_sampler = babel_dev_snr.posting_sampler
+            babel_dev_snr.GetUtteranceFeatures(feat_type=['snr'])
+            babel_dev_snr.GetGlobalFeatures(feat_type=['snr'])
+            Xp_dev_snr_glob=np.asmatrix(babel_dev_snr._glob_features)
+            Xp_dev_snr_utt=np.asmatrix(babel_dev_snr._utt_features)
+            Xdev_dict['SNR_Global'] = Xp_dev_snr_glob.T
+            Xdev_dict['SNR_Utt'] = Xp_dev_snr_utt.T
+            
+        if(score):
+            logging.info('****Score Testing****')
+            list_file = './data/word.kwlist.raw.xml'
+            babel_dev_score = BabelDataset.BabelDataset(list_file, None, posting_file, perc_pos, keep_full_utt=True, reader_type='score',
+                                     posting_sampler=posting_sampler,min_dur=min_dur)
+            posting_sampler = babel_dev_score.posting_sampler
+            babel_dev_score.GetLocalFeatures(feat_type=['raw'])
+            Xp_dev_score_local=np.asmatrix(babel_dev_score._local_features)
+            Xdev_dict['Score_Local'] = Xp_dev_score_local
+
+        Ydev = babel_dev_score.labels().astype(np.int)
 
 ########### CLASSIFIER ###########
 
@@ -262,6 +340,23 @@ def run():
     print 'Neg LogLikelihood is ',neg_ll
     print 'Prior is ',np.sum(Ytrain==0)/float(len(Ytrain))
     
+    if(dev):
+        logging.info('Running Dev...')
+        accu = lr_classifier.Accuracy(Xdev_dict, Ydev)
+        neg_ll = lr_classifier.loss_multiclass_logreg(Xdev_dict, Ydev)
+        prob_dev = lr_classifier.get_predictions_logreg(Xdev_dict)
+          
+        print 'Dev Accuracy is ',accu
+        print 'Dev Neg LogLikelihood is ',neg_ll
+        print 'Dev Prior is ',np.sum(Ydev==0)/float(len(Ydev))
+        sys_name_dev = './data/dev.'+''.join(feat_list)+'.xml'
+        baseline_name_dev = './dava/dev.rawscore.xml'
+        babel_dev_score.DumpScoresXML(sys_name_dev,prob_dev[:,1])
+        babel_dev_score.DumpScoresXML(baseline_name_dev,np.asarray(Xp_dev_score_local).squeeze())
+        
+        print 'Dev ATWV system:',kws_scorer.get_score_dev(sys_name_dev)
+        print 'Dev ATWV baseline:',kws_scorer.get_score_dev(baseline_name_dev)
+        
     logging.info('Running Test...')
     accu = lr_classifier.Accuracy(Xtest_dict, Ytest)
     neg_ll = lr_classifier.loss_multiclass_logreg(Xtest_dict, Ytest)
