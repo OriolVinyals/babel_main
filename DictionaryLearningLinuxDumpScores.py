@@ -99,7 +99,7 @@ def run():
         #reassign utterances (hack because the scp files are wrong)
         babel_post.utt_reader.list_times_utt = babel_lat.utt_reader.list_times_utt
         '''An example for posterior features'''
-        babel_post.GetGlobalFeatures(feat_type=['entropy','entropy'])
+        babel_post.GetGlobalFeatures(feat_type=['entropy'])
         babel_post.GetUtteranceFeatures(feat_type=['entropy'])
         Xp_post_glob = np.asmatrix(babel_post._glob_features)
         Xp_post_utt = np.asmatrix(babel_post._utt_features)
