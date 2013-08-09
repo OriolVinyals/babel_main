@@ -4,8 +4,15 @@ import numpy as np
 import BabelDataset
 import Classifier
 import kws_scorer
+import gflags
+import sys
 
-if __name__ == '__main__':
+gflags.DEFINE_float("perc_pos", 0.2,
+                     "Percentage of positive examples to keep.")
+FLAGS = gflags.FLAGS
+
+
+def run():
     '''Loading Data: '''
     print 'Rank of this process is ',mpi.RANK
     mpi.root_log_level(logging.DEBUG)
@@ -14,25 +21,26 @@ if __name__ == '__main__':
 ########### GRID SEARCH SETUP ###########
     
     #GENERAL
-    #perc_pos
-    #feature_set
+    #perc_pos ***CMD
+    #feature_set ***CACHE
     #svm/logreg (can't do without other threshold)
-    #reg
+    #reg ***CACHE
     
     #ACOUSTIC
-    #dict size
-    #normalization
-    #alpha
-    #patchsize
-    #pool_method
+    #dict size ***CMD
+    #normalization ***CMD
+    #alpha ***CMD
+    #patchsize ***CMD
+    #pool_method **CMD
     
 ########### TRAIN ###########
     
-    perc_pos = 0.2
+    perc_pos = FLAGS.perc_pos
     min_dur = 0.2
     posting_sampler = None
     feat_range = None
     Xtrain_dict = {}
+    feat_list = None
     
     acoustic=True
     if(acoustic):
@@ -91,12 +99,12 @@ if __name__ == '__main__':
         #reassign utterances (hack because the scp files are wrong)
         babel_post.utt_reader.list_times_utt = babel_lat.utt_reader.list_times_utt
         '''An example for posterior features'''
-        babel_post.GetGlobalFeatures(feat_type=['entropy'])
+        babel_post.GetGlobalFeatures(feat_type=['entropy','entropy'])
         babel_post.GetUtteranceFeatures(feat_type=['entropy'])
         Xp_post_glob = np.asmatrix(babel_post._glob_features)
         Xp_post_utt = np.asmatrix(babel_post._utt_features)
-        Xtrain_dict['Posterior_Global'] = Xp_post_glob.T
-        Xtrain_dict['Posterior_Utt'] = Xp_post_utt.T
+        Xtrain_dict['Posterior_Global'] = Xp_post_glob
+        Xtrain_dict['Posterior_Utt'] = Xp_post_utt
         
     srate=True
     if(srate):
@@ -143,6 +151,8 @@ if __name__ == '__main__':
     '''Labels''' 
     feat_list= Xtrain_dict.keys()   
     print 'Features: ' + ' '.join(feat_list)
+    for feat in feat_list:
+        print feat,Xtrain_dict[feat].shape
     Ytrain = babel_score.labels().astype(np.int)
     
     correlation=False
@@ -198,8 +208,8 @@ if __name__ == '__main__':
             babel_eval_post.GetUtteranceFeatures(feat_type=['entropy'])
             Xp_eval_post_glob = np.asmatrix(babel_eval_post._glob_features)
             Xp_eval_post_utt = np.asmatrix(babel_eval_post._utt_features)
-            Xtest_dict['Posterior_Global'] = Xp_eval_post_glob.T
-            Xtest_dict['Posterior_Utt'] = Xp_eval_post_utt.T
+            Xtest_dict['Posterior_Global'] = Xp_eval_post_glob
+            Xtest_dict['Posterior_Utt'] = Xp_eval_post_utt
             
         if(srate):
             logging.info('****Srate Testing****')
@@ -272,3 +282,7 @@ if __name__ == '__main__':
     
     print 'ATWV system:',kws_scorer.get_score(sys_name)
     print 'ATWV baseline:',kws_scorer.get_score(baseline_name)
+    
+if __name__ == '__main__':
+    gflags.FLAGS(sys.argv)
+    run()
