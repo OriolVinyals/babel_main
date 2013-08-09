@@ -58,7 +58,7 @@ class UtteranceReader:
                         pickle.dump(self.feat_size,fp)
                         pickle.dump(self.map_utt_idx,fp)
             except:
-                print 'Could not open file',self.pickle_fname
+                print 'Could not open file for saving',self.pickle_fname
             
     def GetKeywordData(self, utt_name, t_ini=0, t_end=None, kw=''):
         if self.utt_data == []:

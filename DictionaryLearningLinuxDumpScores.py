@@ -41,7 +41,7 @@ if __name__ == '__main__':
         feat_range = None
         posting_file = './data/word.kwlist.alignment.csv'
         babel = BabelDataset.BabelDataset(list_file, feat_range, posting_file, perc_pos,min_dur=min_dur, posting_sampler=posting_sampler,
-                                          reader_type='utterance', pickle_fname='./pickles/full.acoustic.pickle')
+                                          reader_type='utterance')
         posting_sampler = babel.posting_sampler
         '''An example audio pipeline to extract features'''
         conv = pipeline.ConvLayer([
@@ -86,7 +86,7 @@ if __name__ == '__main__':
         posting_file = './data/word.kwlist.alignment.csv'
         feat_range = None
         babel_post = BabelDataset.BabelDataset(list_file, feat_range, posting_file, perc_pos, keep_full_utt=True,reader_type='utterance', 
-                                               pickle_fname='./pickles/full.posterior.pickle', posting_sampler=posting_sampler,min_dur=min_dur)
+                                               posting_sampler=posting_sampler,min_dur=min_dur)
         posting_sampler = babel_post.posting_sampler
         #reassign utterances (hack because the scp files are wrong)
         babel_post.utt_reader.list_times_utt = babel_lat.utt_reader.list_times_utt
