@@ -8,6 +8,7 @@ from external import htkmfc
 import string
 import numpy as np
 import cPickle as pickle
+import os
 
 class UtteranceReader:
     def __init__(self,list_file,pickle_fname=None):
