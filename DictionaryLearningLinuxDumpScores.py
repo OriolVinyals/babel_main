@@ -147,6 +147,11 @@ def run():
         babel_score.GetLocalFeatures(feat_type=['raw'])
         Xp_score_local=np.asmatrix(babel_score._local_features)
         Xtrain_dict['Score_Local'] = Xp_score_local
+        
+    cheating=True
+    if(cheating):
+        logging.info('****Labels (cheating) Training****')
+        Xtrain_dict['Cheating'] = np.asmatrix(babel_score.labels().astype(np.int)).T
 
     '''Labels''' 
     feat_list= Xtrain_dict.keys()   
@@ -241,6 +246,11 @@ def run():
             babel_eval_score.GetLocalFeatures(feat_type=['raw'])
             Xp_eval_score_local=np.asmatrix(babel_eval_score._local_features)
             Xtest_dict['Score_Local'] = Xp_eval_score_local
+            
+        if(cheating):
+            logging.info('****Labels (cheating) Testing****')
+            Xtest_dict['Cheating'] = np.asmatrix(babel_eval_score.labels().astype(np.int)).T
+
 
         Ytest = babel_eval_score.labels().astype(np.int)
         
@@ -324,6 +334,10 @@ def run():
             babel_dev_score.GetLocalFeatures(feat_type=['raw'])
             Xp_dev_score_local=np.asmatrix(babel_dev_score._local_features)
             Xdev_dict['Score_Local'] = Xp_dev_score_local
+            
+        if(cheating):
+            logging.info('****Labels (cheating) Dev****')
+            Xdev_dict['Cheating'] = np.asmatrix(babel_dev_score.labels().astype(np.int)).T
 
         Ydev = babel_dev_score.labels().astype(np.int)
 
