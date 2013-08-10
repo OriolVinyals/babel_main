@@ -266,7 +266,7 @@ def run():
             Xdev_dict['Acoustic'] = Xp_dev_acoustic
             
         if(lattice):
-            logging.info('****Lattice Testing****')
+            logging.info('****Lattice Dev****')
             list_file = './data/lat.list'
             babel_dev_lat = BabelDataset.BabelDataset(list_file, feat_range, posting_file, perc_pos, keep_full_utt=True, 
                                               posting_sampler=posting_sampler,min_dur=min_dur,reader_type='lattice')
@@ -274,7 +274,7 @@ def run():
             Xdev_dict['Lattice'] = 0
         
         if(posterior):
-            logging.info('****Posterior Testing****')
+            logging.info('****Posterior Dev****')
             list_file = './data/20130307.dev.post.untightened.scp'
             feat_range = None
             babel_dev_post = BabelDataset.BabelDataset(list_file, feat_range, posting_file, perc_pos, keep_full_utt=True, posting_sampler=posting_sampler,min_dur=min_dur)
@@ -290,7 +290,7 @@ def run():
             Xdev_dict['Posterior_Utt'] = Xp_dev_post_utt
             
         if(srate):
-            logging.info('****Srate Testing****')
+            logging.info('****Srate Dev****')
             list_file = './data/audio.list'
             babel_dev_srate = BabelDataset.BabelDataset(list_file, None, posting_file, perc_pos, keep_full_utt=True, reader_type='srate',
                                        pickle_fname='./pickles/full.srate.pickle', posting_sampler=posting_sampler,min_dur=min_dur)
@@ -303,7 +303,7 @@ def run():
             Xdev_dict['Srate_Utt'] = Xp_dev_srate_utt.T
             
         if(snr):
-            logging.info('****SNR Testing****')
+            logging.info('****SNR Dev****')
             list_file = './data/audio.list'
             babel_dev_snr = BabelDataset.BabelDataset(list_file, None, posting_file, perc_pos, keep_full_utt=True, reader_type='snr',
                                      pickle_fname='./pickles/full.snr.pickle', posting_sampler=posting_sampler,min_dur=min_dur)
@@ -316,7 +316,7 @@ def run():
             Xdev_dict['SNR_Utt'] = Xp_dev_snr_utt.T
             
         if(score):
-            logging.info('****Score Testing****')
+            logging.info('****Score Dev****')
             list_file = './data/word.kwlist.raw.xml'
             babel_dev_score = BabelDataset.BabelDataset(list_file, None, posting_file, perc_pos, keep_full_utt=True, reader_type='score',
                                      posting_sampler=posting_sampler,min_dur=min_dur)
@@ -350,7 +350,7 @@ def run():
         print 'Dev Neg LogLikelihood is ',neg_ll
         print 'Dev Prior is ',np.sum(Ydev==0)/float(len(Ydev))
         sys_name_dev = './data/dev.'+''.join(feat_list)+'.xml'
-        baseline_name_dev = './dava/dev.rawscore.xml'
+        baseline_name_dev = './data/dev.rawscore.xml'
         babel_dev_score.DumpScoresXML(sys_name_dev,prob_dev[:,1])
         babel_dev_score.DumpScoresXML(baseline_name_dev,np.asarray(Xp_dev_score_local).squeeze())
         
