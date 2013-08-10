@@ -42,7 +42,7 @@ def run():
     Xtrain_dict = {}
     feat_list = None
     
-    acoustic=True
+    acoustic=False
     if(acoustic):
         logging.info('****Acoustic Training****')
         list_file = './data/20130307.dev.untightened.scp'
@@ -77,7 +77,7 @@ def run():
         Xp_acoustic = conv.process_dataset(babel, as_2d = True)
         Xtrain_dict['Acoustic'] = Xp_acoustic
         
-    lattice=True
+    lattice=False
     if(lattice):
         logging.info('****Lattice Training****')
         list_file = './data/lat.list'
@@ -87,7 +87,7 @@ def run():
         posting_sampler = babel_lat.posting_sampler
         #Xtrain_dict['Lattice'] = 0
     
-    posterior=True
+    posterior=False
     if(posterior):
         logging.info('****Posterior Training****')
         list_file = './data/20130307.dev.post.untightened.scp'
@@ -106,7 +106,7 @@ def run():
         Xtrain_dict['Posterior_Global'] = Xp_post_glob
         Xtrain_dict['Posterior_Utt'] = Xp_post_utt
         
-    srate=True
+    srate=False
     if(srate):
         logging.info('****Srate Training****')
         list_file = './data/audio.list'
@@ -121,7 +121,7 @@ def run():
         Xtrain_dict['Srate_Global'] = Xp_srate_glob.T
         Xtrain_dict['Srate_Utt'] = Xp_srate_utt.T
         
-    snr=True
+    snr=False
     if(snr):
         logging.info('****SNR Training****')
         list_file = './data/audio.list'
