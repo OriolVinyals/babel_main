@@ -148,7 +148,7 @@ def run():
         Xp_score_local=np.asmatrix(babel_score._local_features)
         Xtrain_dict['Score_Local'] = Xp_score_local
         
-    cheating=True
+    cheating=False
     if(cheating):
         logging.info('****Labels (cheating) Training****')
         Xtrain_dict['Cheating'] = np.asmatrix(babel_score.labels().astype(np.int)).T
