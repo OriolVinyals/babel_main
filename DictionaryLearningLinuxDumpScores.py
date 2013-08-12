@@ -140,13 +140,20 @@ def run():
     if(score):
         logging.info('****Score Training****')
         list_file = './data/word.kwlist.raw.xml'
+        list_file_sph = './data/audio.list'
         posting_file = './data/word.kwlist.alignment.csv'
         babel_score = BabelDataset.BabelDataset(list_file, None, posting_file, perc_pos, keep_full_utt=True, reader_type='score',
-                                 posting_sampler=posting_sampler,min_dur=min_dur)
+                                 posting_sampler=posting_sampler,min_dur=min_dur,list_file_sph=list_file_sph)
         posting_sampler = babel_score.posting_sampler
         babel_score.GetLocalFeatures(feat_type=['raw'])
+        babel_score.GetGlobalFeatures(feat_type=['avg'])
+        babel_score.GetUtteranceFeatures(feat_type=['avg'])
         Xp_score_local=np.asmatrix(babel_score._local_features)
+        Xp_score_glob=np.asmatrix(babel_score._glob_features)
+        Xp_score_utt=np.asmatrix(babel_score._utt_features)
         Xtrain_dict['Score_Local'] = Xp_score_local
+        Xtrain_dict['Score_Utt'] = Xp_score_utt
+        Xtrain_dict['Score_Glob'] = Xp_score_glob
         
     cheating=False
     if(cheating):
@@ -240,12 +247,19 @@ def run():
         if(score):
             logging.info('****Score Testing****')
             list_file = './data/word.cut_down_evalpart1.kwlist.raw.xml'
+            list_file_sph = './data/audio.eval.list'
             babel_eval_score = BabelDataset.BabelDataset(list_file, None, posting_file, perc_pos, keep_full_utt=True, reader_type='score',
-                                     posting_sampler=posting_sampler,min_dur=min_dur)
+                                     posting_sampler=posting_sampler,min_dur=min_dur,list_file_sph=list_file_sph)
             posting_sampler = babel_eval_score.posting_sampler
             babel_eval_score.GetLocalFeatures(feat_type=['raw'])
+            babel_eval_score.GetGlobalFeatures(feat_type=['avg'])
+            babel_eval_score.GetUtteranceFeatures(feat_type=['avg'])
             Xp_eval_score_local=np.asmatrix(babel_eval_score._local_features)
+            Xp_eval_score_glob=np.asmatrix(babel_eval_score._glob_features)
+            Xp_eval_score_utt=np.asmatrix(babel_eval_score._utt_features)
             Xtest_dict['Score_Local'] = Xp_eval_score_local
+            Xtest_dict['Score_Utt'] = Xp_eval_score_utt
+            Xtest_dict['Score_Glob'] = Xp_eval_score_glob
             
         if(cheating):
             logging.info('****Labels (cheating) Testing****')
@@ -328,12 +342,19 @@ def run():
         if(score):
             logging.info('****Score Dev****')
             list_file = './data/word.kwlist.raw.xml'
+            list_file_sph = './data/audio.list'
             babel_dev_score = BabelDataset.BabelDataset(list_file, None, posting_file, perc_pos, keep_full_utt=True, reader_type='score',
-                                     posting_sampler=posting_sampler,min_dur=min_dur)
+                                     posting_sampler=posting_sampler,min_dur=min_dur,list_file_sph=list_file_sph)
             posting_sampler = babel_dev_score.posting_sampler
             babel_dev_score.GetLocalFeatures(feat_type=['raw'])
+            babel_dev_score.GetGlobalFeatures(feat_type=['avg'])
+            babel_dev_score.GetUtteranceFeatures(feat_type=['avg'])
             Xp_dev_score_local=np.asmatrix(babel_dev_score._local_features)
+            Xp_dev_score_glob=np.asmatrix(babel_dev_score._glob_features)
+            Xp_dev_score_utt=np.asmatrix(babel_dev_score._utt_features)
             Xdev_dict['Score_Local'] = Xp_dev_score_local
+            Xdev_dict['Score_Utt'] = Xp_dev_score_utt
+            Xdev_dict['Score_Glob'] = Xp_dev_score_glob
             
         if(cheating):
             logging.info('****Labels (cheating) Dev****')

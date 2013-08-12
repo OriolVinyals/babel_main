@@ -20,7 +20,7 @@ class BabelDataset(datasets.ImageSet):
     
     #def __init__(self, utt_reader,posting_sampler):
     def __init__(self, list_file, feat_range, posting_file, perc_pos, keep_full_utt=False, posting_sampler=None, min_dur=0.2, reader_type='utterance', 
-                 pickle_fname=None, list_times_utt_np=None):
+                 pickle_fname=None, list_file_sph=None):
         '''TODO: Read pieces of utterance from the CSV file instead to save memory. It would be nice to index thse by utt_id (by now I do a map).'''
         super(BabelDataset, self).__init__()
         if reader_type=='lattice':
@@ -41,7 +41,7 @@ class BabelDataset(datasets.ImageSet):
             utt_reader.ReadAllSrate()
         elif reader_type=='score':
             self.is_lattice = False
-            utt_reader = ScoreReader.ScoreReader(list_file,list_times_utt_np=list_times_utt_np,pickle_fname=pickle_fname)
+            utt_reader = ScoreReader.ScoreReader(list_file,list_file_sph=list_file_sph,pickle_fname=pickle_fname)
         else:
             print 'Reader not implemented!'
             exit(0)

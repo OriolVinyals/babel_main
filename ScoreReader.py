@@ -26,16 +26,40 @@ class AutoVivification(dict):
             return value
 
 class ScoreReader:
-    def __init__(self,score_file,pickle_fname=None,list_times_utt_np=None):
+    def __init__(self,score_file,pickle_fname=None,list_file_sph=None):
         self.score_file = score_file
         self.map_utt_idx = {}
         self.pickle_fname = pickle_fname
+        self.ParseListScp(list_file_sph)
         self.GetScoresXML(score_file)
         self.utt_feature = {}
         self.glob_feature = {}
         #self.num_utt = len(self.list_files)
         self.samp_period = 100
-        self.list_times_utt_np = list_times_utt_np
+        
+    def ParseListScp(self, list_file):
+        if list_file == None:
+            return
+        list_files = []
+        self.list_times_utt = {}
+        self.list_times_utt_np = {}
+        with open(list_file) as f:
+            for line in f:
+                list_files.append(string.join(line.strip().split('_')[0:-2],'_') + '.sph')
+                times=[]
+                times.append(line.strip().split('_')[-2])
+                times.append(line.strip().split('_')[-1].split('.')[0])
+                utt_id = string.join(string.split(line.strip(),'/')[-1].split('_')[0:-2],'_')
+                if self.list_times_utt.has_key(utt_id):
+                    self.list_times_utt[utt_id].append((float(times[0]),float(times[1])))
+                else:
+                    self.list_times_utt[utt_id]=[]
+                    self.list_times_utt[utt_id].append((float(times[0]),float(times[1])))
+        list_files = set(list_files)
+        for key in self.list_times_utt.keys():
+            self.list_times_utt[key].sort(key=lambda x: x[0])
+            self.list_times_utt_np[key] = np.asarray(self.list_times_utt[key])
+        return [n for n in list_files]
             
     def GetScoresXML(self,fname):
         # We get every single entry so that we can pickle and load (since this is quite slow)
@@ -54,13 +78,13 @@ class ScoreReader:
                 times = (round(float(tbeg),2),round(float(tbeg)+float(dur),2))
                 score = root[i][j].attrib['score']
                 #recursive dictionary
-                self.score_kw_utt_times_hash[keyword][utterance][times] = float(score)
+                self.score_kw_utt_times_hash[utterance][times][keyword] = float(score)
                 self.map_utt_idx[utterance]=1
                 #key = keyword + '_' + utterance + '_' + repr(times)
                 #self.score_kw_utt_times_hash[key] = float(score)
         
     def GetKeywordData(self, utt_name, t_ini, t_end, kw=''):
-        ret = self.score_kw_utt_times_hash[kw][utt_name][(t_ini,t_end)]
+        ret = self.score_kw_utt_times_hash[utt_name][(t_ini,t_end)][kw]
         if ret == {}:
             print 'Error couldnt find key!'
             exit(0)
@@ -71,8 +95,17 @@ class ScoreReader:
         if self.glob_feature.has_key(utt_name):
             return self.glob_feature[utt_name]
         else:
-            print 'Global Feature should have been precomputed!'
-            exit(0)
+            #get all the scores from the glob file
+            scores = [0.0]
+            for times in self.score_kw_utt_times_hash[utt_name].values():
+                for score in times.values():
+                    scores.extend([score])
+            vector_return = []
+            for i in range(len(feat_type)):
+                if feat_type[i] == 'avg':
+                    vector_return.append(np.average(scores))
+            self.glob_feature[utt_name] = vector_return
+            return self.glob_feature[utt_name]
     
     def GetUtteranceFeature(self, utt_name, times, feat_type=['avg']):
         utt_times = self.GetTimesUtterance(utt_name, times) #convert in utterance times to boundary utterance times
@@ -80,8 +113,17 @@ class ScoreReader:
         if self.utt_feature.has_key(utt_id_times):
             return self.utt_feature[utt_id_times]
         else:
-            print 'Utterance Feature should have been precomputed!'
-            exit(0)
+            scores = [0.0]
+            for times in self.score_kw_utt_times_hash[utt_name]:
+                if((times[0]*self.samp_period > utt_times[0]) and (times[1]*self.samp_period < utt_times[1])):
+                    for score in self.score_kw_utt_times_hash[utt_name][times].values():
+                        scores.extend([score])
+            vector_return = []
+            for i in range(len(feat_type)):
+                if feat_type[i] == 'avg':
+                    vector_return.append(np.average(scores))
+            self.utt_feature[utt_id_times] = vector_return
+            return self.utt_feature[utt_id_times]
     
     def GetTimesUtterance(self, utt_name, times):
         time_ind = (times[0]+times[1])/2*self.samp_period
