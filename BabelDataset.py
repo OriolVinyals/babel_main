@@ -149,7 +149,7 @@ class BabelDataset(datasets.ImageSet):
                     aux = np.sum(aux,1)
                     vector_return.append(np.average(aux))
                 if feat_type[j] == 'duration':
-                    vector_return.append(self._data[i].shape[0]/float(100))
+                    vector_return.append(self._times[i][1]-self._times[i][0])
                 if feat_type[j] == 'raw': #useful for lattices
                     if feat_range==None:
                         vector_return.append(self._data[i])

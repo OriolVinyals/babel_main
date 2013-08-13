@@ -118,10 +118,16 @@ class ScoreReader:
                 if((times[0]*self.samp_period > utt_times[0]) and (times[1]*self.samp_period < utt_times[1])):
                     for score in self.score_kw_utt_times_hash[utt_name][times].values():
                         scores.extend([score])
+            if len(scores)>1:
+                del scores[0]
             vector_return = []
             for i in range(len(feat_type)):
                 if feat_type[i] == 'avg':
                     vector_return.append(np.average(scores))
+                if feat_type[i] == 'min':
+                    vector_return.append(np.min(scores))
+                if feat_type[i] == 'max':
+                    vector_return.append(np.max(scores))
             self.utt_feature[utt_id_times] = vector_return
             return self.utt_feature[utt_id_times]
     

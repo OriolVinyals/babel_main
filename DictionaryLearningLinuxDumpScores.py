@@ -147,7 +147,7 @@ def run():
         posting_sampler = babel_score.posting_sampler
         babel_score.GetLocalFeatures(feat_type=['raw'])
         babel_score.GetGlobalFeatures(feat_type=['avg'])
-        babel_score.GetUtteranceFeatures(feat_type=['avg'])
+        babel_score.GetUtteranceFeatures(feat_type=['avg','min','max'])
         Xp_score_local=np.asmatrix(babel_score._local_features)
         Xp_score_glob=np.asmatrix(babel_score._glob_features)
         Xp_score_utt=np.asmatrix(babel_score._utt_features)
@@ -170,7 +170,9 @@ def run():
     correlation=True
     if(correlation):
         for feat in feat_list:
-            print feat, np.corrcoef(Ytrain, Xtrain_dict[feat].T)[0,1]
+            print feat, np.corrcoef(Ytrain, Xtrain_dict[feat].T)[0,1:]
+            if Xtrain_dict.has_key('Score_Local'):
+                print feat, np.corrcoef(Xtrain_dict['Score_Local'].T, Xtrain_dict[feat].T)[0,1:]
         #exit(0)
 
 ########### EVAL ###########
@@ -253,7 +255,7 @@ def run():
             posting_sampler = babel_eval_score.posting_sampler
             babel_eval_score.GetLocalFeatures(feat_type=['raw'])
             babel_eval_score.GetGlobalFeatures(feat_type=['avg'])
-            babel_eval_score.GetUtteranceFeatures(feat_type=['avg'])
+            babel_eval_score.GetUtteranceFeatures(feat_type=['avg','min','max'])
             Xp_eval_score_local=np.asmatrix(babel_eval_score._local_features)
             Xp_eval_score_glob=np.asmatrix(babel_eval_score._glob_features)
             Xp_eval_score_utt=np.asmatrix(babel_eval_score._utt_features)
@@ -348,7 +350,7 @@ def run():
             posting_sampler = babel_dev_score.posting_sampler
             babel_dev_score.GetLocalFeatures(feat_type=['raw'])
             babel_dev_score.GetGlobalFeatures(feat_type=['avg'])
-            babel_dev_score.GetUtteranceFeatures(feat_type=['avg'])
+            babel_dev_score.GetUtteranceFeatures(feat_type=['avg','min','max'])
             Xp_dev_score_local=np.asmatrix(babel_dev_score._local_features)
             Xp_dev_score_glob=np.asmatrix(babel_dev_score._glob_features)
             Xp_dev_score_utt=np.asmatrix(babel_dev_score._utt_features)
