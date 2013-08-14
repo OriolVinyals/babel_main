@@ -394,7 +394,7 @@ def run():
         sys_name_dev = './data/dev.'+''.join(feat_list)+'.xml'
         baseline_name_dev = './data/dev.rawscore.xml'
         babel_dev_score.DumpScoresXML(sys_name_dev,prob_dev[:,1])
-        babel_dev_score.DumpScoresXML(baseline_name_dev,np.asarray(Xp_dev_score_local).squeeze())
+        babel_dev_score.DumpScoresXML(baseline_name_dev,np.asarray(Xp_dev_score_local[:,0]).squeeze())
         
         print 'Dev ATWV system:',kws_scorer.get_score_dev(sys_name_dev)
         print 'Dev ATWV baseline:',kws_scorer.get_score_dev(baseline_name_dev)
@@ -412,7 +412,7 @@ def run():
     baseline_name = './data/eval.rawscore.xml'
     
     babel_eval_score.DumpScoresXML(sys_name,prob[:,1])
-    babel_eval_score.DumpScoresXML(baseline_name,np.asarray(Xp_eval_score_local).squeeze())
+    babel_eval_score.DumpScoresXML(baseline_name,np.asarray(Xp_eval_score_local[:,0]).squeeze())
     
     print 'ATWV system:',kws_scorer.get_score(sys_name)
     print 'ATWV baseline:',kws_scorer.get_score(baseline_name)
