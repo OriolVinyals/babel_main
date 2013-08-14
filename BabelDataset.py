@@ -20,7 +20,7 @@ class BabelDataset(datasets.ImageSet):
     
     #def __init__(self, utt_reader,posting_sampler):
     def __init__(self, list_file, feat_range, posting_file, perc_pos, keep_full_utt=False, posting_sampler=None, min_dur=0.2, reader_type='utterance', 
-                 pickle_fname=None, list_file_sph=None):
+                 pickle_fname=None, list_file_sph=None, kw_feat=None):
         '''TODO: Read pieces of utterance from the CSV file instead to save memory. It would be nice to index thse by utt_id (by now I do a map).'''
         super(BabelDataset, self).__init__()
         if reader_type=='lattice':
@@ -129,6 +129,14 @@ class BabelDataset(datasets.ImageSet):
         self._keyword = mpi.distribute_list(self._keyword)
         if self.keep_full_utt == True:
             self.utt_reader = utt_reader
+        if kw_feat != None:
+            try:
+                kw_feat.has_key('length')
+                self.CopyKeywordMaps(kw_feat)
+            except:
+                self.LoadMappingHescii('./data/hescii_babel104b-v0.4bY_conv-eval.kwlist2.xml')
+                self.ComputeKeywordMaps()
+                
         
     def ConvertFeatures(self,feat_range):
         '''Saves a copy for _data (all features), and strips out some features'''
@@ -155,6 +163,8 @@ class BabelDataset(datasets.ImageSet):
                         vector_return.append(self._data[i])
                     else:
                         vector_return.append(self._data[i][feat_range])
+                if feat_type[j] == 'kw_length':
+                    vector_return.append(self.map_keyword_feat['length'][self._keyword[i]])
             self._local_features.append(vector_return)
             
     def GetGlobalFeatures(self, feat_type=['entropy','entropy']):
@@ -209,6 +219,37 @@ class BabelDataset(datasets.ImageSet):
             else:
                 self.keyword_scores[kw_id]='<kw file="' + file + '" channel="1" tbeg="' + str(times[0]) + '" dur="' + str(times[1]-times[0]) + '" score="' + str(score) + '" decision="' + decision + '"/>\n'
             
+    def LoadMappingHescii(self, fname):
+        self.map_keyword = {}
+        self.map_keyword_length = {}
+        self.map_hescii = {}
+        import xml.etree.cElementTree as ET
+        tree = ET.parse(fname)
+        root = tree.getroot()
+        for i in range(len(root)):
+            keyword = root[i].attrib['kwid']
+            keyword_hescii = root[i][0].text
+            self.map_keyword[keyword] = keyword_hescii
+            self.map_keyword_length[keyword] = (len(keyword_hescii)-1)/2
+            self.map_hescii[keyword_hescii] = keyword
+            
+    def ComputeKeywordMaps(self):
+        self.map_keyword_feat = {}
+        self.map_keyword_feat['length'] = self.map_keyword_length
+        keyword_count = {}
+        for i in range(len(self._keyword)):
+            if keyword_count.has_key(self._keyword[i]):
+                keyword_count[self._keyword[i]] += 1
+            else:
+                keyword_count[self._keyword[i]] = 1
+        for kw in self.map_keyword_length.keys():
+            if not keyword_count.has_key(kw):
+                keyword_count[kw] = 0
+        np.sort(keyword_count.values())
+        
+    def CopyKeywordMaps(self, map_keyword_feat):
+        print 'Loading previously set keyword features'
+        self.map_keyword_feat = map_keyword_feat
             
 if __name__ == '__main__':
     feat_range = [0,1,2,5,6,7,69,74]

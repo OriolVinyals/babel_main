@@ -38,6 +38,7 @@ def run():
     perc_pos = FLAGS.perc_pos
     min_dur = 0.2
     posting_sampler = None
+    kw_feat = 1
     feat_range = None
     Xtrain_dict = {}
     feat_list = None
@@ -143,17 +144,19 @@ def run():
         list_file_sph = './data/audio.list'
         posting_file = './data/word.kwlist.alignment.csv'
         babel_score = BabelDataset.BabelDataset(list_file, None, posting_file, perc_pos, keep_full_utt=True, reader_type='score',
-                                 posting_sampler=posting_sampler,min_dur=min_dur,list_file_sph=list_file_sph)
+                                 posting_sampler=posting_sampler,min_dur=min_dur,list_file_sph=list_file_sph, 
+                                 kw_feat=kw_feat)
+        kw_feat = babel_score.map_keyword_feat
         posting_sampler = babel_score.posting_sampler
-        babel_score.GetLocalFeatures(feat_type=['raw'])
+        babel_score.GetLocalFeatures(feat_type=['raw','kw_length'])
         babel_score.GetGlobalFeatures(feat_type=['avg'])
         babel_score.GetUtteranceFeatures(feat_type=['avg','min','max'])
         Xp_score_local=np.asmatrix(babel_score._local_features)
         Xp_score_glob=np.asmatrix(babel_score._glob_features)
         Xp_score_utt=np.asmatrix(babel_score._utt_features)
         Xtrain_dict['Score_Local'] = Xp_score_local
-        Xtrain_dict['Score_Utt'] = Xp_score_utt
-        Xtrain_dict['Score_Glob'] = Xp_score_glob
+        #Xtrain_dict['Score_Utt'] = Xp_score_utt
+        #Xtrain_dict['Score_Glob'] = Xp_score_glob
         
     cheating=False
     if(cheating):
@@ -251,9 +254,10 @@ def run():
             list_file = './data/word.cut_down_evalpart1.kwlist.raw.xml'
             list_file_sph = './data/audio.eval.list'
             babel_eval_score = BabelDataset.BabelDataset(list_file, None, posting_file, perc_pos, keep_full_utt=True, reader_type='score',
-                                     posting_sampler=posting_sampler,min_dur=min_dur,list_file_sph=list_file_sph)
+                                     posting_sampler=posting_sampler,min_dur=min_dur,list_file_sph=list_file_sph,
+                                     kw_feat=kw_feat)
             posting_sampler = babel_eval_score.posting_sampler
-            babel_eval_score.GetLocalFeatures(feat_type=['raw'])
+            babel_eval_score.GetLocalFeatures(feat_type=['raw','kw_length'])
             babel_eval_score.GetGlobalFeatures(feat_type=['avg'])
             babel_eval_score.GetUtteranceFeatures(feat_type=['avg','min','max'])
             Xp_eval_score_local=np.asmatrix(babel_eval_score._local_features)
@@ -346,9 +350,10 @@ def run():
             list_file = './data/word.kwlist.raw.xml'
             list_file_sph = './data/audio.list'
             babel_dev_score = BabelDataset.BabelDataset(list_file, None, posting_file, perc_pos, keep_full_utt=True, reader_type='score',
-                                     posting_sampler=posting_sampler,min_dur=min_dur,list_file_sph=list_file_sph)
+                                     posting_sampler=posting_sampler,min_dur=min_dur,list_file_sph=list_file_sph,
+                                     kw_feat=kw_feat)
             posting_sampler = babel_dev_score.posting_sampler
-            babel_dev_score.GetLocalFeatures(feat_type=['raw'])
+            babel_dev_score.GetLocalFeatures(feat_type=['raw','kw_length'])
             babel_dev_score.GetGlobalFeatures(feat_type=['avg'])
             babel_dev_score.GetUtteranceFeatures(feat_type=['avg','min','max'])
             Xp_dev_score_local=np.asmatrix(babel_dev_score._local_features)
