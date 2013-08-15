@@ -88,7 +88,7 @@ def run():
         posting_sampler = babel_lat.posting_sampler
         #Xtrain_dict['Lattice'] = 0
     
-    posterior=False
+    posterior=True
     if(posterior):
         logging.info('****Posterior Training****')
         list_file = './data/20130307.dev.post.untightened.scp'
@@ -107,7 +107,7 @@ def run():
         Xtrain_dict['Posterior_Global'] = Xp_post_glob
         Xtrain_dict['Posterior_Utt'] = Xp_post_utt
         
-    srate=False
+    srate=True
     if(srate):
         logging.info('****Srate Training****')
         list_file = './data/audio.list'
@@ -122,7 +122,7 @@ def run():
         Xtrain_dict['Srate_Global'] = Xp_srate_glob.T
         Xtrain_dict['Srate_Utt'] = Xp_srate_utt.T
         
-    snr=False
+    snr=True
     if(snr):
         logging.info('****SNR Training****')
         list_file = './data/audio.list'
@@ -148,7 +148,7 @@ def run():
                                  kw_feat=kw_feat)
         kw_feat = babel_score.map_keyword_feat
         posting_sampler = babel_score.posting_sampler
-        babel_score.GetLocalFeatures(feat_type=['raw'])
+        babel_score.GetLocalFeatures(feat_type=['raw','kw_length'])
         babel_score.GetGlobalFeatures(feat_type=['avg'])
         babel_score.GetUtteranceFeatures(feat_type=['avg','min','max'])
         Xp_score_local=np.asmatrix(babel_score._local_features)
@@ -257,7 +257,7 @@ def run():
                                      posting_sampler=posting_sampler,min_dur=min_dur,list_file_sph=list_file_sph,
                                      kw_feat=kw_feat)
             posting_sampler = babel_eval_score.posting_sampler
-            babel_eval_score.GetLocalFeatures(feat_type=['raw'])
+            babel_eval_score.GetLocalFeatures(feat_type=['raw','kw_length'])
             babel_eval_score.GetGlobalFeatures(feat_type=['avg'])
             babel_eval_score.GetUtteranceFeatures(feat_type=['avg','min','max'])
             Xp_eval_score_local=np.asmatrix(babel_eval_score._local_features)
@@ -353,7 +353,7 @@ def run():
                                      posting_sampler=posting_sampler,min_dur=min_dur,list_file_sph=list_file_sph,
                                      kw_feat=kw_feat)
             posting_sampler = babel_dev_score.posting_sampler
-            babel_dev_score.GetLocalFeatures(feat_type=['raw'])
+            babel_dev_score.GetLocalFeatures(feat_type=['raw','kw_length'])
             babel_dev_score.GetGlobalFeatures(feat_type=['avg'])
             babel_dev_score.GetUtteranceFeatures(feat_type=['avg','min','max'])
             Xp_dev_score_local=np.asmatrix(babel_dev_score._local_features)
