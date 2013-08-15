@@ -78,7 +78,7 @@ def run():
         Xp_acoustic = conv.process_dataset(babel, as_2d = True)
         Xtrain_dict['Acoustic'] = Xp_acoustic
         
-    lattice=False
+    lattice=True
     if(lattice):
         logging.info('****Lattice Training****')
         list_file = './data/lat.list'
