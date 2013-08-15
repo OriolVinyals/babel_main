@@ -22,13 +22,49 @@ class Classifier:
             self.w, self.b = classifier.l2svm_onevsall(Xtrain_feats, self._Ytrain, self._gamma)
         elif type=='logreg':
             self.w, self.b = l2logreg_onevsall(Xtrain_feats, self._Ytrain, self._gamma)
+        elif type=='nn_debug':
+            from pybrain.tools.shortcuts import buildNetwork
+            from pybrain.supervised import BackpropTrainer
+            from pybrain.datasets import ClassificationDataSet
+            from pybrain.structure.modules import SoftmaxLayer
+            DS = ClassificationDataSet( Xtrain_feats.shape[1], 1, nb_classes=2 )
+            for i in range(Xtrain_feats.shape[0]):
+                DS.addSample( Xtrain_feats[i,:], [self._Ytrain[i]] )
+            DS._convertToOneOfMany()
+            self._nn = buildNetwork(DS.indim, 10, DS.outdim, outclass=SoftmaxLayer)
+            #n._setParameters([0.0,0.0,0.0,0.0])
+            self._nn_trainer = BackpropTrainer( self._nn, dataset=DS, momentum=0.1, verbose=True, weightdecay=gamma, learningrate=0.01, lrdecay=1.0)
+            self._nn_trainer.trainOnDataset(DS,epochs=5)
+            self.w, self.b = l2logreg_onevsall(Xtrain_feats, self._Ytrain, self._gamma)
+            print self._nn.params
+            print self.w, self.b
+            self._type = 'logreg'
+            print self.Accuracy(self._Xtrain, self._Ytrain)
+            self._type = 'nn_debug'
+            print self.Accuracy(self._Xtrain, self._Ytrain)
+            # self.get_predictions_nn(self._Xtrain)
+            print self.loss_multiclass_logreg(self._Xtrain,self._Ytrain)
+            print self.loss_multiclass_nn(self._Xtrain,self._Ytrain)
+            exit(0)
         return (self.w,self.b)
     
     def Accuracy(self, X, Y):
         X_feats=np.hstack((X[self.feat_list[i]] for i in range(len(self.feat_list))))
         X_feats -= self.m
         X_feats /= self.std
-        self.test_accu = classifier.Evaluator.accuracy(Y, np.dot(X_feats,self.w)+self.b)
+        if self._type=='linsvm' or self._type=='logreg':
+            self.test_accu = classifier.Evaluator.accuracy(Y, np.dot(X_feats,self.w)+self.b)
+        else:
+            from pybrain.tools.shortcuts import buildNetwork
+            from pybrain.supervised import BackpropTrainer
+            from pybrain.datasets import ClassificationDataSet
+            from pybrain.structure.modules import SoftmaxLayer
+            DS = ClassificationDataSet( X_feats.shape[1], 1, nb_classes=2 )
+            for i in range(X_feats.shape[0]):
+                DS.addSample( X_feats[i,:], [Y[i]] )
+            DS._convertToOneOfMany()
+            predict,targts = self._nn_trainer.testOnClassData(DS, verbose=True,return_targets=True)
+            self.test_accu = np.sum(np.array(predict)==np.array(targts))/float(len(targts))
         return self.test_accu
     
     def loss_multiclass_logreg(self, X, Y):
@@ -36,12 +72,33 @@ class Classifier:
         X_feats -= self.m
         X_feats /= self.std
         return loss_multiclass_logreg(Y, X_feats, (self.w,self.b))
+    
+    def loss_multiclass_nn(self, X, Y):
+        X_feats=np.hstack((X[self.feat_list[i]] for i in range(len(self.feat_list))))
+        X_feats -= self.m
+        X_feats /= self.std
+        return loss_multiclass_nn(X_feats, Y, self._nn)
 
     def get_predictions_logreg(self, X):
         X_feats=np.hstack((X[self.feat_list[i]] for i in range(len(self.feat_list))))
         X_feats -= self.m
         X_feats /= self.std
         return get_predictions_logreg(X_feats, (self.w,self.b))
+    
+    def get_predictions_nn(self, X):
+        X_feats=np.hstack((X[self.feat_list[i]] for i in range(len(self.feat_list))))
+        X_feats -= self.m
+        X_feats /= self.std
+        from pybrain.tools.shortcuts import buildNetwork
+        from pybrain.supervised import BackpropTrainer
+        from pybrain.datasets import ClassificationDataSet
+        from pybrain.structure.modules import SoftmaxLayer
+        DS = ClassificationDataSet( X_feats.shape[1], 1, nb_classes=2 )
+        for i in range(X_feats.shape[0]):
+            DS.addSample( X_feats[i,:], [0.0] )
+        DS._convertToOneOfMany()
+        out = self._nn.activateOnDataset(DS)
+        return out
         
 
 def l2logreg_onevsall(X, Y, gamma, weight = None, **kwargs):
@@ -60,6 +117,22 @@ def l2logreg_onevsall(X, Y, gamma, weight = None, **kwargs):
 def loss_multiclass_logreg(Y, X, weights):
     pred = mathutil.dot(X,weights[0])+weights[1]
     local_likelihood = classifier.Loss.loss_multiclass_logistic(classifier.to_one_of_k_coding(Y, 0), pred, None)[0]
+    likelihood = mpi.COMM.allreduce(local_likelihood)
+    num_data = mpi.COMM.allreduce(len(Y))
+    return float(likelihood) / num_data
+
+def loss_multiclass_nn(X_feats, Y, nn):
+    from pybrain.tools.shortcuts import buildNetwork
+    from pybrain.supervised import BackpropTrainer
+    from pybrain.datasets import ClassificationDataSet
+    from pybrain.structure.modules import SoftmaxLayer
+    DS = ClassificationDataSet( X_feats.shape[1], 1, nb_classes=2 )
+    for i in range(X_feats.shape[0]):
+        DS.addSample( X_feats[i,:], [0.0] )
+    DS._convertToOneOfMany()
+    prob = nn.activateOnDataset(DS)
+    Y2 = classifier.to_one_of_k_coding(Y, 0)
+    local_likelihood = -np.dot(np.log(prob).flat, Y2.flat)
     likelihood = mpi.COMM.allreduce(local_likelihood)
     num_data = mpi.COMM.allreduce(len(Y))
     return float(likelihood) / num_data

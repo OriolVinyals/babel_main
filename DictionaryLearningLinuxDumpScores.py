@@ -148,7 +148,7 @@ def run():
                                  kw_feat=kw_feat)
         kw_feat = babel_score.map_keyword_feat
         posting_sampler = babel_score.posting_sampler
-        babel_score.GetLocalFeatures(feat_type=['raw','kw_length'])
+        babel_score.GetLocalFeatures(feat_type=['raw'])
         babel_score.GetGlobalFeatures(feat_type=['avg'])
         babel_score.GetUtteranceFeatures(feat_type=['avg','min','max'])
         Xp_score_local=np.asmatrix(babel_score._local_features)
@@ -374,7 +374,7 @@ def run():
     lr_classifier = Classifier.Classifier(Xtrain_dict, Ytrain)
     '''Classifier stage'''
     #feat_list=['Local','Utterance']
-    w, b = lr_classifier.Train(feat_list=feat_list,type='logreg',gamma=0.0)
+    w, b = lr_classifier.Train(feat_list=feat_list,type='nn_debug',gamma=0.0)
     accu = lr_classifier.Accuracy(Xtrain_dict, Ytrain)
     neg_ll = lr_classifier.loss_multiclass_logreg(Xtrain_dict, Ytrain)
 
