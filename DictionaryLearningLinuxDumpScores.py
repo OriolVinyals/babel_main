@@ -155,8 +155,8 @@ def run():
         Xp_score_glob=np.asmatrix(babel_score._glob_features)
         Xp_score_utt=np.asmatrix(babel_score._utt_features)
         Xtrain_dict['Score_Local'] = Xp_score_local
-        #Xtrain_dict['Score_Utt'] = Xp_score_utt
-        #Xtrain_dict['Score_Glob'] = Xp_score_glob
+        Xtrain_dict['Score_Utt'] = Xp_score_utt
+        Xtrain_dict['Score_Glob'] = Xp_score_glob
         
     cheating=False
     if(cheating):
@@ -264,8 +264,8 @@ def run():
             Xp_eval_score_glob=np.asmatrix(babel_eval_score._glob_features)
             Xp_eval_score_utt=np.asmatrix(babel_eval_score._utt_features)
             Xtest_dict['Score_Local'] = Xp_eval_score_local
-            #Xtest_dict['Score_Utt'] = Xp_eval_score_utt
-            #Xtest_dict['Score_Glob'] = Xp_eval_score_glob
+            Xtest_dict['Score_Utt'] = Xp_eval_score_utt
+            Xtest_dict['Score_Glob'] = Xp_eval_score_glob
             
         if(cheating):
             logging.info('****Labels (cheating) Testing****')
@@ -360,8 +360,8 @@ def run():
             Xp_dev_score_glob=np.asmatrix(babel_dev_score._glob_features)
             Xp_dev_score_utt=np.asmatrix(babel_dev_score._utt_features)
             Xdev_dict['Score_Local'] = Xp_dev_score_local
-            #Xdev_dict['Score_Utt'] = Xp_dev_score_utt
-            #Xdev_dict['Score_Glob'] = Xp_dev_score_glob
+            Xdev_dict['Score_Utt'] = Xp_dev_score_utt
+            Xdev_dict['Score_Glob'] = Xp_dev_score_glob
             
         if(cheating):
             logging.info('****Labels (cheating) Dev****')
