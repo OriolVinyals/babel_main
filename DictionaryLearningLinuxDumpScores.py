@@ -257,15 +257,15 @@ def run():
                                      posting_sampler=posting_sampler,min_dur=min_dur,list_file_sph=list_file_sph,
                                      kw_feat=kw_feat)
             posting_sampler = babel_eval_score.posting_sampler
-            babel_eval_score.GetLocalFeatures(feat_type=['raw','kw_length'])
+            babel_eval_score.GetLocalFeatures(feat_type=['raw'])
             babel_eval_score.GetGlobalFeatures(feat_type=['avg'])
             babel_eval_score.GetUtteranceFeatures(feat_type=['avg','min','max'])
             Xp_eval_score_local=np.asmatrix(babel_eval_score._local_features)
             Xp_eval_score_glob=np.asmatrix(babel_eval_score._glob_features)
             Xp_eval_score_utt=np.asmatrix(babel_eval_score._utt_features)
             Xtest_dict['Score_Local'] = Xp_eval_score_local
-            Xtest_dict['Score_Utt'] = Xp_eval_score_utt
-            Xtest_dict['Score_Glob'] = Xp_eval_score_glob
+            #Xtest_dict['Score_Utt'] = Xp_eval_score_utt
+            #Xtest_dict['Score_Glob'] = Xp_eval_score_glob
             
         if(cheating):
             logging.info('****Labels (cheating) Testing****')
@@ -353,15 +353,15 @@ def run():
                                      posting_sampler=posting_sampler,min_dur=min_dur,list_file_sph=list_file_sph,
                                      kw_feat=kw_feat)
             posting_sampler = babel_dev_score.posting_sampler
-            babel_dev_score.GetLocalFeatures(feat_type=['raw','kw_length'])
+            babel_dev_score.GetLocalFeatures(feat_type=['raw'])
             babel_dev_score.GetGlobalFeatures(feat_type=['avg'])
             babel_dev_score.GetUtteranceFeatures(feat_type=['avg','min','max'])
             Xp_dev_score_local=np.asmatrix(babel_dev_score._local_features)
             Xp_dev_score_glob=np.asmatrix(babel_dev_score._glob_features)
             Xp_dev_score_utt=np.asmatrix(babel_dev_score._utt_features)
             Xdev_dict['Score_Local'] = Xp_dev_score_local
-            Xdev_dict['Score_Utt'] = Xp_dev_score_utt
-            Xdev_dict['Score_Glob'] = Xp_dev_score_glob
+            #Xdev_dict['Score_Utt'] = Xp_dev_score_utt
+            #Xdev_dict['Score_Glob'] = Xp_dev_score_glob
             
         if(cheating):
             logging.info('****Labels (cheating) Dev****')
