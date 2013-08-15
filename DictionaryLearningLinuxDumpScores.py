@@ -372,14 +372,25 @@ def run():
 ########### CLASSIFIER ###########
 
     lr_classifier = Classifier.Classifier(Xtrain_dict, Ytrain)
+    nnet=True
+    if nnet:
+        nn_classifier = Classifier.Classifier(Xtrain_dict, Ytrain)
     '''Classifier stage'''
     #feat_list=['Local','Utterance']
-    w, b = lr_classifier.Train(feat_list=feat_list,type='nn_debug',gamma=0.0)
+    lr_classifier.Train(feat_list=feat_list,type='logreg',gamma=0.0)
+    if nnet:
+        nn_classifier.Train(feat_list=feat_list,type='nn_debug',gamma=0.0)
     accu = lr_classifier.Accuracy(Xtrain_dict, Ytrain)
     neg_ll = lr_classifier.loss_multiclass_logreg(Xtrain_dict, Ytrain)
+    if nnet:
+        accu_nn = nn_classifier.Accuracy(Xtrain_dict, Ytrain)
+        neg_ll_nn = nn_classifier.loss_multiclass_nn(Xtrain_dict, Ytrain)
 
     print 'Accuracy is ',accu
     print 'Neg LogLikelihood is ',neg_ll
+    if nnet:
+        print 'NN Accuracy is ',accu_nn
+        print 'NN Neg LogLikelihood is ',neg_ll_nn
     print 'Prior is ',np.sum(Ytrain==0)/float(len(Ytrain))
     
     if(dev):
@@ -387,34 +398,58 @@ def run():
         accu = lr_classifier.Accuracy(Xdev_dict, Ydev)
         neg_ll = lr_classifier.loss_multiclass_logreg(Xdev_dict, Ydev)
         prob_dev = lr_classifier.get_predictions_logreg(Xdev_dict)
+        if nnet:
+            accu_nn = nn_classifier.Accuracy(Xdev_dict, Ydev)
+            neg_ll_nn = nn_classifier.loss_multiclass_nn(Xdev_dict, Ydev)
+            prob_dev_nn = nn_classifier.get_predictions_nn(Xdev_dict)
           
         print 'Dev Accuracy is ',accu
         print 'Dev Neg LogLikelihood is ',neg_ll
+        if nnet:
+            print 'NN Dev Accuracy is ',accu_nn
+            print 'NN Dev Neg LogLikelihood is ',neg_ll_nn
         print 'Dev Prior is ',np.sum(Ydev==0)/float(len(Ydev))
         sys_name_dev = './data/dev.'+''.join(feat_list)+'.xml'
+        sys_name_dev_nn = './data/dev.'+''.join(feat_list)+'.NN.xml'
         baseline_name_dev = './data/dev.rawscore.xml'
         babel_dev_score.DumpScoresXML(sys_name_dev,prob_dev[:,1])
+        if nnet:
+            babel_dev_score.DumpScoresXML(sys_name_dev_nn,prob_dev_nn[:,1])
         babel_dev_score.DumpScoresXML(baseline_name_dev,np.asarray(Xp_dev_score_local[:,0]).squeeze())
         
         print 'Dev ATWV system:',kws_scorer.get_score_dev(sys_name_dev)
+        if nnet:
+            print 'NN Dev ATWV system:',kws_scorer.get_score_dev(sys_name_dev_nn)
         print 'Dev ATWV baseline:',kws_scorer.get_score_dev(baseline_name_dev)
         
     logging.info('Running Test...')
     accu = lr_classifier.Accuracy(Xtest_dict, Ytest)
     neg_ll = lr_classifier.loss_multiclass_logreg(Xtest_dict, Ytest)
     prob = lr_classifier.get_predictions_logreg(Xtest_dict)
+    if nnet:
+        accu_nn = nn_classifier.Accuracy(Xtest_dict, Ytest)
+        neg_ll_nn = nn_classifier.loss_multiclass_nn(Xtest_dict, Ytest)
+        prob_nn = nn_classifier.get_predictions_nn(Xtest_dict)
       
     print 'Test Accuracy is ',accu
     print 'Test Neg LogLikelihood is ',neg_ll
+    if nnet:
+        print 'NN Test Accuracy is ',accu_nn
+        print 'NN Test Neg LogLikelihood is ',neg_ll_nn
     print 'Test Prior is ',np.sum(Ytest==0)/float(len(Ytest))
     
     sys_name = './data/eval.'+''.join(feat_list)+'.xml'
+    sys_name_nn = './data/eval.'+''.join(feat_list)+'.NN.xml'
     baseline_name = './data/eval.rawscore.xml'
     
     babel_eval_score.DumpScoresXML(sys_name,prob[:,1])
+    if nnet:
+        babel_eval_score.DumpScoresXML(sys_name_nn,prob_nn[:,1])
     babel_eval_score.DumpScoresXML(baseline_name,np.asarray(Xp_eval_score_local[:,0]).squeeze())
     
     print 'ATWV system:',kws_scorer.get_score(sys_name)
+    if nnet:
+        print 'NN ATWV system:',kws_scorer.get_score(sys_name_nn)
     print 'ATWV baseline:',kws_scorer.get_score(baseline_name)
     
 if __name__ == '__main__':
