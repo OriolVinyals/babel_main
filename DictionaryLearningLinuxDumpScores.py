@@ -78,7 +78,7 @@ def run():
         Xp_acoustic = conv.process_dataset(babel, as_2d = True)
         Xtrain_dict['Acoustic'] = Xp_acoustic
         
-    lattice=False
+    lattice=True
     if(lattice):
         logging.info('****Lattice Training****')
         list_file = './data/lat.list'
@@ -88,7 +88,7 @@ def run():
         posting_sampler = babel_lat.posting_sampler
         #Xtrain_dict['Lattice'] = 0
     
-    posterior=False
+    posterior=True
     if(posterior):
         logging.info('****Posterior Training****')
         list_file = './data/20130307.dev.post.untightened.scp'
