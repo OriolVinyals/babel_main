@@ -45,6 +45,8 @@ class Classifier:
             self._nn = buildNetwork(DS.indim, 10, DS.outdim, outclass=SoftmaxLayer, fast=True)
             self._nn_trainer = BackpropTrainer( self._nn, dataset=DS, momentum=0.1, verbose=True, weightdecay=gamma, learningrate=0.01, lrdecay=1.0)
             self._nn_trainer.trainOnDataset(DS,epochs=5)
+            self._nn_trainer = BackpropTrainer( self._nn, dataset=DS, momentum=0.1, verbose=True, weightdecay=gamma, learningrate=0.001, lrdecay=1.0)
+            self._nn_trainer.trainOnDataset(DS,epochs=5)
             return self._nn
     
     def Accuracy(self, X, Y):
