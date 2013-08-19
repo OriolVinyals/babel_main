@@ -150,7 +150,7 @@ def run():
                                  kw_feat=kw_feat)
         kw_feat = babel_score.map_keyword_feat
         posting_sampler = babel_score.posting_sampler
-        babel_score.GetLocalFeatures(feat_type=['raw','kw_length','kw_freq'])
+        babel_score.GetLocalFeatures(feat_type=['raw','kw_length','kw_freq','kw_freq_fine','kw_id'])
         babel_score.GetGlobalFeatures(feat_type=['avg'])
         babel_score.GetUtteranceFeatures(feat_type=['avg','min','max'])
         Xp_score_local=np.asmatrix(babel_score._local_features)
@@ -261,7 +261,7 @@ def run():
                                      posting_sampler=posting_sampler,min_dur=min_dur,list_file_sph=list_file_sph,
                                      kw_feat=kw_feat)
             posting_sampler = babel_eval_score.posting_sampler
-            babel_eval_score.GetLocalFeatures(feat_type=['raw','kw_length','kw_freq'])
+            babel_eval_score.GetLocalFeatures(feat_type=['raw','kw_length','kw_freq','kw_freq_fine','kw_id'])
             babel_eval_score.GetGlobalFeatures(feat_type=['avg'])
             babel_eval_score.GetUtteranceFeatures(feat_type=['avg','min','max'])
             Xp_eval_score_local=np.asmatrix(babel_eval_score._local_features)
@@ -358,7 +358,7 @@ def run():
                                      posting_sampler=posting_sampler,min_dur=min_dur,list_file_sph=list_file_sph,
                                      kw_feat=kw_feat)
             posting_sampler = babel_dev_score.posting_sampler
-            babel_dev_score.GetLocalFeatures(feat_type=['raw','kw_length','kw_freq'])
+            babel_dev_score.GetLocalFeatures(feat_type=['raw','kw_length','kw_freq','kw_freq_fine','kw_id'])
             babel_dev_score.GetGlobalFeatures(feat_type=['avg'])
             babel_dev_score.GetUtteranceFeatures(feat_type=['avg','min','max'])
             Xp_dev_score_local=np.asmatrix(babel_dev_score._local_features)

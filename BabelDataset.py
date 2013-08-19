@@ -180,6 +180,18 @@ class BabelDataset(datasets.ImageSet):
                         vector_return.extend(elem)
                     else:
                         vector_return.append(elem)
+                if feat_type[j] == 'kw_freq_fine':
+                    elem = self.map_keyword_feat['freq_fine'][self._keyword[i]]
+                    if isinstance(elem,list):
+                        vector_return.extend(elem)
+                    else:
+                        vector_return.append(elem)
+                if feat_type[j] == 'kw_id':
+                    elem = self.map_keyword_feat['id'][self._keyword[i]]
+                    if isinstance(elem,list):
+                        vector_return.extend(elem)
+                    else:
+                        vector_return.append(elem)
             self._local_features.append(vector_return)
             
     def GetGlobalFeatures(self, feat_type=['entropy','entropy']):
@@ -267,6 +279,28 @@ class BabelDataset(datasets.ImageSet):
             ret_vector = np.zeros((4))
             ret_vector[np.where(keyword_count[kw] > np.array((-1,th_25,th_50,th_75)))[0][-1]] = 1
             self.map_keyword_feat['freq'][kw] = ret_vector.tolist()
+            
+        th_vector = np.percentile(sorted_list, (10,20,30,40,50,60,70,80,90))
+        th_vector.insert(0,-1)
+        self.map_keyword_feat['freq_fine'] = {}
+        for kw in self.map_keyword_length.keys():
+            ret_vector = np.zeros((len(th_vector)))
+            ret_vector[np.where(keyword_count[kw] > np.array(th_vector))[0][-1]] = 1
+            self.map_keyword_feat['freq_fine'][kw] = ret_vector.tolist()
+            
+        self.map_keyword_feat['id'] = {}
+        oov_index = 0
+        oov_th = 3
+        num_keywords = len(np.nonzero(np.asarray(keyword_count.values())>oov_th)[0])
+        aux = np.eye(num_keywords+1)
+        index = 1
+        for kw in keyword_count:
+            if keyword_count[kw] <= oov_th:
+                self.map_keyword_feat['id'][kw] = aux[oov_index].tolist()
+            else:
+                self.map_keyword_feat['id'][kw] = aux[index].tolist()
+                index += 1
+        print 'Set of kyeword features computed'
 
         
     def CopyKeywordMaps(self, map_keyword_feat):
