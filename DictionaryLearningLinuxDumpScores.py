@@ -6,6 +6,8 @@ import Classifier
 import kws_scorer
 import gflags
 import sys
+import cPickle as pickle
+import scipy.io as sio
 
 gflags.DEFINE_float("perc_pos", 0.0,
                      "Percentage of positive examples to keep.")
@@ -148,7 +150,7 @@ def run():
                                  kw_feat=kw_feat)
         kw_feat = babel_score.map_keyword_feat
         posting_sampler = babel_score.posting_sampler
-        babel_score.GetLocalFeatures(feat_type=['raw','kw_length'])
+        babel_score.GetLocalFeatures(feat_type=['raw','kw_length','kw_freq'])
         babel_score.GetGlobalFeatures(feat_type=['avg'])
         babel_score.GetUtteranceFeatures(feat_type=['avg','min','max'])
         Xp_score_local=np.asmatrix(babel_score._local_features)
@@ -169,6 +171,8 @@ def run():
     for feat in feat_list:
         print feat,Xtrain_dict[feat].shape
     Ytrain = babel_score.labels().astype(np.int)
+    
+    sio.savemat('./pickles/train.mat',{'Xtrain':Xtrain_dict,'Ytrain':Ytrain})
     
     correlation=True
     if(correlation):
@@ -257,7 +261,7 @@ def run():
                                      posting_sampler=posting_sampler,min_dur=min_dur,list_file_sph=list_file_sph,
                                      kw_feat=kw_feat)
             posting_sampler = babel_eval_score.posting_sampler
-            babel_eval_score.GetLocalFeatures(feat_type=['raw','kw_length'])
+            babel_eval_score.GetLocalFeatures(feat_type=['raw','kw_length','kw_freq'])
             babel_eval_score.GetGlobalFeatures(feat_type=['avg'])
             babel_eval_score.GetUtteranceFeatures(feat_type=['avg','min','max'])
             Xp_eval_score_local=np.asmatrix(babel_eval_score._local_features)
@@ -273,7 +277,8 @@ def run():
 
 
         Ytest = babel_eval_score.labels().astype(np.int)
-        
+        sio.savemat('./pickles/eval.mat',{'Xtest':Xtest_dict,'Ytest':Ytest})
+
 ########### DEV ###########
 
     perc_pos = 0.0
@@ -353,7 +358,7 @@ def run():
                                      posting_sampler=posting_sampler,min_dur=min_dur,list_file_sph=list_file_sph,
                                      kw_feat=kw_feat)
             posting_sampler = babel_dev_score.posting_sampler
-            babel_dev_score.GetLocalFeatures(feat_type=['raw','kw_length'])
+            babel_dev_score.GetLocalFeatures(feat_type=['raw','kw_length','kw_freq'])
             babel_dev_score.GetGlobalFeatures(feat_type=['avg'])
             babel_dev_score.GetUtteranceFeatures(feat_type=['avg','min','max'])
             Xp_dev_score_local=np.asmatrix(babel_dev_score._local_features)

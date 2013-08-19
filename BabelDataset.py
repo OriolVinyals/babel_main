@@ -5,6 +5,7 @@ import cPickle as pickle
 from iceberk import datasets, mpi
 import numpy as np
 import os
+import itertools
 import UtteranceReader
 import LatticeReader
 import SNRReader
@@ -160,11 +161,25 @@ class BabelDataset(datasets.ImageSet):
                     vector_return.append(self._times[i][1]-self._times[i][0])
                 if feat_type[j] == 'raw': #useful for lattices
                     if feat_range==None:
-                        vector_return.append(self._data[i])
+                        elem = self._data[i]
                     else:
-                        vector_return.append(self._data[i][feat_range])
+                        elem = self._data[i][feat_range]
+                    if isinstance(elem,list):
+                        vector_return.extend(elem)
+                    else:
+                        vector_return.append(elem)
                 if feat_type[j] == 'kw_length':
-                    vector_return.append(self.map_keyword_feat['length'][self._keyword[i]])
+                    elem = self.map_keyword_feat['length'][self._keyword[i]]
+                    if isinstance(elem,list):
+                        vector_return.extend(elem)
+                    else:
+                        vector_return.append(elem)
+                if feat_type[j] == 'kw_freq':
+                    elem = self.map_keyword_feat['freq'][self._keyword[i]]
+                    if isinstance(elem,list):
+                        vector_return.extend(elem)
+                    else:
+                        vector_return.append(elem)
             self._local_features.append(vector_return)
             
     def GetGlobalFeatures(self, feat_type=['entropy','entropy']):
@@ -245,7 +260,14 @@ class BabelDataset(datasets.ImageSet):
         for kw in self.map_keyword_length.keys():
             if not keyword_count.has_key(kw):
                 keyword_count[kw] = 0
-        np.sort(keyword_count.values())
+        sorted_list = np.sort(keyword_count.values())
+        th_25, th_50, th_75 = np.percentile(sorted_list, (25,50,75))
+        self.map_keyword_feat['freq'] = {}
+        for kw in self.map_keyword_length.keys():
+            ret_vector = np.zeros((4))
+            ret_vector[np.where(keyword_count[kw] > np.array((-1,th_25,th_50,th_75)))[0][-1]] = 1
+            self.map_keyword_feat['freq'][kw] = ret_vector.tolist()
+
         
     def CopyKeywordMaps(self, map_keyword_feat):
         print 'Loading previously set keyword features'
