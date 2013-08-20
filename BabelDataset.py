@@ -290,7 +290,7 @@ class BabelDataset(datasets.ImageSet):
             
         self.map_keyword_feat['id'] = {}
         oov_index = 0
-        oov_th = 10
+        oov_th = 50
         num_keywords = len(np.nonzero(np.asarray(keyword_count.values())>oov_th)[0])
         aux = np.eye(num_keywords+1)
         index = 1

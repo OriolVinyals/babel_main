@@ -10,8 +10,13 @@ class PostingParser:
     def __init__(self, csvfile):
         self.dictReader = csv.DictReader(open(csvfile, 'rb'),delimiter = ',', quotechar = '"')
         self.data = []
+        num_rows = 0
         for row in self.dictReader:
             self.data.append(row)
+            num_rows += 1
+            #if __debug__:
+            #    if(num_rows>10000):
+            #        break
     
     def GetFields(self):
         return self.dictReader.fieldnames
