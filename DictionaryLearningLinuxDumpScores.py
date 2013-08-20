@@ -172,7 +172,7 @@ def run():
         print feat,Xtrain_dict[feat].shape
     Ytrain = babel_score.labels().astype(np.int)
     
-    sio.savemat('./pickles/train.mat',{'Xtrain':Xtrain_dict,'Ytrain':Ytrain})
+    #sio.savemat('./pickles/train.mat',{'Xtrain':Xtrain_dict,'Ytrain':Ytrain})
     
     correlation=True
     if(correlation):
@@ -277,7 +277,7 @@ def run():
 
 
         Ytest = babel_eval_score.labels().astype(np.int)
-        sio.savemat('./pickles/eval.mat',{'Xtest':Xtest_dict,'Ytest':Ytest})
+        #sio.savemat('./pickles/eval.mat',{'Xtest':Xtest_dict,'Ytest':Ytest})
 
 ########### DEV ###########
 
