@@ -174,7 +174,7 @@ def run():
     
     #sio.savemat('./pickles/train.mat',{'Xtrain':Xtrain_dict,'Ytrain':Ytrain})
     
-    correlation=True
+    correlation=False
     if(correlation):
         for feat in feat_list:
             print feat, np.corrcoef(Ytrain, Xtrain_dict[feat].T)[0,1:]
