@@ -17,7 +17,7 @@ class Classifier:
         self.feat_list=feat_list
         self._gamma=gamma
         self._type=type
-        Xtrain_feats=np.hstack((self._Xtrain[feat] for feat in feat_list))
+        Xtrain_feats = np.ascontiguousarray(np.hstack((self._Xtrain[feat] for feat in feat_list)))
         self.m, self.std = classifier.feature_meanstd(Xtrain_feats)
         Xtrain_feats -= self.m
         Xtrain_feats /= self.std
@@ -54,7 +54,7 @@ class Classifier:
             return self._nn
     
     def Accuracy(self, X, Y):
-        X_feats=np.hstack((X[self.feat_list[i]] for i in range(len(self.feat_list))))
+        X_feats = np.ascontiguousarray(np.hstack((X[self.feat_list[i]] for i in range(len(self.feat_list)))))
         X_feats -= self.m
         X_feats /= self.std
         if self._type=='linsvm' or self._type=='logreg':
@@ -77,7 +77,7 @@ class Classifier:
         return loss_multiclass_logreg(Y, X_feats, (self.w,self.b))
     
     def loss_multiclass_nn(self, X, Y):
-        X_feats=np.hstack((X[self.feat_list[i]] for i in range(len(self.feat_list))))
+        X_feats = np.ascontiguousarray(np.hstack((X[self.feat_list[i]] for i in range(len(self.feat_list)))))
         X_feats -= self.m
         X_feats /= self.std
         return loss_multiclass_nn(X_feats, Y, self._nn)
@@ -89,7 +89,7 @@ class Classifier:
         return get_predictions_logreg(X_feats, (self.w,self.b))
     
     def get_predictions_nn(self, X):
-        X_feats=np.hstack((X[self.feat_list[i]] for i in range(len(self.feat_list))))
+        X_feats = np.ascontiguousarray(np.hstack((X[self.feat_list[i]] for i in range(len(self.feat_list)))))
         X_feats -= self.m
         X_feats /= self.std
         DS = ClassificationDataSet( X_feats.shape[1], 1, nb_classes=2 )
