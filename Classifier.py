@@ -39,8 +39,10 @@ class Classifier:
 #                     mpi.COMM.Bcast(self._nn)
 #                 mpi.distribute(prob)                
             DS = ClassificationDataSet( Xtrain_feats.shape[1], 1, nb_classes=2 )
-            for i in range(Xtrain_feats.shape[0]):
-                DS.addSample( Xtrain_feats[i,:], [self._Ytrain[i]] )
+            #for i in range(Xtrain_feats.shape[0]):
+            #    DS.addSample( Xtrain_feats[i,:], [self._Ytrain[i]] )
+            DS.setField('input', Xtrain_feats)
+            DS.setField('target', self._Ytrain[:,np.newaxis])
             DS._convertToOneOfMany()
             self._nn = buildNetwork(DS.indim, 10, DS.outdim, outclass=SoftmaxLayer, fast=True)
             self._nn_trainer = BackpropTrainer( self._nn, dataset=DS, momentum=0.1, verbose=True, weightdecay=gamma, learningrate=0.01, lrdecay=1.0)
@@ -59,8 +61,10 @@ class Classifier:
             self.test_accu = classifier.Evaluator.accuracy(Y, np.dot(X_feats,self.w)+self.b)
         else:
             DS = ClassificationDataSet( X_feats.shape[1], 1, nb_classes=2 )
-            for i in range(X_feats.shape[0]):
-                DS.addSample( X_feats[i,:], [Y[i]] )
+            #for i in range(X_feats.shape[0]):
+            #    DS.addSample( X_feats[i,:], [Y[i]] )
+            DS.setField('input', X_feats)
+            DS.setField('target', Y[:,np.newaxis])
             DS._convertToOneOfMany()
             predict,targts = self._nn_trainer.testOnClassData(DS, verbose=True,return_targets=True)
             self.test_accu = np.sum(np.array(predict)==np.array(targts))/float(len(targts))
@@ -89,8 +93,10 @@ class Classifier:
         X_feats -= self.m
         X_feats /= self.std
         DS = ClassificationDataSet( X_feats.shape[1], 1, nb_classes=2 )
-        for i in range(X_feats.shape[0]):
-            DS.addSample( X_feats[i,:], [0.0] )
+        #for i in range(X_feats.shape[0]):
+        #    DS.addSample( X_feats[i,:], [0.0] )
+        DS.setField('input', X_feats)
+        DS.setField('target', np.zeros((X_feats.shape[0],1)))
         DS._convertToOneOfMany()
         prob = self._nn.activateOnDataset(DS)
         prob = mpi.COMM.gather(prob)
@@ -122,8 +128,10 @@ def loss_multiclass_logreg(Y, X, weights):
 
 def loss_multiclass_nn(X_feats, Y, nn):
     DS = ClassificationDataSet( X_feats.shape[1], 1, nb_classes=2 )
-    for i in range(X_feats.shape[0]):
-        DS.addSample( X_feats[i,:], [0.0] )
+    #for i in range(X_feats.shape[0]):
+    #    DS.addSample( X_feats[i,:], [0.0] )
+    DS.setField('input', X_feats)
+    DS.setField('target', np.zeros((X_feats.shape[0],1)))
     DS._convertToOneOfMany()
     prob = nn.activateOnDataset(DS)
     Y2 = classifier.to_one_of_k_coding(Y, 0)
