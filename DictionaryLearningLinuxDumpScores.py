@@ -293,7 +293,7 @@ def run():
     feat_range = None
     Xdev_dict = {}
 
-    dev=False
+    dev=True
     if(dev):
         posting_file = './data/word.kwlist.alignment.csv'
         if(acoustic):
