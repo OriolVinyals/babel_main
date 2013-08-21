@@ -80,7 +80,7 @@ def run():
         Xp_acoustic = conv.process_dataset(babel, as_2d = True)
         Xtrain_dict['Acoustic'] = Xp_acoustic
         
-    lattice=True
+    lattice=False
     if(lattice):
         logging.info('****Lattice Training****')
         list_file = './data/lat.list'
@@ -90,7 +90,7 @@ def run():
         posting_sampler = babel_lat.posting_sampler
         #Xtrain_dict['Lattice'] = 0
     
-    posterior=True
+    posterior=False
     if(posterior):
         logging.info('****Posterior Training****')
         list_file = './data/20130307.dev.post.untightened.scp'
@@ -109,7 +109,7 @@ def run():
         Xtrain_dict['Posterior_Global'] = Xp_post_glob
         Xtrain_dict['Posterior_Utt'] = Xp_post_utt
         
-    srate=True
+    srate=False
     if(srate):
         logging.info('****Srate Training****')
         list_file = './data/audio.list'
@@ -124,7 +124,7 @@ def run():
         Xtrain_dict['Srate_Global'] = Xp_srate_glob.T
         Xtrain_dict['Srate_Utt'] = Xp_srate_utt.T
         
-    snr=True
+    snr=False
     if(snr):
         logging.info('****SNR Training****')
         list_file = './data/audio.list'
@@ -150,15 +150,17 @@ def run():
                                  kw_feat=kw_feat)
         kw_feat = babel_score.map_keyword_feat
         posting_sampler = babel_score.posting_sampler
-        babel_score.GetLocalFeatures(feat_type=['raw','kw_length','kw_freq','kw_freq_fine'])
+        #feat_type_local_score=['raw','kw_length','kw_freq','kw_freq_fine']
+        feat_type_local_score=['raw','kew_length','kw_freq','kw_freq_fine','kw_true_freq','kw_true_ratio']
+        babel_score.GetLocalFeatures(feat_type=feat_type_local_score)
         babel_score.GetGlobalFeatures(feat_type=['avg'])
         babel_score.GetUtteranceFeatures(feat_type=['avg','min','max'])
         Xp_score_local=np.asmatrix(babel_score._local_features)
         Xp_score_glob=np.asmatrix(babel_score._glob_features)
         Xp_score_utt=np.asmatrix(babel_score._utt_features)
         Xtrain_dict['Score_Local'] = Xp_score_local
-        Xtrain_dict['Score_Utt'] = Xp_score_utt
-        Xtrain_dict['Score_Glob'] = Xp_score_glob
+        #Xtrain_dict['Score_Utt'] = Xp_score_utt
+        #Xtrain_dict['Score_Glob'] = Xp_score_glob
         
     cheating=False
     if(cheating):
@@ -178,12 +180,12 @@ def run():
     #nn_classifier.Train(feat_list=feat_list,type='nn_debug',gamma=0.0)
     ###TEMP
     
-    correlation=False
+    correlation=True
     if(correlation):
         for feat in feat_list:
             print feat, np.corrcoef(Ytrain, Xtrain_dict[feat].T)[0,1:]
-            if Xtrain_dict.has_key('Score_Local'):
-                print feat, np.corrcoef(Xtrain_dict['Score_Local'].T, Xtrain_dict[feat].T)[0,1:]
+            #if Xtrain_dict.has_key('Score_Local'):
+            #    print feat, np.corrcoef(Xtrain_dict['Score_Local'].T, Xtrain_dict[feat].T)[0,1:]
         #exit(0)
 
 ########### EVAL ###########
@@ -265,7 +267,7 @@ def run():
                                      posting_sampler=posting_sampler,min_dur=min_dur,list_file_sph=list_file_sph,
                                      kw_feat=kw_feat)
             posting_sampler = babel_eval_score.posting_sampler
-            babel_eval_score.GetLocalFeatures(feat_type=['raw','kw_length','kw_freq','kw_freq_fine'])
+            babel_eval_score.GetLocalFeatures(feat_type=feat_type_local_score)
             babel_eval_score.GetGlobalFeatures(feat_type=['avg'])
             babel_eval_score.GetUtteranceFeatures(feat_type=['avg','min','max'])
             Xp_eval_score_local=np.asmatrix(babel_eval_score._local_features)
@@ -362,7 +364,7 @@ def run():
                                      posting_sampler=posting_sampler,min_dur=min_dur,list_file_sph=list_file_sph,
                                      kw_feat=kw_feat)
             posting_sampler = babel_dev_score.posting_sampler
-            babel_dev_score.GetLocalFeatures(feat_type=['raw','kw_length','kw_freq','kw_freq_fine'])
+            babel_dev_score.GetLocalFeatures(feat_type=feat_type_local_score)
             babel_dev_score.GetGlobalFeatures(feat_type=['avg'])
             babel_dev_score.GetUtteranceFeatures(feat_type=['avg','min','max'])
             Xp_dev_score_local=np.asmatrix(babel_dev_score._local_features)

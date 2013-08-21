@@ -24,6 +24,13 @@ class BabelDataset(datasets.ImageSet):
                  pickle_fname=None, list_file_sph=None, kw_feat=None):
         '''TODO: Read pieces of utterance from the CSV file instead to save memory. It would be nice to index thse by utt_id (by now I do a map).'''
         super(BabelDataset, self).__init__()
+        if list_file.find('eval') >= 0:
+            self.is_eval = True
+            self.T = 18600.705
+        else:
+            self.is_eval = False
+            self.T = 36255.58
+        self.reader_type = reader_type
         if reader_type=='lattice':
             self.is_lattice = True
             utt_reader = LatticeReader.LatticeReader(list_file)
@@ -186,8 +193,39 @@ class BabelDataset(datasets.ImageSet):
                         vector_return.extend(elem)
                     else:
                         vector_return.append(elem)
+                if feat_type[j] == 'kw_true_freq':
+                    elem = self.map_keyword_feat['true_freq'][self._keyword[i]]
+                    if isinstance(elem,list):
+                        vector_return.extend(elem)
+                    else:
+                        vector_return.append(elem)
+                if feat_type[j] == 'kw_true_freq_fine':
+                    elem = self.map_keyword_feat['true_freq_fine'][self._keyword[i]]
+                    if isinstance(elem,list):
+                        vector_return.extend(elem)
+                    else:
+                        vector_return.append(elem)
+                if feat_type[j] == 'kw_true_ratio':
+                    elem = self.map_keyword_feat['true_ratio'][self._keyword[i]]
+                    if isinstance(elem,list):
+                        vector_return.extend(elem)
+                    else:
+                        vector_return.append(elem)
                 if feat_type[j] == 'kw_id':
                     elem = self.map_keyword_feat['id'][self._keyword[i]]
+                    if isinstance(elem,list):
+                        vector_return.extend(elem)
+                    else:
+                        vector_return.append(elem)
+                if feat_type[j] == 'raw_odd':
+                    elem = self._data[i] / (1.0 - self._data[i])        
+                    if isinstance(elem,list):
+                        vector_return.extend(elem)
+                    else:
+                        vector_return.append(elem)
+                if feat_type[j] == 'kw_n_est_odd':
+                    aux = float(self.map_keyword_feat['n_est'][self._keyword[i]]) / float(self.T)
+                    elem = aux / (1.0 - aux)
                     if isinstance(elem,list):
                         vector_return.extend(elem)
                     else:
@@ -264,14 +302,22 @@ class BabelDataset(datasets.ImageSet):
         self.map_keyword_feat = {}
         self.map_keyword_feat['length'] = self.map_keyword_length
         keyword_count = {}
+        true_keyword_count = {}
         for i in range(len(self._keyword)):
             if keyword_count.has_key(self._keyword[i]):
                 keyword_count[self._keyword[i]] += 1
             else:
                 keyword_count[self._keyword[i]] = 1
+            if self._label[i] == 1:
+                if true_keyword_count.has_key(self._keyword[i]):
+                    true_keyword_count[self._keyword[i]] += 1
+                else:
+                    true_keyword_count[self._keyword[i]] = 1
         for kw in self.map_keyword_length.keys():
             if not keyword_count.has_key(kw):
                 keyword_count[kw] = 0
+            if not true_keyword_count.has_key(kw):
+                true_keyword_count[kw] = 0
         sorted_list = np.sort(keyword_count.values())
         th_25, th_50, th_75 = np.percentile(sorted_list, (25,50,75))
         self.map_keyword_feat['freq'] = {}
@@ -287,6 +333,29 @@ class BabelDataset(datasets.ImageSet):
             ret_vector = np.zeros((len(th_vector)))
             ret_vector[np.where(keyword_count[kw] > np.array(th_vector))[0][-1]] = 1
             self.map_keyword_feat['freq_fine'][kw] = ret_vector.tolist()
+        
+        sorted_list = np.sort(true_keyword_count.values())
+        th_25, th_50, th_75 = np.percentile(sorted_list, (25,50,75))
+        self.map_keyword_feat['true_freq'] = {}
+        for kw in self.map_keyword_length.keys():
+            ret_vector = np.zeros((4))
+            ret_vector[np.where(true_keyword_count[kw] > np.array((-1,th_25,th_50,th_75)))[0][-1]] = 1
+            self.map_keyword_feat['true_freq'][kw] = ret_vector.tolist()
+            
+        th_vector = np.percentile(sorted_list, (10,20,30,40,50,60,70,80,90))
+        th_vector.insert(0,-1)
+        self.map_keyword_feat['true_freq_fine'] = {}
+        for kw in self.map_keyword_length.keys():
+            ret_vector = np.zeros((len(th_vector)))
+            ret_vector[np.where(true_keyword_count[kw] > np.array(th_vector))[0][-1]] = 1
+            self.map_keyword_feat['true_freq_fine'][kw] = ret_vector.tolist()
+            
+        self.map_keyword_feat['true_ratio'] = {}
+        for kw in self.map_keyword_length.keys():
+            if keyword_count[kw] > 0:
+                self.map_keyword_feat['true_ratio'][kw] = float(true_keyword_count[kw]) / float(keyword_count[kw])
+            else:
+                self.map_keyword_feat['true_ratio'][kw] = 0.0
             
         self.map_keyword_feat['id'] = {}
         oov_index = 0
@@ -300,6 +369,15 @@ class BabelDataset(datasets.ImageSet):
             else:
                 self.map_keyword_feat['id'][kw] = aux[index].tolist()
                 index += 1
+                
+        if self.reader_type == 'score':
+            self.map_keyword_feat['n_est'] = {}
+            for i in range(len(self._data)):
+                if self.map_keyword_feat['n_est'].has_key(self._keyword[i]):
+                    self.map_keyword_feat['n_est'][self._keyword[i]] += self._data[i]
+                else:
+                    self.map_keyword_feat['n_est'][self._keyword[i]] = self._data[i]
+        self.map_keyword_feat['n_true'] = true_keyword_count
         print 'Set of kyeword features computed'
 
         
