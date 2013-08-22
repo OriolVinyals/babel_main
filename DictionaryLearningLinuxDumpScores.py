@@ -152,6 +152,8 @@ def run():
         posting_sampler = babel_score.posting_sampler
         #feat_type_local_score=['raw','kw_length','kw_freq','kw_freq_fine']
         feat_type_local_score=['raw','kew_length','kw_freq','kw_freq_fine','kw_true_freq','kw_true_ratio']
+        feat_type_local_score=['raw','threshold']
+        feat_type_local_score=['raw_odd','kw_n_est_odd']
         babel_score.GetLocalFeatures(feat_type=feat_type_local_score)
         babel_score.GetGlobalFeatures(feat_type=['avg'])
         babel_score.GetUtteranceFeatures(feat_type=['avg','min','max'])
@@ -429,8 +431,10 @@ def run():
         babel_dev_score.DumpScoresXML(baseline_name_dev,np.asarray(Xp_dev_score_local[:,0]).squeeze())
         
         print 'Dev ATWV system:',kws_scorer.get_score_dev(sys_name_dev)
+        print 'Dev ATWV no threshold system:',kws_scorer.get_score_woth_dev(sys_name_dev)
         if nnet:
             print 'NN Dev ATWV system:',kws_scorer.get_score_dev(sys_name_dev_nn)
+            print 'NN Dev ATWV no threshold system:',kws_scorer.get_score_woth_dev(sys_name_dev_nn)
         print 'Dev ATWV baseline:',kws_scorer.get_score_dev(baseline_name_dev)
         
     logging.info('Running Test...')
@@ -459,8 +463,10 @@ def run():
     babel_eval_score.DumpScoresXML(baseline_name,np.asarray(Xp_eval_score_local[:,0]).squeeze())
     
     print 'ATWV system:',kws_scorer.get_score(sys_name)
+    print 'ATWV no threshold system',kws_scorer.get_score_woth(sys_name)
     if nnet:
         print 'NN ATWV system:',kws_scorer.get_score(sys_name_nn)
+        print 'NN ATWV no threshold system',kws_scorer.get_score_woth(sys_name_nn)
     print 'ATWV baseline:',kws_scorer.get_score(baseline_name)
     
 if __name__ == '__main__':

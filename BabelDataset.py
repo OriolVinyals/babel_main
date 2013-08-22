@@ -30,6 +30,7 @@ class BabelDataset(datasets.ImageSet):
         else:
             self.is_eval = False
             self.T = 36255.58
+        self.beta = 999.9
         self.reader_type = reader_type
         if reader_type=='lattice':
             self.is_lattice = True
@@ -218,14 +219,23 @@ class BabelDataset(datasets.ImageSet):
                     else:
                         vector_return.append(elem)
                 if feat_type[j] == 'raw_odd':
-                    elem = self._data[i] / (1.0 - self._data[i])        
+                    aux = np.min((0.999,self._data[i]))
+                    elem = aux / (1.0 - aux)        
+                    if isinstance(elem,list):
+                        vector_return.extend(elem)
+                    else:
+                        vector_return.append(elem)
+                if feat_type[j] == 'threshold':
+                    S = float(self.map_keyword_feat['n_est'][self._keyword[i]])
+                    elem = (S)/(float(self.T)/float(self.beta) + S)
                     if isinstance(elem,list):
                         vector_return.extend(elem)
                     else:
                         vector_return.append(elem)
                 if feat_type[j] == 'kw_n_est_odd':
                     aux = float(self.map_keyword_feat['n_est'][self._keyword[i]]) / float(self.T)
-                    elem = aux / (1.0 - aux)
+                    aux = np.min((0.999,aux))
+                    elem = float(self.beta) * aux / (1.0 - aux)
                     if isinstance(elem,list):
                         vector_return.extend(elem)
                     else:
@@ -384,6 +394,13 @@ class BabelDataset(datasets.ImageSet):
     def CopyKeywordMaps(self, map_keyword_feat):
         print 'Loading previously set keyword features'
         self.map_keyword_feat = map_keyword_feat
+        if self.reader_type == 'score': #This feature is dataset specific
+            self.map_keyword_feat['n_est'] = {}
+            for i in range(len(self._data)):
+                if self.map_keyword_feat['n_est'].has_key(self._keyword[i]):
+                    self.map_keyword_feat['n_est'][self._keyword[i]] += self._data[i]
+                else:
+                    self.map_keyword_feat['n_est'][self._keyword[i]] = self._data[i]
             
 if __name__ == '__main__':
     feat_range = [0,1,2,5,6,7,69,74]
