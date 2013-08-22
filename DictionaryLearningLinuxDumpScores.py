@@ -153,7 +153,7 @@ def run():
         #feat_type_local_score=['raw','kw_length','kw_freq','kw_freq_fine']
         feat_type_local_score=['raw','kew_length','kw_freq','kw_freq_fine','kw_true_freq','kw_true_ratio']
         feat_type_local_score=['raw','threshold']
-        feat_type_local_score=['raw_odd','kw_n_est_odd']
+        #feat_type_local_score=['raw_odd','kw_n_est_odd']
         babel_score.GetLocalFeatures(feat_type=feat_type_local_score)
         babel_score.GetGlobalFeatures(feat_type=['avg'])
         babel_score.GetUtteranceFeatures(feat_type=['avg','min','max'])
