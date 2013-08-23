@@ -401,8 +401,8 @@ def run():
     #feat_list=['Local','Utterance']
     lr_classifier.Train(feat_list=feat_list,type='logreg',gamma=0.0, domeanstd=False, special_bias=Xtrain_special_bias, add_bias=False)
     print lr_classifier.b,lr_classifier.w
-    lr_classifier.w[0,0]=-1
-    lr_classifier.w[0,1]=1
+    #lr_classifier.w[0,0]=-1
+    #lr_classifier.w[0,1]=1
     if nnet:
         nn_classifier.Train(feat_list=feat_list,type='nn_debug',gamma=0.0)
 
