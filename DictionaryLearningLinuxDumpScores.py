@@ -165,7 +165,7 @@ def run():
         #Xtrain_dict['Score_Utt'] = Xp_score_utt
         #Xtrain_dict['Score_Glob'] = Xp_score_glob
         babel_score.GetLocalFeatures(feat_type=['kw_n_est_log_odd'])
-        Xtrain_special_bias = np.asmatrix(babel_score._local_features)
+        Xtrain_special_bias = -np.asmatrix(babel_score._local_features)
         
     cheating=False
     if(cheating):
@@ -283,7 +283,7 @@ def run():
             Xtest_dict['Score_Utt'] = Xp_eval_score_utt
             Xtest_dict['Score_Glob'] = Xp_eval_score_glob
             babel_eval_score.GetLocalFeatures(feat_type=['kw_n_est_log_odd'])
-            Xtest_special_bias = np.asmatrix(babel_eval_score._local_features)
+            Xtest_special_bias = -np.asmatrix(babel_eval_score._local_features)
             
         if(cheating):
             logging.info('****Labels (cheating) Testing****')
@@ -383,7 +383,7 @@ def run():
             Xdev_dict['Score_Utt'] = Xp_dev_score_utt
             Xdev_dict['Score_Glob'] = Xp_dev_score_glob
             babel_dev_score.GetLocalFeatures(feat_type=['kw_n_est_log_odd'])
-            Xdev_special_bias = np.asmatrix(babel_dev_score._local_features)
+            Xdev_special_bias = -np.asmatrix(babel_dev_score._local_features)
             
         if(cheating):
             logging.info('****Labels (cheating) Dev****')
@@ -401,6 +401,8 @@ def run():
     #feat_list=['Local','Utterance']
     lr_classifier.Train(feat_list=feat_list,type='logreg',gamma=0.0, domeanstd=False, special_bias=Xtrain_special_bias, add_bias=False)
     print lr_classifier.b,lr_classifier.w
+    lr_classifier.w[0,0]=-1
+    lr_classifier.w[0,1]=1
     if nnet:
         nn_classifier.Train(feat_list=feat_list,type='nn_debug',gamma=0.0)
 
