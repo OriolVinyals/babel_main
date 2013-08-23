@@ -425,7 +425,7 @@ def run():
         sys_name_dev = './data/dev.'+''.join(feat_list)+'.xml'
         sys_name_dev_nn = './data/dev.'+''.join(feat_list)+'.NN.xml'
         baseline_name_dev = './data/dev.rawscore.xml'
-        prob_dev[:,1] = 1/(1+np.exp(-(Xdev_dict['Score_Local'][:,0] - Xdev_dict['Score_Local'][:,1])))
+        prob_dev[:,1] = np.asarray(1/(1+np.exp(-(Xdev_dict['Score_Local'][:,0] - Xdev_dict['Score_Local'][:,1])))).squeeze()
         babel_dev_score.DumpScoresXML(sys_name_dev,prob_dev[:,1])
         if nnet:
             babel_dev_score.DumpScoresXML(sys_name_dev_nn,prob_dev_nn[:,1])
