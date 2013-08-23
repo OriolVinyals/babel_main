@@ -11,7 +11,7 @@ class Classifier:
         self._Ytrain=Ytrain
         self.features=Xtrain.keys()
         
-    def Train(self,feat_list=None,type='logreg',gamma=0.0):
+    def Train(self,feat_list=None,type='logreg',gamma=0.0,domeanstd=True):
         if feat_list==None:
             feat_list=self.features
         self.feat_list=feat_list
@@ -19,6 +19,9 @@ class Classifier:
         self._type=type
         Xtrain_feats = np.ascontiguousarray(np.hstack((self._Xtrain[feat] for feat in feat_list)))
         self.m, self.std = classifier.feature_meanstd(Xtrain_feats)
+        if domeanstd==False: #hacky, overwrite the things we computed
+            self.m[:] = 0
+            self.std[:] = 1
         Xtrain_feats -= self.m
         Xtrain_feats /= self.std
         '''Classifier stage'''

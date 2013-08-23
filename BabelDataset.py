@@ -225,6 +225,14 @@ class BabelDataset(datasets.ImageSet):
                         vector_return.extend(elem)
                     else:
                         vector_return.append(elem)
+                if feat_type[j] == 'raw_log_odd':
+                    aux = np.min((0.999,self._data[i]))
+                    elem = aux / (1.0 - aux)
+                    elem = np.log(elem)    
+                    if isinstance(elem,list):
+                        vector_return.extend(elem)
+                    else:
+                        vector_return.append(elem)
                 if feat_type[j] == 'threshold':
                     S = float(self.map_keyword_feat['n_est'][self._keyword[i]])
                     elem = (S)/(float(self.T)/float(self.beta) + S)
@@ -236,6 +244,15 @@ class BabelDataset(datasets.ImageSet):
                     aux = float(self.map_keyword_feat['n_est'][self._keyword[i]]) / float(self.T)
                     aux = np.min((0.999,aux))
                     elem = float(self.beta) * aux / (1.0 - aux)
+                    if isinstance(elem,list):
+                        vector_return.extend(elem)
+                    else:
+                        vector_return.append(elem)
+                if feat_type[j] == 'kw_n_est_log_odd':
+                    aux = float(self.map_keyword_feat['n_est'][self._keyword[i]]) / float(self.T)
+                    aux = np.min((0.999,aux))
+                    elem = float(self.beta) * aux / (1.0 - aux)
+                    elem = np.log(elem)
                     if isinstance(elem,list):
                         vector_return.extend(elem)
                     else:

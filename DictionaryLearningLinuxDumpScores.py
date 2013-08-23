@@ -153,7 +153,7 @@ def run():
         #feat_type_local_score=['raw','kw_length','kw_freq','kw_freq_fine']
         feat_type_local_score=['raw','kew_length','kw_freq','kw_freq_fine','kw_true_freq','kw_true_ratio']
         feat_type_local_score=['raw','threshold']
-        #feat_type_local_score=['raw_odd','kw_n_est_odd']
+        feat_type_local_score=['raw_log_odd','kw_n_est_log_odd']
         babel_score.GetLocalFeatures(feat_type=feat_type_local_score)
         babel_score.GetGlobalFeatures(feat_type=['avg'])
         babel_score.GetUtteranceFeatures(feat_type=['avg','min','max'])
@@ -385,7 +385,7 @@ def run():
 ########### CLASSIFIER ###########
 
     lr_classifier = Classifier.Classifier(Xtrain_dict, Ytrain)
-    nnet=True
+    nnet=False
     if nnet:
         nn_classifier = Classifier.Classifier(Xtrain_dict, Ytrain)
     '''Classifier stage'''
@@ -425,6 +425,7 @@ def run():
         sys_name_dev = './data/dev.'+''.join(feat_list)+'.xml'
         sys_name_dev_nn = './data/dev.'+''.join(feat_list)+'.NN.xml'
         baseline_name_dev = './data/dev.rawscore.xml'
+        prob_dev[:,1] = 1/(1+np.exp(-(Xdev_dict['Score_Local'][:,0] - Xdev_dict['Score_Local'][:,1])))
         babel_dev_score.DumpScoresXML(sys_name_dev,prob_dev[:,1])
         if nnet:
             babel_dev_score.DumpScoresXML(sys_name_dev_nn,prob_dev_nn[:,1])
