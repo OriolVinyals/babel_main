@@ -11,12 +11,14 @@ class Classifier:
         self._Ytrain=Ytrain
         self.features=Xtrain.keys()
         
-    def Train(self,feat_list=None,type='logreg',gamma=0.0,domeanstd=True):
+    def Train(self,feat_list=None,type='logreg',gamma=0.0,domeanstd=True,special_bias=None,add_bias=True):
         if feat_list==None:
             feat_list=self.features
         self.feat_list=feat_list
         self._gamma=gamma
         self._type=type
+        self._special_bias = special_bias
+        self._add_bias = add_bias
         Xtrain_feats = np.ascontiguousarray(np.hstack((self._Xtrain[feat] for feat in feat_list)))
         self.m, self.std = classifier.feature_meanstd(Xtrain_feats)
         if domeanstd==False: #hacky, overwrite the things we computed
@@ -24,12 +26,14 @@ class Classifier:
             self.std[:] = 1
         Xtrain_feats -= self.m
         Xtrain_feats /= self.std
+        if special_bias != None:
+            Xtrain_feats = np.ascontiguousarray(np.hstack((Xtrain_feats, special_bias)))
         '''Classifier stage'''
         if type=='linsvm':
             self.w, self.b = classifier.l2svm_onevsall(Xtrain_feats, self._Ytrain, self._gamma)
             return (self.w,self.b)
         elif type=='logreg':
-            self.w, self.b = l2logreg_onevsall(Xtrain_feats, self._Ytrain, self._gamma)
+            self.w, self.b = l2logreg_onevsall(Xtrain_feats, self._Ytrain, self._gamma, special_bias=special_bias, add_bias=add_bias)
             return (self.w,self.b)
         elif type=='nn_debug':
             if mpi.COMM.Get_size() > 1:
@@ -56,10 +60,12 @@ class Classifier:
             self._nn_trainer.trainOnDataset(DS,epochs=5)
             return self._nn
     
-    def Accuracy(self, X, Y):
+    def Accuracy(self, X, Y, special_bias = None):
         X_feats = np.ascontiguousarray(np.hstack((X[self.feat_list[i]] for i in range(len(self.feat_list)))))
         X_feats -= self.m
         X_feats /= self.std
+        if special_bias != None:
+            X_feats = np.ascontiguousarray(np.hstack((X_feats, special_bias)))
         if self._type=='linsvm' or self._type=='logreg':
             self.test_accu = classifier.Evaluator.accuracy(Y, np.dot(X_feats,self.w)+self.b)
         else:
@@ -73,28 +79,36 @@ class Classifier:
             self.test_accu = np.sum(np.array(predict)==np.array(targts))/float(len(targts))
         return self.test_accu
     
-    def loss_multiclass_logreg(self, X, Y):
+    def loss_multiclass_logreg(self, X, Y, special_bias=None):
         X_feats=np.hstack((X[self.feat_list[i]] for i in range(len(self.feat_list))))
         X_feats -= self.m
         X_feats /= self.std
+        if special_bias != None:
+            X_feats = np.ascontiguousarray(np.hstack((X_feats, special_bias)))
         return loss_multiclass_logreg(Y, X_feats, (self.w,self.b))
     
-    def loss_multiclass_nn(self, X, Y):
+    def loss_multiclass_nn(self, X, Y, special_bias=None):
         X_feats = np.ascontiguousarray(np.hstack((X[self.feat_list[i]] for i in range(len(self.feat_list)))))
         X_feats -= self.m
         X_feats /= self.std
+        if special_bias != None:
+            X_feats = np.ascontiguousarray(np.hstack((X_feats, special_bias)))
         return loss_multiclass_nn(X_feats, Y, self._nn)
 
-    def get_predictions_logreg(self, X):
+    def get_predictions_logreg(self, X, special_bias=None):
         X_feats=np.hstack((X[self.feat_list[i]] for i in range(len(self.feat_list))))
         X_feats -= self.m
         X_feats /= self.std
+        if special_bias != None:
+            X_feats = np.ascontiguousarray(np.hstack((X_feats, special_bias)))
         return get_predictions_logreg(X_feats, (self.w,self.b))
     
-    def get_predictions_nn(self, X):
+    def get_predictions_nn(self, X, special_bias=None):
         X_feats = np.ascontiguousarray(np.hstack((X[self.feat_list[i]] for i in range(len(self.feat_list)))))
         X_feats -= self.m
         X_feats /= self.std
+        if special_bias != None:
+            X_feats = np.ascontiguousarray(np.hstack((X_feats, special_bias)))
         DS = ClassificationDataSet( X_feats.shape[1], 1, nb_classes=2 )
         #for i in range(X_feats.shape[0]):
         #    DS.addSample( X_feats[i,:], [0.0] )

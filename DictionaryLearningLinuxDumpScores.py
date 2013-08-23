@@ -44,6 +44,7 @@ def run():
     feat_range = None
     Xtrain_dict = {}
     feat_list = None
+    Xtrain_special_bias = None
     
     acoustic=False
     if(acoustic):
@@ -153,7 +154,7 @@ def run():
         #feat_type_local_score=['raw','kw_length','kw_freq','kw_freq_fine']
         feat_type_local_score=['raw','kew_length','kw_freq','kw_freq_fine','kw_true_freq','kw_true_ratio']
         feat_type_local_score=['raw','threshold']
-        feat_type_local_score=['raw_log_odd','kw_n_est_log_odd']
+        feat_type_local_score=['raw_log_odd']
         babel_score.GetLocalFeatures(feat_type=feat_type_local_score)
         babel_score.GetGlobalFeatures(feat_type=['avg'])
         babel_score.GetUtteranceFeatures(feat_type=['avg','min','max'])
@@ -163,6 +164,8 @@ def run():
         Xtrain_dict['Score_Local'] = Xp_score_local
         #Xtrain_dict['Score_Utt'] = Xp_score_utt
         #Xtrain_dict['Score_Glob'] = Xp_score_glob
+        babel_score.GetLocalFeatures(feat_type=['kw_n_est_log_odd'])
+        Xtrain_special_bias = np.asmatrix(babel_score._local_features)
         
     cheating=False
     if(cheating):
@@ -197,6 +200,7 @@ def run():
     posting_sampler = None
     feat_range = None
     Xtest_dict = {}
+    Xtest_special_bias = None
 
     eval=True
     if(eval):
@@ -278,6 +282,8 @@ def run():
             Xtest_dict['Score_Local'] = Xp_eval_score_local
             Xtest_dict['Score_Utt'] = Xp_eval_score_utt
             Xtest_dict['Score_Glob'] = Xp_eval_score_glob
+            babel_eval_score.GetLocalFeatures(feat_type=['kw_n_est_log_odd'])
+            Xtest_special_bias = np.asmatrix(babel_eval_score._local_features)
             
         if(cheating):
             logging.info('****Labels (cheating) Testing****')
@@ -294,6 +300,7 @@ def run():
     posting_sampler = None
     feat_range = None
     Xdev_dict = {}
+    Xdev_special_bias = None
 
     dev=True
     if(dev):
@@ -375,6 +382,8 @@ def run():
             Xdev_dict['Score_Local'] = Xp_dev_score_local
             Xdev_dict['Score_Utt'] = Xp_dev_score_utt
             Xdev_dict['Score_Glob'] = Xp_dev_score_glob
+            babel_dev_score.GetLocalFeatures(feat_type=['kw_n_est_log_odd'])
+            Xdev_special_bias = np.asmatrix(babel_dev_score._local_features)
             
         if(cheating):
             logging.info('****Labels (cheating) Dev****')
@@ -390,11 +399,13 @@ def run():
         nn_classifier = Classifier.Classifier(Xtrain_dict, Ytrain)
     '''Classifier stage'''
     #feat_list=['Local','Utterance']
-    lr_classifier.Train(feat_list=feat_list,type='logreg',gamma=0.0)
+    lr_classifier.Train(feat_list=feat_list,type='logreg',gamma=0.0, domeanstd=False, special_bias=Xtrain_special_bias, add_bias=False)
+    print lr_classifier.b,lr_classifier.w
     if nnet:
         nn_classifier.Train(feat_list=feat_list,type='nn_debug',gamma=0.0)
-    accu = lr_classifier.Accuracy(Xtrain_dict, Ytrain)
-    neg_ll = lr_classifier.loss_multiclass_logreg(Xtrain_dict, Ytrain)
+
+    accu = lr_classifier.Accuracy(Xtrain_dict, Ytrain, special_bias=Xtrain_special_bias)
+    neg_ll = lr_classifier.loss_multiclass_logreg(Xtrain_dict, Ytrain, special_bias=Xtrain_special_bias)
     if nnet:
         accu_nn = nn_classifier.Accuracy(Xtrain_dict, Ytrain)
         neg_ll_nn = nn_classifier.loss_multiclass_nn(Xtrain_dict, Ytrain)
@@ -408,9 +419,9 @@ def run():
     
     if(dev):
         logging.info('Running Dev...')
-        accu = lr_classifier.Accuracy(Xdev_dict, Ydev)
-        neg_ll = lr_classifier.loss_multiclass_logreg(Xdev_dict, Ydev)
-        prob_dev = lr_classifier.get_predictions_logreg(Xdev_dict)
+        accu = lr_classifier.Accuracy(Xdev_dict, Ydev, special_bias=Xdev_special_bias)
+        neg_ll = lr_classifier.loss_multiclass_logreg(Xdev_dict, Ydev, special_bias=Xdev_special_bias)
+        prob_dev = lr_classifier.get_predictions_logreg(Xdev_dict, special_bias=Xdev_special_bias)
         if nnet:
             accu_nn = nn_classifier.Accuracy(Xdev_dict, Ydev)
             neg_ll_nn = nn_classifier.loss_multiclass_nn(Xdev_dict, Ydev)
@@ -425,7 +436,7 @@ def run():
         sys_name_dev = './data/dev.'+''.join(feat_list)+'.xml'
         sys_name_dev_nn = './data/dev.'+''.join(feat_list)+'.NN.xml'
         baseline_name_dev = './data/dev.rawscore.xml'
-        prob_dev[:,1] = np.asarray(1/(1+np.exp(-(Xdev_dict['Score_Local'][:,0] - Xdev_dict['Score_Local'][:,1])))).squeeze()
+        #prob_dev[:,1] = np.asarray(1/(1+np.exp(-(Xdev_dict['Score_Local'][:,0] - Xdev_dict['Score_Local'][:,1])))).squeeze()
         babel_dev_score.DumpScoresXML(sys_name_dev,prob_dev[:,1])
         if nnet:
             babel_dev_score.DumpScoresXML(sys_name_dev_nn,prob_dev_nn[:,1])
@@ -439,9 +450,9 @@ def run():
         print 'Dev ATWV baseline:',kws_scorer.get_score_dev(baseline_name_dev)
         
     logging.info('Running Test...')
-    accu = lr_classifier.Accuracy(Xtest_dict, Ytest)
-    neg_ll = lr_classifier.loss_multiclass_logreg(Xtest_dict, Ytest)
-    prob = lr_classifier.get_predictions_logreg(Xtest_dict)
+    accu = lr_classifier.Accuracy(Xtest_dict, Ytest, special_bias=Xtest_special_bias)
+    neg_ll = lr_classifier.loss_multiclass_logreg(Xtest_dict, Ytest, special_bias=Xtest_special_bias)
+    prob = lr_classifier.get_predictions_logreg(Xtest_dict, special_bias=Xtest_special_bias)
     if nnet:
         accu_nn = nn_classifier.Accuracy(Xtest_dict, Ytest)
         neg_ll_nn = nn_classifier.loss_multiclass_nn(Xtest_dict, Ytest)
