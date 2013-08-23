@@ -81,7 +81,7 @@ def run():
         Xp_acoustic = conv.process_dataset(babel, as_2d = True)
         Xtrain_dict['Acoustic'] = Xp_acoustic
         
-    lattice=True
+    lattice=False
     if(lattice):
         logging.info('****Lattice Training****')
         list_file = './data/lat.list'
@@ -91,7 +91,7 @@ def run():
         posting_sampler = babel_lat.posting_sampler
         #Xtrain_dict['Lattice'] = 0
     
-    posterior=True
+    posterior=False
     if(posterior):
         logging.info('****Posterior Training****')
         list_file = './data/20130307.dev.post.untightened.scp'
@@ -110,7 +110,7 @@ def run():
         Xtrain_dict['Posterior_Global'] = Xp_post_glob
         Xtrain_dict['Posterior_Utt'] = Xp_post_utt
         
-    srate=True
+    srate=False
     if(srate):
         logging.info('****Srate Training****')
         list_file = './data/audio.list'
@@ -125,7 +125,7 @@ def run():
         Xtrain_dict['Srate_Global'] = Xp_srate_glob.T
         Xtrain_dict['Srate_Utt'] = Xp_srate_utt.T
         
-    snr=True
+    snr=False
     if(snr):
         logging.info('****SNR Training****')
         list_file = './data/audio.list'
@@ -155,7 +155,7 @@ def run():
         feat_type_local_score=['raw','kew_length','kw_freq','kw_freq_fine','kw_true_freq','kw_true_ratio']
         feat_type_local_score=['raw','threshold']
         feat_type_local_score=['raw_log_odd']
-        feat_type_local_score=['raw_log_odd','raw','kew_length','kw_freq','kw_freq_fine','kw_true_freq','kw_true_ratio']
+        #feat_type_local_score=['raw_log_odd','raw','kew_length','kw_freq','kw_freq_fine','kw_true_freq','kw_true_ratio']
         babel_score.GetLocalFeatures(feat_type=feat_type_local_score)
         babel_score.GetGlobalFeatures(feat_type=['avg'])
         babel_score.GetUtteranceFeatures(feat_type=['avg','min','max'])
@@ -395,12 +395,14 @@ def run():
 ########### CLASSIFIER ###########
 
     lr_classifier = Classifier.Classifier(Xtrain_dict, Ytrain)
+    #svm_classifier = Classifier.Classifier(Xtrain_dict, Ytrain)
     nnet=False
     if nnet:
         nn_classifier = Classifier.Classifier(Xtrain_dict, Ytrain)
     '''Classifier stage'''
     #feat_list=['Local','Utterance']
-    lr_classifier.Train(feat_list=feat_list,type='logreg',gamma=0.0, domeanstd=False, special_bias=Xtrain_special_bias, add_bias=False)
+    lr_classifier.Train(feat_list=feat_list,type='linsvm',gamma=0.0, domeanstd=False, special_bias=Xtrain_special_bias, add_bias=False)
+    #svm_classifier.Train(feat_list=feat_list,type='linsvm',gamma=0.0, domeanstd=False, special_bias=Xtrain_special_bias, add_bias=False)
     print lr_classifier.b,lr_classifier.w
     #lr_classifier.w[0,0]=-1
     #lr_classifier.w[0,1]=1

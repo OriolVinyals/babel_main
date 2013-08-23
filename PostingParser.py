@@ -14,9 +14,9 @@ class PostingParser:
         for row in self.dictReader:
             self.data.append(row)
             num_rows += 1
-            #if __debug__:
-            #    if(num_rows>10000):
-            #        break
+            if __debug__:
+                if(num_rows>10000):
+                    break
     
     def GetFields(self):
         return self.dictReader.fieldnames

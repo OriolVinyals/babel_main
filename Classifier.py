@@ -30,7 +30,7 @@ class Classifier:
             Xtrain_feats = np.ascontiguousarray(np.hstack((Xtrain_feats, special_bias)))
         '''Classifier stage'''
         if type=='linsvm':
-            self.w, self.b = classifier.l2svm_onevsall(Xtrain_feats, self._Ytrain, self._gamma)
+            self.w, self.b = classifier.svm_onevsall(Xtrain_feats, self._Ytrain, self._gamma, special_bias=special_bias, add_bias=add_bias)
             return (self.w,self.b)
         elif type=='logreg':
             self.w, self.b = l2logreg_onevsall(Xtrain_feats, self._Ytrain, self._gamma, special_bias=special_bias, add_bias=add_bias)
