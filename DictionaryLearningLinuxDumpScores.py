@@ -399,7 +399,7 @@ def run():
         nn_classifier = Classifier.Classifier(Xtrain_dict, Ytrain)
     '''Classifier stage'''
     #feat_list=['Local','Utterance']
-    lr_classifier.Train(feat_list=feat_list,type='logreg',gamma=0.0, domeanstd=False, special_bias=Xtrain_special_bias, add_bias=False)
+    lr_classifier.Train(feat_list=feat_list,type='logreg',gamma=0.0, domeanstd=False, special_bias=Xtrain_special_bias, add_bias=True)
     print lr_classifier.b,lr_classifier.w
     #lr_classifier.w[0,0]=-1
     #lr_classifier.w[0,1]=1
