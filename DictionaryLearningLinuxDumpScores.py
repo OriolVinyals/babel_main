@@ -424,6 +424,7 @@ def run():
     
     if(dev):
         a_list = (0.3,0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7)
+        a_list = (1.1)
         for a in a_list:
             logging.info('Running Dev...')
             print 'A value',a
