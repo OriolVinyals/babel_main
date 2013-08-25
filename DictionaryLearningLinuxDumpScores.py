@@ -423,36 +423,41 @@ def run():
     print 'Prior is ',np.sum(Ytrain==0)/float(len(Ytrain))
     
     if(dev):
-        logging.info('Running Dev...')
-        accu = lr_classifier.Accuracy(Xdev_dict, Ydev, special_bias=Xdev_special_bias)
-        neg_ll = lr_classifier.loss_multiclass_logreg(Xdev_dict, Ydev, special_bias=Xdev_special_bias)
-        prob_dev = lr_classifier.get_predictions_logreg(Xdev_dict, special_bias=Xdev_special_bias)
-        if nnet:
-            accu_nn = nn_classifier.Accuracy(Xdev_dict, Ydev)
-            neg_ll_nn = nn_classifier.loss_multiclass_nn(Xdev_dict, Ydev)
-            prob_dev_nn = nn_classifier.get_predictions_nn(Xdev_dict)
-          
-        print 'Dev Accuracy is ',accu
-        print 'Dev Neg LogLikelihood is ',neg_ll
-        if nnet:
-            print 'NN Dev Accuracy is ',accu_nn
-            print 'NN Dev Neg LogLikelihood is ',neg_ll_nn
-        print 'Dev Prior is ',np.sum(Ydev==0)/float(len(Ydev))
-        sys_name_dev = './data/dev.'+''.join(feat_list)+'.xml'
-        sys_name_dev_nn = './data/dev.'+''.join(feat_list)+'.NN.xml'
-        baseline_name_dev = './data/dev.rawscore.xml'
-        #prob_dev[:,1] = np.asarray(1/(1+np.exp(-(Xdev_dict['Score_Local'][:,0] - Xdev_dict['Score_Local'][:,1])))).squeeze()
-        babel_dev_score.DumpScoresXML(sys_name_dev,prob_dev[:,1])
-        if nnet:
-            babel_dev_score.DumpScoresXML(sys_name_dev_nn,prob_dev_nn[:,1])
-        babel_dev_score.DumpScoresXML(baseline_name_dev,np.asarray(Xp_dev_score_local[:,0]).squeeze())
-        
-        print 'Dev ATWV system:',kws_scorer.get_score_dev(sys_name_dev)
-        print 'Dev ATWV no threshold system:',kws_scorer.get_score_woth_dev(sys_name_dev)
-        if nnet:
-            print 'NN Dev ATWV system:',kws_scorer.get_score_dev(sys_name_dev_nn)
-            print 'NN Dev ATWV no threshold system:',kws_scorer.get_score_woth_dev(sys_name_dev_nn)
-        print 'Dev ATWV baseline:',kws_scorer.get_score_dev(baseline_name_dev)
+        a_list = (0.3,0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7)
+        for a in a_list:
+            logging.info('Running Dev...')
+            print 'A value',a
+            lr_classifier.w[0,0]=-a
+            lr_classifier.w[0,1]=a
+            accu = lr_classifier.Accuracy(Xdev_dict, Ydev, special_bias=Xdev_special_bias)
+            neg_ll = lr_classifier.loss_multiclass_logreg(Xdev_dict, Ydev, special_bias=Xdev_special_bias)
+            prob_dev = lr_classifier.get_predictions_logreg(Xdev_dict, special_bias=Xdev_special_bias)
+            if nnet:
+                accu_nn = nn_classifier.Accuracy(Xdev_dict, Ydev)
+                neg_ll_nn = nn_classifier.loss_multiclass_nn(Xdev_dict, Ydev)
+                prob_dev_nn = nn_classifier.get_predictions_nn(Xdev_dict)
+              
+            print 'Dev Accuracy is ',accu
+            print 'Dev Neg LogLikelihood is ',neg_ll
+            if nnet:
+                print 'NN Dev Accuracy is ',accu_nn
+                print 'NN Dev Neg LogLikelihood is ',neg_ll_nn
+            print 'Dev Prior is ',np.sum(Ydev==0)/float(len(Ydev))
+            sys_name_dev = './data/dev.'+''.join(feat_list)+'.xml'
+            sys_name_dev_nn = './data/dev.'+''.join(feat_list)+'.NN.xml'
+            baseline_name_dev = './data/dev.rawscore.xml'
+            #prob_dev[:,1] = np.asarray(1/(1+np.exp(-(Xdev_dict['Score_Local'][:,0] - Xdev_dict['Score_Local'][:,1])))).squeeze()
+            babel_dev_score.DumpScoresXML(sys_name_dev,prob_dev[:,1])
+            if nnet:
+                babel_dev_score.DumpScoresXML(sys_name_dev_nn,prob_dev_nn[:,1])
+            babel_dev_score.DumpScoresXML(baseline_name_dev,np.asarray(Xp_dev_score_local[:,0]).squeeze())
+            
+            print 'Dev ATWV system:',kws_scorer.get_score_dev(sys_name_dev)
+            print 'Dev ATWV no threshold system:',kws_scorer.get_score_woth_dev(sys_name_dev)
+            if nnet:
+                print 'NN Dev ATWV system:',kws_scorer.get_score_dev(sys_name_dev_nn)
+                print 'NN Dev ATWV no threshold system:',kws_scorer.get_score_woth_dev(sys_name_dev_nn)
+            print 'Dev ATWV baseline:',kws_scorer.get_score_dev(baseline_name_dev)
         
     logging.info('Running Test...')
     accu = lr_classifier.Accuracy(Xtest_dict, Ytest, special_bias=Xtest_special_bias)
