@@ -407,7 +407,7 @@ def run():
     Xtrain_special_bias=None
     Xdev_special_bias=None
     Xtest_special_bias=None
-    lr_classifier.Train(feat_list=feat_list,type='linsvm',gamma=0.0, domeanstd=False, special_bias=Xtrain_special_bias, add_bias=True)
+    lr_classifier.Train(feat_list=feat_list,type='linsvm',gamma=0.0, domeanstd=False, special_bias=Xtrain_special_bias, add_bias=True, weight=Xtrain_weight)
     #lr_classifier.Train(feat_list=feat_list,type='linsvm',gamma=0.0, domeanstd=False, add_bias=True)
     print lr_classifier.b,lr_classifier.w
     #lr_classifier.w[0,0]=-1
