@@ -154,7 +154,7 @@ def run():
         #feat_type_local_score=['raw','kw_length','kw_freq','kw_freq_fine']
         feat_type_local_score=['raw','kew_length','kw_freq','kw_freq_fine','kw_true_freq','kw_true_ratio']
         feat_type_local_score=['raw','threshold']
-        feat_type_local_score=['raw_log_odd']
+        feat_type_local_score=['raw']
         #feat_type_local_score=['raw_log_odd','raw','kew_length','kw_freq','kw_freq_fine','kw_true_freq','kw_true_ratio']
         babel_score.GetLocalFeatures(feat_type=feat_type_local_score)
         babel_score.GetGlobalFeatures(feat_type=['avg'])
@@ -165,7 +165,7 @@ def run():
         Xtrain_dict['Score_Local'] = Xp_score_local
         #Xtrain_dict['Score_Utt'] = Xp_score_utt
         #Xtrain_dict['Score_Glob'] = Xp_score_glob
-        babel_score.GetLocalFeatures(feat_type=['kw_n_est_log_odd'])
+        babel_score.GetLocalFeatures(feat_type=['threshold'])
         Xtrain_special_bias = -np.asmatrix(babel_score._local_features)
         
     cheating=False
@@ -283,7 +283,7 @@ def run():
             Xtest_dict['Score_Local'] = Xp_eval_score_local
             Xtest_dict['Score_Utt'] = Xp_eval_score_utt
             Xtest_dict['Score_Glob'] = Xp_eval_score_glob
-            babel_eval_score.GetLocalFeatures(feat_type=['kw_n_est_log_odd'])
+            babel_eval_score.GetLocalFeatures(feat_type=['threshold'])
             Xtest_special_bias = -np.asmatrix(babel_eval_score._local_features)
             
         if(cheating):
@@ -383,7 +383,7 @@ def run():
             Xdev_dict['Score_Local'] = Xp_dev_score_local
             Xdev_dict['Score_Utt'] = Xp_dev_score_utt
             Xdev_dict['Score_Glob'] = Xp_dev_score_glob
-            babel_dev_score.GetLocalFeatures(feat_type=['kw_n_est_log_odd'])
+            babel_dev_score.GetLocalFeatures(feat_type=['threshold'])
             Xdev_special_bias = -np.asmatrix(babel_dev_score._local_features)
             
         if(cheating):
@@ -424,7 +424,7 @@ def run():
     
     if(dev):
         a_list = (0.3,0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7)
-        a_list = (1.01,1.02,1.03,1.04,1.05,1.06,1.07,1.08,1.09,1.1,1.11,1.12,1.13,1.14,1.15,1.16,1.17,1.18,1.19)
+        #a_list = (1.01,1.02,1.03,1.04,1.05,1.06,1.07,1.08,1.09,1.1,1.11,1.12,1.13,1.14,1.15,1.16,1.17,1.18,1.19)
         for a in a_list:
             logging.info('Running Dev...')
             print 'A value',a
