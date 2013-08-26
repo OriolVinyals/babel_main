@@ -11,7 +11,7 @@ class Classifier:
         self._Ytrain=Ytrain
         self.features=Xtrain.keys()
         
-    def Train(self,feat_list=None,type='logreg',gamma=0.0,domeanstd=True,special_bias=None,add_bias=True):
+    def Train(self,feat_list=None,type='logreg',gamma=0.0,domeanstd=True,special_bias=None,add_bias=True, weight=None):
         if feat_list==None:
             feat_list=self.features
         self.feat_list=feat_list
@@ -30,10 +30,10 @@ class Classifier:
             Xtrain_feats = np.ascontiguousarray(np.hstack((Xtrain_feats, special_bias)))
         '''Classifier stage'''
         if type=='linsvm':
-            self.w, self.b = classifier.svm_onevsall(Xtrain_feats, self._Ytrain, self._gamma, special_bias=special_bias, add_bias=add_bias)
+            self.w, self.b = classifier.svm_onevsall(Xtrain_feats, self._Ytrain, self._gamma, weight = weight, special_bias=special_bias, add_bias=add_bias)
             return (self.w,self.b)
         elif type=='logreg':
-            self.w, self.b = l2logreg_onevsall(Xtrain_feats, self._Ytrain, self._gamma, special_bias=special_bias, add_bias=add_bias)
+            self.w, self.b = l2logreg_onevsall(Xtrain_feats, self._Ytrain, self._gamma, weight = weight, special_bias=special_bias, add_bias=add_bias)
             return (self.w,self.b)
         elif type=='nn_debug':
             if mpi.COMM.Get_size() > 1:

@@ -8,6 +8,7 @@ import gflags
 import sys
 import cPickle as pickle
 import scipy.io as sio
+from external import pyroc
 
 gflags.DEFINE_float("perc_pos", 0.0,
                      "Percentage of positive examples to keep.")
@@ -110,7 +111,7 @@ def run():
         Xtrain_dict['Posterior_Global'] = Xp_post_glob
         Xtrain_dict['Posterior_Utt'] = Xp_post_utt
         
-    srate=False
+    srate=True
     if(srate):
         logging.info('****Srate Training****')
         list_file = './data/audio.list'
@@ -125,7 +126,7 @@ def run():
         Xtrain_dict['Srate_Global'] = Xp_srate_glob.T
         Xtrain_dict['Srate_Utt'] = Xp_srate_utt.T
         
-    snr=False
+    snr=True
     if(snr):
         logging.info('****SNR Training****')
         list_file = './data/audio.list'
@@ -152,9 +153,9 @@ def run():
         kw_feat = babel_score.map_keyword_feat
         posting_sampler = babel_score.posting_sampler
         #feat_type_local_score=['raw','kw_length','kw_freq','kw_freq_fine']
-        feat_type_local_score=['raw','kew_length','kw_freq','kw_freq_fine','kw_true_freq','kw_true_ratio']
-        feat_type_local_score=['raw','threshold']
-        feat_type_local_score=['raw']
+        feat_type_local_score=['raw','kw_length','kw_freq','kw_freq_fine','kw_true_freq','kw_true_ratio']
+        #feat_type_local_score=['raw','threshold']
+        #feat_type_local_score=['raw']
         #feat_type_local_score=['raw_log_odd','raw','kew_length','kw_freq','kw_freq_fine','kw_true_freq','kw_true_ratio']
         babel_score.GetLocalFeatures(feat_type=feat_type_local_score)
         babel_score.GetGlobalFeatures(feat_type=['avg'])
@@ -163,10 +164,13 @@ def run():
         Xp_score_glob=np.asmatrix(babel_score._glob_features)
         Xp_score_utt=np.asmatrix(babel_score._utt_features)
         Xtrain_dict['Score_Local'] = Xp_score_local
-        #Xtrain_dict['Score_Utt'] = Xp_score_utt
-        #Xtrain_dict['Score_Glob'] = Xp_score_glob
-        babel_score.GetLocalFeatures(feat_type=['threshold'])
+        Xtrain_dict['Score_Utt'] = Xp_score_utt
+        Xtrain_dict['Score_Glob'] = Xp_score_glob
+        babel_score.GetLocalFeatures(feat_type=['kw_n_est_log_odd'])
         Xtrain_special_bias = -np.asmatrix(babel_score._local_features)
+        babel_score.GetLocalFeatures(feat_type=['n_est'])
+        Xtrain_weight = 1.0 / np.asarray(babel_score._local_features)
+        Xtrain_weight = np.hstack((Xtrain_weight,Xtrain_weight))
         
     cheating=False
     if(cheating):
@@ -283,7 +287,7 @@ def run():
             Xtest_dict['Score_Local'] = Xp_eval_score_local
             Xtest_dict['Score_Utt'] = Xp_eval_score_utt
             Xtest_dict['Score_Glob'] = Xp_eval_score_glob
-            babel_eval_score.GetLocalFeatures(feat_type=['threshold'])
+            babel_eval_score.GetLocalFeatures(feat_type=['kw_n_est_log_odd'])
             Xtest_special_bias = -np.asmatrix(babel_eval_score._local_features)
             
         if(cheating):
@@ -383,7 +387,7 @@ def run():
             Xdev_dict['Score_Local'] = Xp_dev_score_local
             Xdev_dict['Score_Utt'] = Xp_dev_score_utt
             Xdev_dict['Score_Glob'] = Xp_dev_score_glob
-            babel_dev_score.GetLocalFeatures(feat_type=['threshold'])
+            babel_dev_score.GetLocalFeatures(feat_type=['kw_n_est_log_odd'])
             Xdev_special_bias = -np.asmatrix(babel_dev_score._local_features)
             
         if(cheating):
@@ -395,14 +399,16 @@ def run():
 ########### CLASSIFIER ###########
 
     lr_classifier = Classifier.Classifier(Xtrain_dict, Ytrain)
-    #svm_classifier = Classifier.Classifier(Xtrain_dict, Ytrain)
     nnet=False
     if nnet:
         nn_classifier = Classifier.Classifier(Xtrain_dict, Ytrain)
     '''Classifier stage'''
     #feat_list=['Local','Utterance']
+    Xtrain_special_bias=None
+    Xdev_special_bias=None
+    Xtest_special_bias=None
     lr_classifier.Train(feat_list=feat_list,type='linsvm',gamma=0.0, domeanstd=False, special_bias=Xtrain_special_bias, add_bias=True)
-    #svm_classifier.Train(feat_list=feat_list,type='linsvm',gamma=0.0, domeanstd=False, special_bias=Xtrain_special_bias, add_bias=False)
+    #lr_classifier.Train(feat_list=feat_list,type='linsvm',gamma=0.0, domeanstd=False, add_bias=True)
     print lr_classifier.b,lr_classifier.w
     #lr_classifier.w[0,0]=-1
     #lr_classifier.w[0,1]=1
@@ -448,11 +454,23 @@ def run():
             sys_name_dev = './data/dev.'+''.join(feat_list)+'.xml'
             sys_name_dev_nn = './data/dev.'+''.join(feat_list)+'.NN.xml'
             baseline_name_dev = './data/dev.rawscore.xml'
-            #prob_dev[:,1] = np.asarray(1/(1+np.exp(-(Xdev_dict['Score_Local'][:,0] - Xdev_dict['Score_Local'][:,1])))).squeeze()
             babel_dev_score.DumpScoresXML(sys_name_dev,prob_dev[:,1])
             if nnet:
                 babel_dev_score.DumpScoresXML(sys_name_dev_nn,prob_dev_nn[:,1])
             babel_dev_score.DumpScoresXML(baseline_name_dev,np.asarray(Xp_dev_score_local[:,0]).squeeze())
+            
+            plot_roc=False
+            if plot_roc:
+                roc_1 = []
+                for i in range(len(Ydev)):
+                    roc_1.append((Ydev[i],prob_dev[i,1]))
+                roc_2 = []
+                for i in range(len(Ydev)):
+                    roc_2.append((Ydev[i],Xp_dev_score_local[i,0]))
+                r1 = pyroc.ROCData(roc_1)
+                r2 = pyroc.ROCData(roc_2)
+                lista = [r1,r2]
+                pyroc.plot_multiple_roc(lista,'Multiple ROC Curves',labels=['system','baseline'],include_baseline=True)
             
             print 'Dev ATWV system:',kws_scorer.get_score_dev(sys_name_dev)
             print 'Dev ATWV no threshold system:',kws_scorer.get_score_woth_dev(sys_name_dev)

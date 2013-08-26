@@ -248,6 +248,14 @@ class BabelDataset(datasets.ImageSet):
                         vector_return.extend(elem)
                     else:
                         vector_return.append(elem)
+                if feat_type[j] == 'n_est':
+                    aux = float(self.map_keyword_feat['n_est'][self._keyword[i]])
+                    aux = aux + 0.1
+                    elem = aux
+                    if isinstance(elem,list):
+                        vector_return.extend(elem)
+                    else:
+                        vector_return.append(elem)
                 if feat_type[j] == 'kw_n_est_log_odd':
                     aux = float(self.map_keyword_feat['n_est'][self._keyword[i]]) / float(self.T)
                     aux = np.min((0.999,aux))
