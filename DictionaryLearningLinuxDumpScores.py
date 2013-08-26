@@ -401,7 +401,7 @@ def run():
         nn_classifier = Classifier.Classifier(Xtrain_dict, Ytrain)
     '''Classifier stage'''
     #feat_list=['Local','Utterance']
-    lr_classifier.Train(feat_list=feat_list,type='linsvm',gamma=0.0, domeanstd=False, special_bias=Xtrain_special_bias, add_bias=False)
+    lr_classifier.Train(feat_list=feat_list,type='linsvm',gamma=0.0, domeanstd=False, special_bias=Xtrain_special_bias, add_bias=True)
     #svm_classifier.Train(feat_list=feat_list,type='linsvm',gamma=0.0, domeanstd=False, special_bias=Xtrain_special_bias, add_bias=False)
     print lr_classifier.b,lr_classifier.w
     #lr_classifier.w[0,0]=-1
@@ -423,13 +423,14 @@ def run():
     print 'Prior is ',np.sum(Ytrain==0)/float(len(Ytrain))
     
     if(dev):
-        a_list = (0.3,0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7)
+        #a_list = (0.3,0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7)
         #a_list = (1.01,1.02,1.03,1.04,1.05,1.06,1.07,1.08,1.09,1.1,1.11,1.12,1.13,1.14,1.15,1.16,1.17,1.18,1.19)
+        a_list = (0.0,0.0)
         for a in a_list:
             logging.info('Running Dev...')
             print 'A value',a
-            lr_classifier.w[0,0]=-a
-            lr_classifier.w[0,1]=a
+            #lr_classifier.w[0,0]=-a
+            #lr_classifier.w[0,1]=a
             accu = lr_classifier.Accuracy(Xdev_dict, Ydev, special_bias=Xdev_special_bias)
             neg_ll = lr_classifier.loss_multiclass_logreg(Xdev_dict, Ydev, special_bias=Xdev_special_bias)
             prob_dev = lr_classifier.get_predictions_logreg(Xdev_dict, special_bias=Xdev_special_bias)
