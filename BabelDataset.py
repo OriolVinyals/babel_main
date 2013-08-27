@@ -20,7 +20,7 @@ class BabelDataset(datasets.ImageSet):
     # some  Babel constants
     
     #def __init__(self, utt_reader,posting_sampler):
-    def __init__(self, list_file, feat_range, posting_file, perc_pos, keep_full_utt=False, posting_sampler=None, min_dur=0.2, reader_type='utterance', 
+    def __init__(self, list_file, feat_range, posting_file, perc_pos, keep_full_utt=False, posting_sampler=None, min_dur=0.2, min_count=0.0, max_count=10000000.0, reader_type='utterance', 
                  pickle_fname=None, list_file_sph=None, kw_feat=None):
         '''TODO: Read pieces of utterance from the CSV file instead to save memory. It would be nice to index thse by utt_id (by now I do a map).'''
         super(BabelDataset, self).__init__()
@@ -130,6 +130,37 @@ class BabelDataset(datasets.ImageSet):
             self._utt_id = None
             self._times = None
             self._keyword = None
+        #populate true kw freq
+        self._map_kw_counts = {}
+        for i in range(len(self.posting_sampler.positive_data)):
+            if utt_reader.map_utt_idx.has_key(self.posting_sampler.positive_data[i]['file']):
+                kw = self.posting_sampler.positive_data[i]['termid']
+                if self._map_kw_counts.has_key(kw):
+                    self._map_kw_counts[kw] += 1
+                else:
+                    self._map_kw_counts[kw] = 1
+        #filter dataset depending on count
+        if mpi.is_root():
+            ind_keep = []
+            kw_zero = 0
+            for i in range(len(self._keyword)):
+                kw = self._keyword[i]
+                kw_count = 0
+                if self._map_kw_counts.has_key(kw):
+                    kw_count = self._map_kw_counts[kw]
+                else:
+                    kw_zero += 1
+                if kw_count <= max_count and kw_count >= min_count:
+                    ind_keep.append(i)
+            
+            self._data = [self._data[i] for i in ind_keep]
+            self._label = [self._label[i] for i in ind_keep]
+            self._features = [self._features[i] for i in ind_keep]
+            self._utt_id = [self._utt_id[i] for i in ind_keep]
+            self._times = [self._times[i] for i in ind_keep]
+            self._keyword = [self._keyword[i] for i in ind_keep]
+
+                    
         self._data = mpi.distribute_list(self._data)
         self._label = mpi.distribute(self._label)
         self._features = mpi.distribute_list(self._features)
@@ -248,7 +279,7 @@ class BabelDataset(datasets.ImageSet):
                         vector_return.extend(elem)
                     else:
                         vector_return.append(elem)
-                if feat_type[j] == 'n_est':
+                if feat_type[j] == 'kw_n_est':
                     aux = float(self.map_keyword_feat['n_est'][self._keyword[i]])
                     aux = aux + 0.1
                     elem = aux
@@ -318,7 +349,24 @@ class BabelDataset(datasets.ImageSet):
                 self.keyword_scores[kw_id]+='<kw file="' + file + '" channel="1" tbeg="' + str(times[0]) + '" dur="' + str(times[1]-times[0]) + '" score="' + str(score) + '" decision="' + decision + '"/>\n'
             else:
                 self.keyword_scores[kw_id]='<kw file="' + file + '" channel="1" tbeg="' + str(times[0]) + '" dur="' + str(times[1]-times[0]) + '" score="' + str(score) + '" decision="' + decision + '"/>\n'
-            
+    
+    def GetATWV(self,scores,ths=None):
+        atwv = 0.0            
+        for i in range(len(self._keyword)):
+            score = scores[i]
+            if ths == None:
+                th = 0.5
+            else:
+                th = ths[i]
+            if score>=th:
+                kw_id=self._keyword[i]
+                if self._map_kw_counts.has_key(kw_id):
+                    if self._label[i] == 1:
+                        atwv += 1.0/float(self._map_kw_counts[kw_id])
+                    else:
+                        atwv -= float(self.beta)/(float(self.T) - float(self._map_kw_counts[kw_id]))
+        return atwv/len(self._map_kw_counts)
+                        
     def LoadMappingHescii(self, fname):
         self.map_keyword = {}
         self.map_keyword_length = {}
