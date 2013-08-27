@@ -166,7 +166,7 @@ def run():
         Xtrain_dict['Score_Local'] = Xp_score_local
         Xtrain_dict['Score_Utt'] = Xp_score_utt
         Xtrain_dict['Score_Glob'] = Xp_score_glob
-        babel_score.GetLocalFeatures(feat_type=['kw_n_est_log_odd'])
+        babel_score.GetLocalFeatures(feat_type=['threshold'])
         Xtrain_special_bias = -np.asmatrix(babel_score._local_features)
         babel_score.GetLocalFeatures(feat_type=['kw_n_est'])
         Xtrain_weight = 1.0 / np.asarray(babel_score._local_features)
@@ -287,7 +287,7 @@ def run():
             Xtest_dict['Score_Local'] = Xp_eval_score_local
             Xtest_dict['Score_Utt'] = Xp_eval_score_utt
             Xtest_dict['Score_Glob'] = Xp_eval_score_glob
-            babel_eval_score.GetLocalFeatures(feat_type=['kw_n_est_log_odd'])
+            babel_eval_score.GetLocalFeatures(feat_type=['threshold'])
             Xtest_special_bias = -np.asmatrix(babel_eval_score._local_features)
             
         if(cheating):
@@ -387,7 +387,7 @@ def run():
             Xdev_dict['Score_Local'] = Xp_dev_score_local
             Xdev_dict['Score_Utt'] = Xp_dev_score_utt
             Xdev_dict['Score_Glob'] = Xp_dev_score_glob
-            babel_dev_score.GetLocalFeatures(feat_type=['kw_n_est_log_odd'])
+            babel_dev_score.GetLocalFeatures(feat_type=['threshold'])
             Xdev_special_bias = -np.asmatrix(babel_dev_score._local_features)
             
         if(cheating):
