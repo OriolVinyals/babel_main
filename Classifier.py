@@ -4,6 +4,7 @@ from pybrain.tools.shortcuts import buildNetwork
 from pybrain.supervised import BackpropTrainer
 from pybrain.datasets import ClassificationDataSet
 from pybrain.structure.modules import SoftmaxLayer
+from scipy import optimize
 
 class Classifier:
     def __init__(self,Xtrain,Ytrain):
@@ -11,7 +12,7 @@ class Classifier:
         self._Ytrain=Ytrain
         self.features=Xtrain.keys()
         
-    def Train(self,feat_list=None,type='logreg',gamma=0.0,domeanstd=True,special_bias=None,add_bias=True, weight=None):
+    def Train(self,feat_list=None,type='logreg',gamma=0.0,domeanstd=True,special_bias=None,add_bias=True, weight=None, class_instance=None):
         if feat_list==None:
             feat_list=self.features
         self.feat_list=feat_list
@@ -35,6 +36,8 @@ class Classifier:
         elif type=='logreg':
             self.w, self.b = l2logreg_onevsall(Xtrain_feats, self._Ytrain, self._gamma, weight = weight, special_bias=special_bias, add_bias=add_bias)
             return (self.w,self.b)
+        elif type=='logreg_atwv':
+            self.w, self.b = Train_atwv(Xtrain_feats,class_instance=class_instance,weight=weight,special_bias=special_bias, add_bias=add_bias)
         elif type=='nn_debug':
             if mpi.COMM.Get_size() > 1:
                 print 'Warning!!! Running NN training with MPI with more than one Node!'
@@ -66,7 +69,7 @@ class Classifier:
         X_feats /= self.std
         if special_bias != None:
             X_feats = np.ascontiguousarray(np.hstack((X_feats, special_bias)))
-        if self._type=='linsvm' or self._type=='logreg':
+        if self._type=='linsvm' or self._type=='logreg' or self._type=='logreg_atwv':
             self.test_accu = classifier.Evaluator.accuracy(Y, np.dot(X_feats,self.w)+self.b)
         else:
             DS = ClassificationDataSet( X_feats.shape[1], 1, nb_classes=2 )
@@ -167,4 +170,40 @@ def get_predictions_logreg(X, weights):
         return np.vstack(prob)
     else:
         return np.zeros((0))
+    
+def Train_atwv(Xtrain_feats,class_instance=None,weight=None,special_bias=None,add_bias=True):
+    if weight==None:
+        params = []
+        w = np.zeros((Xtrain_feats.shape[1],2))
+        b = np.zeros((1,2))
+        w[0,0]=-1
+        w[0,1]=1
+        w[-1,0]=-1
+        w[-1,1]=1
+        params.append(w)
+        params.append(b)
+        weight = np.hstack((p.flatten() for p in params))
+    weight = optimize.fmin(f_atwv,weight,(Xtrain_feats,class_instance,special_bias,add_bias),disp=True,xtol=0.01)
+    K=2
+    dim=Xtrain_feats.shape[1]
+    w = weight[: K * dim].reshape(dim, K)
+    b = weight[K * dim :]
+    return w,b
+    
+    
+def f_atwv(weights, X,class_instance,special_bias,add_bias):
+    weights_unfl = []
+    K=2
+    dim=X.shape[1]
+    w = weights[: K * dim].reshape(dim, K)
+    b = weights[K * dim :]
+    if add_bias==False:
+        b[:] = 0
+    if special_bias != None:
+        w[-1,0] = -1
+        w[-1,1] = 1
+    weights_unfl.append(w)
+    weights_unfl.append(b)
+    scores = get_predictions_logreg(X, weights_unfl)
+    return -class_instance.GetATWV(scores[:,1])
 

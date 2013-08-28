@@ -46,6 +46,8 @@ def run():
     Xtrain_dict = {}
     feat_list = None
     Xtrain_special_bias = None
+    min_count = 0.0
+    max_count= 1000000.0
     
     acoustic=False
     if(acoustic):
@@ -54,7 +56,7 @@ def run():
         feat_range = None
         posting_file = './data/word.kwlist.alignment.csv'
         babel = BabelDataset.BabelDataset(list_file, feat_range, posting_file, perc_pos,min_dur=min_dur, posting_sampler=posting_sampler,
-                                          reader_type='utterance')
+                                          reader_type='utterance', min_count=min_count, max_count=max_count)
         posting_sampler = babel.posting_sampler
         '''An example audio pipeline to extract features'''
         conv = pipeline.ConvLayer([
@@ -88,7 +90,7 @@ def run():
         list_file = './data/lat.list'
         posting_file = './data/word.kwlist.alignment.csv'
         babel_lat = BabelDataset.BabelDataset(list_file, feat_range, posting_file, perc_pos, keep_full_utt=True, 
-                                          posting_sampler=posting_sampler,min_dur=min_dur,reader_type='lattice')
+                                          posting_sampler=posting_sampler,min_dur=min_dur,reader_type='lattice',min_count=min_count, max_count=max_count)
         posting_sampler = babel_lat.posting_sampler
         #Xtrain_dict['Lattice'] = 0
     
@@ -99,7 +101,7 @@ def run():
         posting_file = './data/word.kwlist.alignment.csv'
         feat_range = None
         babel_post = BabelDataset.BabelDataset(list_file, feat_range, posting_file, perc_pos, keep_full_utt=True,reader_type='utterance', 
-                                               posting_sampler=posting_sampler,min_dur=min_dur)
+                                               posting_sampler=posting_sampler,min_dur=min_dur,min_count=min_count, max_count=max_count)
         posting_sampler = babel_post.posting_sampler
         #reassign utterances (hack because the scp files are wrong)
         babel_post.utt_reader.list_times_utt = babel_lat.utt_reader.list_times_utt
@@ -117,7 +119,7 @@ def run():
         list_file = './data/audio.list'
         posting_file = './data/word.kwlist.alignment.csv'
         babel_srate = BabelDataset.BabelDataset(list_file, None, posting_file, perc_pos, keep_full_utt=True, reader_type='srate',pickle_fname='./pickles/full.srate.pickle',
-                                   posting_sampler=posting_sampler,min_dur=min_dur)
+                                   posting_sampler=posting_sampler,min_dur=min_dur,min_count=min_count, max_count=max_count)
         posting_sampler = babel_srate.posting_sampler
         babel_srate.GetUtteranceFeatures(feat_type=['srate'])
         babel_srate.GetGlobalFeatures(feat_type=['srate'])
@@ -132,7 +134,7 @@ def run():
         list_file = './data/audio.list'
         posting_file = './data/word.kwlist.alignment.csv'
         babel_snr = BabelDataset.BabelDataset(list_file, None, posting_file, perc_pos, keep_full_utt=True, reader_type='snr',pickle_fname='./pickles/full.snr.pickle',
-                                 posting_sampler=posting_sampler,min_dur=min_dur)
+                                 posting_sampler=posting_sampler,min_dur=min_dur,min_count=min_count, max_count=max_count)
         posting_sampler = babel_snr.posting_sampler
         babel_snr.GetUtteranceFeatures(feat_type=['snr'])
         babel_snr.GetGlobalFeatures(feat_type=['snr'])
@@ -149,7 +151,7 @@ def run():
         posting_file = './data/word.kwlist.alignment.csv'
         babel_score = BabelDataset.BabelDataset(list_file, None, posting_file, perc_pos, keep_full_utt=True, reader_type='score',
                                  posting_sampler=posting_sampler,min_dur=min_dur,list_file_sph=list_file_sph, 
-                                 kw_feat=kw_feat)
+                                 kw_feat=kw_feat,min_count=min_count, max_count=max_count)
         kw_feat = babel_score.map_keyword_feat
         posting_sampler = babel_score.posting_sampler
         #feat_type_local_score=['raw','kw_length','kw_freq','kw_freq_fine']
@@ -407,7 +409,8 @@ def run():
     #Xtrain_special_bias=None
     #Xdev_special_bias=None
     #Xtest_special_bias=None
-    lr_classifier.Train(feat_list=feat_list,type='logreg',gamma=0.0, domeanstd=False, special_bias=Xtrain_special_bias, add_bias=False)
+    #lr_classifier.Train(feat_list=feat_list,type='logreg',gamma=0.0, domeanstd=False, special_bias=Xtrain_special_bias, add_bias=False)
+    lr_classifier.Train(feat_list=feat_list,type='logreg_atwv',gamma=0.0, domeanstd=False, special_bias=Xtrain_special_bias, add_bias=False, class_instance=babel_dev_score)
     #lr_classifier.Train(feat_list=feat_list,type='linsvm',gamma=0.0, domeanstd=False, add_bias=True)
     print lr_classifier.b,lr_classifier.w
     #lr_classifier.w[0,0]=-1
@@ -431,7 +434,7 @@ def run():
     if(dev):
         #a_list = (0.3,0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7)
         #a_list = (1.01,1.02,1.03,1.04,1.05,1.06,1.07,1.08,1.09,1.1,1.11,1.12,1.13,1.14,1.15,1.16,1.17,1.18,1.19)
-        a_list = (0.0,0.0)
+        a_list = (1.0,1.0)
         #a_list = (0.7,0.71,0.72,0.73,0.74,0.75,0.76,0.77,0.78,0.79,0.8,0.81,0.82,0.83,0.84,0.85,0.86,0.87,0.88,0.89)
         best_atwv = 0
         for a in a_list:
@@ -454,6 +457,7 @@ def run():
                 print 'NN Dev Neg LogLikelihood is ',neg_ll_nn
             print 'Dev Prior is ',np.sum(Ydev==0)/float(len(Ydev))
             atwv_tst = babel_dev_score.GetATWV(prob_dev[:,1])
+            print 'Testing ATWV',atwv_tst
             sys_name_dev = './data/dev.'+''.join(feat_list)+'.xml'
             sys_name_dev_nn = './data/dev.'+''.join(feat_list)+'.NN.xml'
             baseline_name_dev = './data/dev.rawscore.xml'
@@ -496,8 +500,8 @@ def run():
                 print 'NN Dev ATWV no threshold system:',kws_scorer.get_score_woth_dev(sys_name_dev_nn)
             print 'Dev ATWV baseline:',kws_scorer.get_score_dev(baseline_name_dev)
     
-    lr_classifier.w[0,0]=-best_a
-    lr_classifier.w[0,1]=best_a
+    #lr_classifier.w[0,0]=-best_a
+    #lr_classifier.w[0,1]=best_a
         
     logging.info('Running Test...')
     accu = lr_classifier.Accuracy(Xtest_dict, Ytest, special_bias=Xtest_special_bias)
