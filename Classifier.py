@@ -333,9 +333,9 @@ def Train_atwv_nn(Xtrain_feats,class_instance=None,weight=None,special_bias=None
         weight = np.hstack((p.flatten() for p in params))
     else:
         weight = np.hstack((p.flatten() for p in weight))
-    print 'Error',optimize.check_grad(lambda x: f_atwv_nn(x, Xtrain_feats,class_instance,special_bias,add_bias,arch,method,factor,gamma)[0], 
-                        lambda x: f_atwv_nn(x, Xtrain_feats,class_instance,special_bias,add_bias,arch,method,factor,gamma)[1],
-                        weight)
+    #print 'Error',optimize.check_grad(lambda x: f_atwv_nn(x, Xtrain_feats,class_instance,special_bias,add_bias,arch,method,factor,gamma)[0], 
+    #                    lambda x: f_atwv_nn(x, Xtrain_feats,class_instance,special_bias,add_bias,arch,method,factor,gamma)[1],
+    #                    weight)
     if cv_feats != None:
         callback_f = lambda x: sys.stdout.write('CV ATWV ' + repr(-f_atwv_nn(x, cv_feats,cv_class_instance,special_bias,add_bias,arch,'exact',0,0)[0]) +
                                                 'Train ATWV ' + repr(-f_atwv_nn(x, Xtrain_feats,class_instance,special_bias,add_bias,arch,'exact',0,0)[0]))
