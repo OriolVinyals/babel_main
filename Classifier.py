@@ -292,11 +292,11 @@ def Train_atwv_nn(Xtrain_feats,class_instance=None,weight=None,special_bias=None
         params = []
         w_h = np.random.randn(dim,n_hid)
         interval = 4.0*np.sqrt(6.0/(dim+n_hid))
-        w_h = np.random.uniform(low=-interval,high=interval,size=(dim,n_hid))
+        #w_h = np.random.uniform(low=-interval,high=interval,size=(dim,n_hid))
         b_h = np.zeros((1,n_hid))
         w_s = np.random.randn(n_hid,K)
         interval = 4.0*np.sqrt(6.0/(n_hid+K))
-        w_s = np.random.uniform(low=-interval,high=interval,size=(n_hid,K))
+        #w_s = np.random.uniform(low=-interval,high=interval,size=(n_hid,K))
         b_s = np.zeros((1,K))
         params.append(w_h)
         params.append(b_h)
@@ -305,9 +305,9 @@ def Train_atwv_nn(Xtrain_feats,class_instance=None,weight=None,special_bias=None
         weight = np.hstack((p.flatten() for p in params))
     else:
         weight = np.hstack((p.flatten() for p in weight))
-    print 'Error',optimize.check_grad(lambda x: f_atwv_nn(x, Xtrain_feats,class_instance,special_bias,add_bias,arch,method,factor)[0], 
-                        lambda x: f_atwv_nn(x, Xtrain_feats,class_instance,special_bias,add_bias,arch,method,factor)[1],
-                        weight)
+    #print 'Error',optimize.check_grad(lambda x: f_atwv_nn(x, Xtrain_feats,class_instance,special_bias,add_bias,arch,method,factor)[0], 
+    #                    lambda x: f_atwv_nn(x, Xtrain_feats,class_instance,special_bias,add_bias,arch,method,factor)[1],
+    #                    weight)
     weight = optimize.fmin_l_bfgs_b(f_atwv_nn,weight,args=(Xtrain_feats,class_instance,special_bias,add_bias,arch,method,factor),disp=True)[0]
     ind = 0
     w_h = weight[ind: (ind+n_hid * dim)].reshape(dim, n_hid)

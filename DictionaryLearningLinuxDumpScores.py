@@ -406,7 +406,7 @@ def run():
 
     print 'Classifier Stage'
     lr_classifier = Classifier.Classifier(Xtrain_dict, Ytrain)
-    nnet=True
+    nnet=False
     if nnet:
         nn_classifier = Classifier.Classifier(Xtrain_dict, Ytrain)
     '''Classifier stage'''
@@ -421,7 +421,7 @@ def run():
         pass
     if nnet:
         nn_classifier.Train(feat_list=feat_list,type='nn_atwv',gamma=0.0, domeanstd=False, special_bias=Xtrain_special_bias, add_bias=True, 
-                            class_instance=babel_dev_score, factor=10.0)
+                            class_instance=babel_dev_score, arch=[10], factor=10.0)
 
     accu = lr_classifier.Accuracy(Xtrain_dict, Ytrain, special_bias=Xtrain_special_bias)
     neg_ll = lr_classifier.loss_multiclass_logreg(Xtrain_dict, Ytrain, special_bias=Xtrain_special_bias)
