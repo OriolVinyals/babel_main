@@ -5,6 +5,7 @@ from pybrain.supervised import BackpropTrainer
 from pybrain.datasets import ClassificationDataSet
 from pybrain.structure.modules import SoftmaxLayer
 from scipy import optimize
+import sys
 
 class Classifier:
     def __init__(self,Xtrain,Ytrain):
@@ -248,8 +249,8 @@ def Train_atwv(Xtrain_feats,class_instance=None,weight=None,special_bias=None,ad
                         lambda x: f_atwv(x, Xtrain_feats,class_instance,special_bias,add_bias,method,factor,0,gamma)[1],
                         weight)
     #weight = sgd(f_atwv,weight,args=(Xtrain_feats,class_instance,special_bias,add_bias,method,factor,10),disp=True)[0]
-    callback_f = lambda x: f_atwv(x, Xtrain_feats,class_instance,special_bias,add_bias,'exact',0,0,0)[0]
-    callback_f = lambda x: 0
+    callback_f = lambda x: sys.stdout.write('Error ' + repr(f_atwv(x, Xtrain_feats,class_instance,special_bias,add_bias,'exact',0,0,0)[0]))
+    callback_f = lambda x: sys.stdout.write('Error ' + repr(0.0))
     weight = optimize.fmin_l_bfgs_b(f_atwv,weight,args=(Xtrain_feats,class_instance,special_bias,add_bias,method,factor,0,gamma),disp=True,callback=callback_f)[0]
     w = weight[: K * dim].reshape(dim, K)
     b = weight[K * dim :]
