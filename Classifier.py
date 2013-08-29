@@ -259,7 +259,8 @@ def Train_atwv(Xtrain_feats,class_instance=None,weight=None,special_bias=None,ad
                         weight)
     #weight = sgd(f_atwv,weight,args=(Xtrain_feats,class_instance,special_bias,add_bias,method,factor,10),disp=True)[0]
     if cv_feats != None:
-        callback_f = lambda x: sys.stdout.write('CV ATWV ' + repr(-f_atwv(x, cv_feats,cv_class_instance,special_bias,add_bias,'exact',0,0,0)[0]))
+        callback_f = lambda x: sys.stdout.write('CV ATWV ' + repr(-f_atwv(x, cv_feats,cv_class_instance,special_bias,add_bias,'exact',0,0,0)[0]) +
+                                                'Train ATWV ' + repr(-f_atwv(x, Xtrain_feats,class_instance,special_bias,add_bias,'exact',0,0,0)[0]))
     else:
         callback_f = lambda x: sys.stdout.write('Train ATWV ' + repr(-f_atwv(x, Xtrain_feats,class_instance,special_bias,add_bias,'exact',0,0,0)[0]))
     #callback_f = lambda x: sys.stdout.write('Dummy CB')
