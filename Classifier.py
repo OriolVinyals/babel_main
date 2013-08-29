@@ -37,13 +37,14 @@ class Classifier:
             self.w, self.b = l2logreg_onevsall(Xtrain_feats, self._Ytrain, self._gamma, weight = weight, special_bias=special_bias, add_bias=add_bias)
             return (self.w,self.b)
         elif type=='logreg_atwv':
-            self.w, self.b = Train_atwv(Xtrain_feats,class_instance=class_instance,weight=weight,special_bias=special_bias, add_bias=add_bias, method=method, factor=factor)
+            self.w, self.b = Train_atwv(Xtrain_feats,class_instance=class_instance,weight=weight,special_bias=special_bias, add_bias=add_bias, method=method, 
+                                        factor=factor, gamma=self._gamma)
         elif type=='nn_atwv':
             self._arch = arch
             self._weights_nn = Train_atwv_nn(Xtrain_feats,class_instance=class_instance,weight=weight,special_bias=special_bias, add_bias=add_bias, 
-                                             arch=self._arch, method=method, factor=factor)
-            self._weights_nn = Train_atwv_nn(Xtrain_feats,class_instance=class_instance,weight=self._weights_nn,special_bias=special_bias, add_bias=add_bias, 
-                                             arch=self._arch, method=method, factor=factor*10.0)
+                                             arch=self._arch, method=method, factor=factor, gamma=self._gamma)
+            #self._weights_nn = Train_atwv_nn(Xtrain_feats,class_instance=class_instance,weight=self._weights_nn,special_bias=special_bias, add_bias=add_bias, 
+            #                                 arch=self._arch, method=method, factor=factor*10.0)
         elif type=='nn_debug':
             if mpi.COMM.Get_size() > 1:
                 print 'Warning!!! Running NN training with MPI with more than one Node!'
@@ -226,7 +227,7 @@ def get_predictions_nn(X, weights,arch):
     else:
         return np.zeros((0)),np.zeros((0))
     
-def Train_atwv(Xtrain_feats,class_instance=None,weight=None,special_bias=None,add_bias=True,method='sigmoid',factor=10.0):
+def Train_atwv(Xtrain_feats,class_instance=None,weight=None,special_bias=None,add_bias=True,method='sigmoid',factor=10.0,gamma=0.0):
     K=2
     dim=Xtrain_feats.shape[1]
     if weight==None:
@@ -243,16 +244,17 @@ def Train_atwv(Xtrain_feats,class_instance=None,weight=None,special_bias=None,ad
     else:
         weight = np.hstack((p.flatten() for p in weight))
     #weight = optimize.fmin(f_atwv,weight,(Xtrain_feats,class_instance,special_bias,add_bias),disp=True,xtol=0.01)
-    print 'Error',optimize.check_grad(lambda x: f_atwv(x, Xtrain_feats,class_instance,special_bias,add_bias,method,factor)[0], 
-                        lambda x: f_atwv(x, Xtrain_feats,class_instance,special_bias,add_bias,method,factor)[1],
+    print 'Error',optimize.check_grad(lambda x: f_atwv(x, Xtrain_feats,class_instance,special_bias,add_bias,method,factor,0,gamma)[0], 
+                        lambda x: f_atwv(x, Xtrain_feats,class_instance,special_bias,add_bias,method,factor,0,gamma)[1],
                         weight)
-    weight = optimize.fmin_l_bfgs_b(f_atwv,weight,args=(Xtrain_feats,class_instance,special_bias,add_bias,method,factor),disp=True)[0]
+    #weight = sgd(f_atwv,weight,args=(Xtrain_feats,class_instance,special_bias,add_bias,method,factor,10),disp=True)[0]
+    weight = optimize.fmin_l_bfgs_b(f_atwv,weight,args=(Xtrain_feats,class_instance,special_bias,add_bias,method,factor,0,gamma),disp=True)[0]
     w = weight[: K * dim].reshape(dim, K)
     b = weight[K * dim :]
     return w,b
     
     
-def f_atwv(weights, X,class_instance,special_bias,add_bias,method,factor):
+def f_atwv(weights, X,class_instance,special_bias,add_bias,method,factor,mb,gamma):
     weights_unfl = []
     K=2
     dim=X.shape[1]
@@ -266,8 +268,15 @@ def f_atwv(weights, X,class_instance,special_bias,add_bias,method,factor):
     weights_unfl.append(w)
     weights_unfl.append(b)
     #scores = get_predictions_logreg(X, weights_unfl)
-    scores = get_predictions_logreg(X, weights_unfl)
-    f,gpred = class_instance.GetATWVsmooth(scores[:,1],method=method,factor=factor)
+    if mb>0:
+        n_samp = X.shape[0]
+        ind_sel = np.random.choice(n_samp, mb, replace=False)
+        X = X[ind_sel]
+        scores = get_predictions_logreg(X, weights_unfl)
+        f,gpred = class_instance.GetATWVsmooth(scores[:,1],method=method,factor=factor,inds=ind_sel)
+    else:
+        scores = get_predictions_logreg(X, weights_unfl)
+        f,gpred = class_instance.GetATWVsmooth(scores[:,1],method=method,factor=factor)
     g_w_0 = np.dot(X.T, gpred*scores[:,1]*(-scores[:,0]))
     #g_w_0 = np.dot(X.T, 0*gpred*scores[:,1]*(-scores[:,0]))
     g_w_1 = np.dot(X.T, gpred*scores[:,1]*(1-scores[:,1]))
@@ -280,10 +289,12 @@ def f_atwv(weights, X,class_instance,special_bias,add_bias,method,factor):
         g_b[:]=0
     if special_bias != None:
         g_w[-1,:] = 0
+    f = f - gamma*np.sum(w**2)
+    g_w = g_w - gamma*2.0*w
     g = np.hstack((g_w.flatten(),g_b.flatten()))
     return -f,-g
 
-def Train_atwv_nn(Xtrain_feats,class_instance=None,weight=None,special_bias=None,add_bias=True,arch=[10],method='sigmoid',factor=10.0):
+def Train_atwv_nn(Xtrain_feats,class_instance=None,weight=None,special_bias=None,add_bias=True,arch=[10],method='sigmoid',factor=10.0,gamma=0.0):
     #1 hidden layer NN
     K=2
     dim=Xtrain_feats.shape[1]
@@ -308,7 +319,7 @@ def Train_atwv_nn(Xtrain_feats,class_instance=None,weight=None,special_bias=None
     #print 'Error',optimize.check_grad(lambda x: f_atwv_nn(x, Xtrain_feats,class_instance,special_bias,add_bias,arch,method,factor)[0], 
     #                    lambda x: f_atwv_nn(x, Xtrain_feats,class_instance,special_bias,add_bias,arch,method,factor)[1],
     #                    weight)
-    weight = optimize.fmin_l_bfgs_b(f_atwv_nn,weight,args=(Xtrain_feats,class_instance,special_bias,add_bias,arch,method,factor),disp=True)[0]
+    weight = optimize.fmin_l_bfgs_b(f_atwv_nn,weight,args=(Xtrain_feats,class_instance,special_bias,add_bias,arch,method,factor,gamma),disp=True,pgtol=1e-6)[0]
     ind = 0
     w_h = weight[ind: (ind+n_hid * dim)].reshape(dim, n_hid)
     ind += n_hid * dim
@@ -320,7 +331,7 @@ def Train_atwv_nn(Xtrain_feats,class_instance=None,weight=None,special_bias=None
     return w_h,b_h,w_s,b_s
     
     
-def f_atwv_nn(weights, X,class_instance,special_bias,add_bias,arch,method,factor):
+def f_atwv_nn(weights, X,class_instance,special_bias,add_bias,arch,method,factor,gamma):
     weights_unfl = []
     K=2
     dim=X.shape[1]
@@ -359,8 +370,25 @@ def f_atwv_nn(weights, X,class_instance,special_bias,add_bias,arch,method,factor
     dEdh = np.outer(dEdh,w_s[:,1])
     g_w_h = np.dot(X.T, dEdh*hidden*(1-hidden))
     g_b_h = np.sum(dEdh*hidden*(1-hidden),axis=0)
+    f = f - gamma*np.sum(w_h**2) - gamma*np.sum(w_s**2)
+    g_w_h = g_w_h - gamma*2.0*w_h
+    g_w_s = g_w_s - gamma*2.0*w_s
     if add_bias==False:
         g_b_s[:]=0
     g = np.hstack((g_w_h.flatten(),g_b_h.flatten(),g_w_s.flatten(),g_b_s.flatten()))
     return -f,-g
+
+def sgd(f,w,args=[],disp=True):
+    lr = 0.01
+    momentum = 0.1
+    v = w.copy()
+    v[:]=0.0
+    for i in range(500):
+        f_val,g = f(w,*args)
+        v = momentum*v - lr*g
+        w = w + v
+        if disp:
+            print 'f: ',f_val,'|g|: ',np.sum(g**2)
+    return w,f_val
+
 

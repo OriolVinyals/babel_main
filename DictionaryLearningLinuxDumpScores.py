@@ -413,7 +413,7 @@ def run():
     Xtrain_special_bias=None
     Xdev_special_bias=None
     Xtest_special_bias=None
-    lr_classifier.Train(feat_list=feat_list,type='logreg_atwv',gamma=0.0, domeanstd=False, special_bias=Xtrain_special_bias, add_bias=True, 
+    lr_classifier.Train(feat_list=feat_list,type='logreg_atwv',gamma=1.0, domeanstd=False, special_bias=Xtrain_special_bias, add_bias=True, 
                         class_instance=babel_dev_score, factor=10.0)
     try:
         print lr_classifier.b,lr_classifier.w
@@ -421,7 +421,7 @@ def run():
         pass
     if nnet:
         nn_classifier.Train(feat_list=feat_list,type='nn_atwv',gamma=0.0, domeanstd=False, special_bias=Xtrain_special_bias, add_bias=True, 
-                            class_instance=babel_dev_score, arch=[10], factor=10.0)
+                            class_instance=babel_dev_score, arch=[80], factor=10.0)
 
     accu = lr_classifier.Accuracy(Xtrain_dict, Ytrain, special_bias=Xtrain_special_bias)
     neg_ll = lr_classifier.loss_multiclass_logreg(Xtrain_dict, Ytrain, special_bias=Xtrain_special_bias)
