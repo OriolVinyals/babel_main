@@ -406,7 +406,7 @@ def run():
 
     print 'Classifier Stage'
     lr_classifier = Classifier.Classifier(Xtrain_dict, Ytrain)
-    nnet=False
+    nnet=True
     if nnet:
         nn_classifier = Classifier.Classifier(Xtrain_dict, Ytrain)
     '''Classifier stage'''
