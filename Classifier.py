@@ -333,15 +333,17 @@ def Train_atwv_nn(Xtrain_feats,class_instance=None,weight=None,special_bias=None
         weight = np.hstack((p.flatten() for p in params))
     else:
         weight = np.hstack((p.flatten() for p in weight))
-    #print 'Error',optimize.check_grad(lambda x: f_atwv_nn(x, Xtrain_feats,class_instance,special_bias,add_bias,arch,method,factor)[0], 
-    #                    lambda x: f_atwv_nn(x, Xtrain_feats,class_instance,special_bias,add_bias,arch,method,factor)[1],
-    #                    weight)
+    print 'Error',optimize.check_grad(lambda x: f_atwv_nn(x, Xtrain_feats,class_instance,special_bias,add_bias,arch,method,factor)[0], 
+                        lambda x: f_atwv_nn(x, Xtrain_feats,class_instance,special_bias,add_bias,arch,method,factor)[1],
+                        weight)
     if cv_feats != None:
-        callback_f = lambda x: sys.stdout.write('CV ATWV ' + repr(-f_atwv_nn(x, cv_feats,cv_class_instance,special_bias,add_bias,arch,'exact',0,0)[0]))
+        callback_f = lambda x: sys.stdout.write('CV ATWV ' + repr(-f_atwv_nn(x, cv_feats,cv_class_instance,special_bias,add_bias,arch,'exact',0,0)[0]) +
+                                                'Train ATWV ' + repr(-f_atwv_nn(x, Xtrain_feats,class_instance,special_bias,add_bias,arch,'exact',0,0)[0]))
     else:
         callback_f = lambda x: sys.stdout.write('Train ATWV ' + repr(-f_atwv_nn(x, Xtrain_feats,class_instance,special_bias,add_bias,arch,'exact',0,0)[0]))
     #callback_f = lambda x: sys.stdout.write('Dummy CB')
-    weight = optimize.fmin_l_bfgs_b(f_atwv_nn,weight,args=(Xtrain_feats,class_instance,special_bias,add_bias,arch,method,factor,gamma),disp=True,pgtol=1e-6)[0]
+    weight = optimize.fmin_l_bfgs_b(f_atwv_nn,weight,args=(Xtrain_feats,class_instance,special_bias,add_bias,arch,method,factor,gamma),disp=True,pgtol=1e-6,
+                                    callback=callback_f)[0]
     ind = 0
     w_h = weight[ind: (ind+n_hid * dim)].reshape(dim, n_hid)
     ind += n_hid * dim
