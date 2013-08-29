@@ -350,7 +350,18 @@ class BabelDataset(datasets.ImageSet):
             else:
                 self.keyword_scores[kw_id]='<kw file="' + file + '" channel="1" tbeg="' + str(times[0]) + '" dur="' + str(times[1]-times[0]) + '" score="' + str(score) + '" decision="' + decision + '"/>\n'
     
-    def GetATWV(self,scores,ths=None):
+    def GetATWV(self,scores,ths=None,compute_th=False):
+        if compute_th:
+            S = {}
+            for i in range(len(self._keyword)):
+                kw_id=self._keyword[i]
+                if S.has_key(kw_id):
+                    S[kw_id] += scores[i]
+                else:
+                    S[kw_id] = scores[i]
+            ths = []
+            for i in range(len(self._keyword)):
+                ths.append((S[self._keyword[i]])/(float(self.T)/float(self.beta) + S[self._keyword[i]]))
         atwv = 0.0            
         for i in range(len(self._keyword)):
             score = scores[i]
@@ -366,6 +377,51 @@ class BabelDataset(datasets.ImageSet):
                     else:
                         atwv -= float(self.beta)/(float(self.T) - float(self._map_kw_counts[kw_id]))
         return atwv/len(self._map_kw_counts)
+    
+    def GetATWVsmooth(self,scores,ths=None,compute_th=False):
+        if compute_th:
+            S = {}
+            for i in range(len(self._keyword)):
+                kw_id=self._keyword[i]
+                if S.has_key(kw_id):
+                    S[kw_id] += scores[i]
+                else:
+                    S[kw_id] = scores[i]
+            ths = []
+            for i in range(len(self._keyword)):
+                ths.append((S[self._keyword[i]])/(float(self.T)/float(self.beta) + S[self._keyword[i]]))
+        try:
+            weight = self._weight
+        except:
+            self._weight = np.zeros((len(self._keyword),))
+            for i in range(len(self._keyword)):
+                kw_id=self._keyword[i]
+                if self._map_kw_counts.has_key(kw_id):
+                    if self._label[i] == 1:
+                        self._weight[i] = 1.0/float(self._map_kw_counts[kw_id])
+                    else:
+                        self._weight[i] = -float(self.beta)/(float(self.T) - float(self._map_kw_counts[kw_id]))
+            weight = self._weight
+        if ths==None:
+            ths = 0.5
+        
+        loss,dloss = self.Loss01smooth(scores-ths)
+        atwv = np.dot(loss, weight)/len(self._map_kw_counts)
+        gatwv = dloss*weight/len(self._map_kw_counts)
+        return atwv, gatwv
+    
+    @staticmethod
+    def Loss01smooth(input,factor=10.0,method='sigmoid'):
+        if method=='exact':
+            out = input >= 0
+            gout = input == 0
+        elif method=='hinge':
+            out = np.max(input + 1,0)
+            gout = input + 1 >= 0
+        elif method=='sigmoid':
+            out = 1/(1+np.exp(-factor*(input)))
+            gout = out*(1-out)*factor
+        return out, gout
                         
     def LoadMappingHescii(self, fname):
         self.map_keyword = {}

@@ -38,6 +38,8 @@ class Classifier:
             return (self.w,self.b)
         elif type=='logreg_atwv':
             self.w, self.b = Train_atwv(Xtrain_feats,class_instance=class_instance,weight=weight,special_bias=special_bias, add_bias=add_bias)
+        elif type=='nn_atwv':
+            self._weights_nn = Train_atwv_nn(Xtrain_feats,class_instance=class_instance,weight=weight,special_bias=special_bias, add_bias=add_bias, arch=[10])
         elif type=='nn_debug':
             if mpi.COMM.Get_size() > 1:
                 print 'Warning!!! Running NN training with MPI with more than one Node!'
@@ -71,6 +73,9 @@ class Classifier:
             X_feats = np.ascontiguousarray(np.hstack((X_feats, special_bias)))
         if self._type=='linsvm' or self._type=='logreg' or self._type=='logreg_atwv':
             self.test_accu = classifier.Evaluator.accuracy(Y, np.dot(X_feats,self.w)+self.b)
+        elif self._type=='nn_atwv':
+            pred = get_predictions_nn(X_feats, self._weights_nn, arch=[10])[0]
+            self.test_accu = classifier.Evaluator.accuracy(Y, pred)
         else:
             DS = ClassificationDataSet( X_feats.shape[1], 1, nb_classes=2 )
             #for i in range(X_feats.shape[0]):
@@ -160,7 +165,7 @@ def loss_multiclass_nn(X_feats, Y, nn):
     num_data = mpi.COMM.allreduce(len(Y))
     return float(likelihood) / num_data
 
-def get_predictions_logreg(X, weights):
+def get_predictions_logreg_temp(X, weights):
     pred = mathutil.dot(X,weights[0])+weights[1]
     prob = pred - pred.max(axis=1)[:,np.newaxis]
     mathutil.exp(prob, out=prob)
@@ -171,21 +176,51 @@ def get_predictions_logreg(X, weights):
     else:
         return np.zeros((0))
     
+def get_predictions_logreg(X, weights):
+    pred = mathutil.dot(X,weights[0])+weights[1]
+    prob = 1.0/(1.0+np.exp(-pred))
+    prob = mpi.COMM.gather(prob)
+    if mpi.is_root():
+        return np.vstack(prob)
+    else:
+        return np.zeros((0))
+    
+def get_predictions_nn(X, weights,arch):
+    hid = mathutil.dot(X,weights[0])+weights[1]
+    hid = 1.0/(1+np.exp(-hid)) #sigmoid
+    pred = mathutil.dot(hid,weights[2])+weights[3]
+    #prob = pred - pred.max(axis=1)[:,np.newaxis]
+    #mathutil.exp(prob, out=prob)
+    #prob /= prob.sum(axis=1)[:, np.newaxis]
+    prob = 1.0/(1.0+np.exp(-pred))
+    prob = mpi.COMM.gather(prob)
+    hid = mpi.COMM.gather(hid)
+    if mpi.is_root():
+        return np.vstack(prob),np.vstack(hid)
+    else:
+        return np.zeros((0)),np.zeros((0))
+    
 def Train_atwv(Xtrain_feats,class_instance=None,weight=None,special_bias=None,add_bias=True):
+    K=2
+    dim=Xtrain_feats.shape[1]
     if weight==None:
         params = []
-        w = np.zeros((Xtrain_feats.shape[1],2))
-        b = np.zeros((1,2))
-        w[0,0]=-1
-        w[0,1]=1
+        w = np.zeros((dim,K))
+        b = np.zeros((1,K))
+        w[0,0]=-0.09
+        w[0,1]=0.09
         w[-1,0]=-1
         w[-1,1]=1
         params.append(w)
         params.append(b)
         weight = np.hstack((p.flatten() for p in params))
-    weight = optimize.fmin(f_atwv,weight,(Xtrain_feats,class_instance,special_bias,add_bias),disp=True,xtol=0.01)
-    K=2
-    dim=Xtrain_feats.shape[1]
+    else:
+        weight = np.hstack((p.flatten() for p in weight))
+    #weight = optimize.fmin(f_atwv,weight,(Xtrain_feats,class_instance,special_bias,add_bias),disp=True,xtol=0.01)
+    print 'Error',optimize.check_grad(lambda x: f_atwv(x, Xtrain_feats,class_instance,special_bias,add_bias)[0], 
+                        lambda x: f_atwv(x, Xtrain_feats,class_instance,special_bias,add_bias)[1],
+                        weight)
+    weight = optimize.fmin_l_bfgs_b(f_atwv,weight,args=(Xtrain_feats,class_instance,special_bias,add_bias),disp=True)[0]
     w = weight[: K * dim].reshape(dim, K)
     b = weight[K * dim :]
     return w,b
@@ -204,6 +239,99 @@ def f_atwv(weights, X,class_instance,special_bias,add_bias):
         w[-1,1] = 1
     weights_unfl.append(w)
     weights_unfl.append(b)
+    #scores = get_predictions_logreg(X, weights_unfl)
     scores = get_predictions_logreg(X, weights_unfl)
-    return -class_instance.GetATWV(scores[:,1])
+    f,gpred = class_instance.GetATWVsmooth(scores[:,1])
+    #g_w_0 = np.dot(X.T, gpred*scores[:,1]*(-scores[:,0]))
+    g_w_0 = np.dot(X.T, 0*gpred*scores[:,1]*(-scores[:,0]))
+    g_w_1 = np.dot(X.T, gpred*scores[:,1]*(1-scores[:,1]))
+    g_w = np.hstack((g_w_0[:,np.newaxis],g_w_1[:,np.newaxis]))
+    #g_b_0 = np.sum(gpred*scores[:,1]*(-scores[:,0]))
+    g_b_0 = np.sum(0*gpred*scores[:,1]*(-scores[:,0]))
+    g_b_1 = np.sum(gpred*scores[:,1]*(1-scores[:,1]))
+    g_b = np.hstack((g_b_0,g_b_1))
+    if add_bias==False:
+        g_b[:]=0
+    if special_bias != None:
+        g_w[-1,:] = 0
+    g = np.hstack((g_w.flatten(),g_b.flatten()))
+    return -f,-g
+
+def Train_atwv_nn(Xtrain_feats,class_instance=None,weight=None,special_bias=None,add_bias=True,arch=[10]):
+    #1 hidden layer NN
+    K=2
+    dim=Xtrain_feats.shape[1]
+    n_hid = arch[0]
+    if weight==None:
+        params = []
+        w_h = np.random.randn(dim,n_hid)
+        np.random.randn
+        b_h = np.zeros((1,n_hid))
+        w_s = np.random.randn(n_hid,K)
+        b_s = np.zeros((1,K))
+        params.append(w_h)
+        params.append(b_h)
+        params.append(w_s)
+        params.append(b_s)
+        weight = np.hstack((p.flatten() for p in params))
+    else:
+        weight = np.hstack((p.flatten() for p in weight))
+    print 'Error',optimize.check_grad(lambda x: f_atwv_nn(x, Xtrain_feats,class_instance,special_bias,add_bias,arch)[0], 
+                        lambda x: f_atwv_nn(x, Xtrain_feats,class_instance,special_bias,add_bias,arch)[1],
+                        weight)
+    weight = optimize.fmin_l_bfgs_b(f_atwv_nn,weight,args=(Xtrain_feats,class_instance,special_bias,add_bias,arch),disp=True)[0]
+    ind = 0
+    w_h = weight[ind: (ind+n_hid * dim)].reshape(dim, n_hid)
+    ind += n_hid * dim
+    b_h = weight[ind:(ind+n_hid)]
+    ind += n_hid
+    w_s = weight[ind: (ind + n_hid*K)].reshape(n_hid, K)
+    ind += n_hid*K
+    b_s = weight[ind:]
+    return w_h,b_h,w_s,b_s
+    
+    
+def f_atwv_nn(weights, X,class_instance,special_bias,add_bias,arch):
+    weights_unfl = []
+    K=2
+    dim=X.shape[1]
+    n_hid=arch[0]
+    ind = 0
+    w_h = weights[ind: (ind+n_hid * dim)].reshape(dim, n_hid)
+    ind += n_hid * dim
+    b_h = weights[ind:(ind+n_hid)]
+    ind += n_hid
+    w_s = weights[ind: (ind + n_hid*K)].reshape(n_hid, K)
+    ind += n_hid*K
+    b_s = weights[ind:]
+    if add_bias==False:
+        b_s[:] = 0
+    weights_unfl.append(w_h)
+    weights_unfl.append(b_h)
+    weights_unfl.append(w_s)
+    weights_unfl.append(b_s)
+    #Forward
+    scores,hidden = get_predictions_nn(X, weights_unfl,arch)
+    #Backward, factorize!
+    f,gpred = class_instance.GetATWVsmooth(scores[:,1])
+    #g_w_s_0 = np.dot(hidden.T, gpred*scores[:,1]*(-scores[:,0]))
+    g_w_s_0 = np.dot(hidden.T, 0*gpred*scores[:,1]*(-scores[:,0]))
+    g_w_s_1 = np.dot(hidden.T, gpred*scores[:,1]*(1-scores[:,1]))
+    g_w_s = np.hstack((g_w_s_0[:,np.newaxis],g_w_s_1[:,np.newaxis]))
+    #g_b_s_0 = np.sum(gpred*scores[:,1]*(-scores[:,0]))
+    g_b_s_0 = np.sum(0*gpred*scores[:,1]*(-scores[:,0]))
+    g_b_s_1 = np.sum(gpred*scores[:,1]*(1-scores[:,1]))
+    g_b_s = np.hstack((g_b_s_0,g_b_s_1))
+    
+    #dEdh_0 = gpred*scores[:,1]*(-scores[:,0])
+    #dEdh_1 = gpred*scores[:,1]*(1-scores[:,1])
+    #dEdh = np.hstack((dEdh_0[:,np.newaxis],dEdh_1[:,np.newaxis]))
+    dEdh = gpred*scores[:,1]*(1-scores[:,1])
+    dEdh = np.outer(dEdh,w_s[:,1])
+    g_w_h = np.dot(X.T, dEdh*hidden*(1-hidden))
+    g_b_h = np.sum(dEdh*hidden*(1-hidden),axis=0)
+    if add_bias==False:
+        g_b_s[:]=0
+    g = np.hstack((g_w_h.flatten(),g_b_h.flatten(),g_w_s.flatten(),g_b_s.flatten()))
+    return -f,-g
 

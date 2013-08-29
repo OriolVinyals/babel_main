@@ -15,7 +15,7 @@ class PostingParser:
             self.data.append(row)
             num_rows += 1
             #if __debug__:
-            #    if(num_rows>10000):
+            #    if(num_rows>1000):
             #        break
     
     def GetFields(self):

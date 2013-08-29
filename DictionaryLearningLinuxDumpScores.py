@@ -156,9 +156,10 @@ def run():
         posting_sampler = babel_score.posting_sampler
         #feat_type_local_score=['raw','kw_length','kw_freq','kw_freq_fine']
         #feat_type_local_score=['raw','kw_length','kw_freq','kw_freq_fine','kw_true_freq','kw_true_ratio']
-        #feat_type_local_score=['raw','threshold']
-        feat_type_local_score=['raw_log_odd']
         #feat_type_local_score=['raw_log_odd','raw','kw_length','kw_freq','kw_freq_fine','kw_true_freq','kw_true_ratio']
+        #feat_type_local_score=['raw']
+        feat_type_local_score=['raw_log_odd','kw_n_est_log_odd']
+        feat_type_local_score=['raw_log_odd','raw','kw_length','kw_freq','kw_freq_fine','kw_n_est_log_odd']
         babel_score.GetLocalFeatures(feat_type=feat_type_local_score)
         babel_score.GetGlobalFeatures(feat_type=['avg'])
         babel_score.GetUtteranceFeatures(feat_type=['avg','min','max'])
@@ -166,13 +167,15 @@ def run():
         Xp_score_glob=np.asmatrix(babel_score._glob_features)
         Xp_score_utt=np.asmatrix(babel_score._utt_features)
         Xtrain_dict['Score_Local'] = Xp_score_local
-        #Xtrain_dict['Score_Utt'] = Xp_score_utt
-        #Xtrain_dict['Score_Glob'] = Xp_score_glob
-        babel_score.GetLocalFeatures(feat_type=['kw_n_est_log_odd'])
+        Xtrain_dict['Score_Utt'] = Xp_score_utt
+        Xtrain_dict['Score_Glob'] = Xp_score_glob
+        feat_type_special_bias=['kw_n_est_log_odd']
+        #feat_type_special_bias=['threshold']
+        babel_score.GetLocalFeatures(feat_type=feat_type_special_bias)
         Xtrain_special_bias = -np.asmatrix(babel_score._local_features)
-        babel_score.GetLocalFeatures(feat_type=['kw_n_est'])
-        Xtrain_weight = 1.0 / np.asarray(babel_score._local_features)
-        Xtrain_weight = np.hstack((Xtrain_weight,Xtrain_weight))
+        #babel_score.GetLocalFeatures(feat_type=['kw_n_est'])
+        #Xtrain_weight = 1.0 / np.asarray(babel_score._local_features)
+        #Xtrain_weight = np.hstack((Xtrain_weight,Xtrain_weight))
         
     cheating=False
     if(cheating):
@@ -180,7 +183,8 @@ def run():
         Xtrain_dict['Cheating'] = np.asmatrix(babel_score.labels().astype(np.int)).T
 
     '''Labels''' 
-    feat_list= Xtrain_dict.keys()   
+    feat_list= Xtrain_dict.keys()
+    feat_list.insert(0, feat_list.pop(feat_list.index('Score_Local')))
     print 'Features: ' + ' '.join(feat_list)
     for feat in feat_list:
         print feat,Xtrain_dict[feat].shape
@@ -289,7 +293,7 @@ def run():
             Xtest_dict['Score_Local'] = Xp_eval_score_local
             Xtest_dict['Score_Utt'] = Xp_eval_score_utt
             Xtest_dict['Score_Glob'] = Xp_eval_score_glob
-            babel_eval_score.GetLocalFeatures(feat_type=['kw_n_est_log_odd'])
+            babel_eval_score.GetLocalFeatures(feat_type=feat_type_special_bias)
             Xtest_special_bias = -np.asmatrix(babel_eval_score._local_features)
             
         if(cheating):
@@ -389,7 +393,7 @@ def run():
             Xdev_dict['Score_Local'] = Xp_dev_score_local
             Xdev_dict['Score_Utt'] = Xp_dev_score_utt
             Xdev_dict['Score_Glob'] = Xp_dev_score_glob
-            babel_dev_score.GetLocalFeatures(feat_type=['kw_n_est_log_odd'])
+            babel_dev_score.GetLocalFeatures(feat_type=feat_type_special_bias)
             Xdev_special_bias = -np.asmatrix(babel_dev_score._local_features)
             
         if(cheating):
@@ -400,21 +404,22 @@ def run():
 
 ########### CLASSIFIER ###########
 
+    print 'Classifier Stage'
     lr_classifier = Classifier.Classifier(Xtrain_dict, Ytrain)
     nnet=False
     if nnet:
         nn_classifier = Classifier.Classifier(Xtrain_dict, Ytrain)
     '''Classifier stage'''
-    #feat_list=['Local','Utterance']
-    #Xtrain_special_bias=None
-    #Xdev_special_bias=None
-    #Xtest_special_bias=None
-    #lr_classifier.Train(feat_list=feat_list,type='logreg',gamma=0.0, domeanstd=False, special_bias=Xtrain_special_bias, add_bias=False)
-    lr_classifier.Train(feat_list=feat_list,type='logreg_atwv',gamma=0.0, domeanstd=False, special_bias=Xtrain_special_bias, add_bias=False, class_instance=babel_dev_score)
-    #lr_classifier.Train(feat_list=feat_list,type='linsvm',gamma=0.0, domeanstd=False, add_bias=True)
-    print lr_classifier.b,lr_classifier.w
-    #lr_classifier.w[0,0]=-1
-    #lr_classifier.w[0,1]=1
+    Xtrain_special_bias=None
+    Xdev_special_bias=None
+    Xtest_special_bias=None
+    lr_classifier.Train(feat_list=feat_list,type='logreg_atwv',gamma=0.0, domeanstd=False, special_bias=Xtrain_special_bias, add_bias=True, class_instance=babel_dev_score)
+    #lr_classifier.Train(feat_list=feat_list,type='logreg_atwv',gamma=0.0, domeanstd=False, special_bias=Xtrain_special_bias, add_bias=False, 
+    #                    class_instance=babel_dev_score,weight=(lr_classifier.w,lr_classifier.b))
+    try:
+        print lr_classifier.b,lr_classifier.w
+    except:
+        pass
     if nnet:
         nn_classifier.Train(feat_list=feat_list,type='nn_debug',gamma=0.0)
 
@@ -432,76 +437,50 @@ def run():
     print 'Prior is ',np.sum(Ytrain==0)/float(len(Ytrain))
     
     if(dev):
-        #a_list = (0.3,0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7)
-        #a_list = (1.01,1.02,1.03,1.04,1.05,1.06,1.07,1.08,1.09,1.1,1.11,1.12,1.13,1.14,1.15,1.16,1.17,1.18,1.19)
-        a_list = (1.0,1.0)
-        #a_list = (0.7,0.71,0.72,0.73,0.74,0.75,0.76,0.77,0.78,0.79,0.8,0.81,0.82,0.83,0.84,0.85,0.86,0.87,0.88,0.89)
-        best_atwv = 0
-        for a in a_list:
-            logging.info('Running Dev...')
-            print 'A value',a
-            #lr_classifier.w[0,0]=-a
-            #lr_classifier.w[0,1]=a
-            accu = lr_classifier.Accuracy(Xdev_dict, Ydev, special_bias=Xdev_special_bias)
-            neg_ll = lr_classifier.loss_multiclass_logreg(Xdev_dict, Ydev, special_bias=Xdev_special_bias)
-            prob_dev = lr_classifier.get_predictions_logreg(Xdev_dict, special_bias=Xdev_special_bias)
+        logging.info('Running Dev...')
+        accu = lr_classifier.Accuracy(Xdev_dict, Ydev, special_bias=Xdev_special_bias)
+        neg_ll = lr_classifier.loss_multiclass_logreg(Xdev_dict, Ydev, special_bias=Xdev_special_bias)
+        prob_dev = lr_classifier.get_predictions_logreg(Xdev_dict, special_bias=Xdev_special_bias)
+        if nnet:
+            accu_nn = nn_classifier.Accuracy(Xdev_dict, Ydev)
+            neg_ll_nn = nn_classifier.loss_multiclass_nn(Xdev_dict, Ydev)
+            prob_dev_nn = nn_classifier.get_predictions_nn(Xdev_dict)
+          
+        print 'Dev Accuracy is ',accu
+        print 'Dev Neg LogLikelihood is ',neg_ll
+        if nnet:
+            print 'NN Dev Accuracy is ',accu_nn
+            print 'NN Dev Neg LogLikelihood is ',neg_ll_nn
+        print 'Dev Prior is ',np.sum(Ydev==0)/float(len(Ydev))
+        
+        plot_roc=False
+        if plot_roc:
+            roc_1 = []
+            for i in range(len(Ydev)):
+                roc_1.append((Ydev[i],prob_dev[i,1]))
+            roc_2 = []
+            for i in range(len(Ydev)):
+                roc_2.append((Ydev[i],Xp_dev_score_local[i,0]))
             if nnet:
-                accu_nn = nn_classifier.Accuracy(Xdev_dict, Ydev)
-                neg_ll_nn = nn_classifier.loss_multiclass_nn(Xdev_dict, Ydev)
-                prob_dev_nn = nn_classifier.get_predictions_nn(Xdev_dict)
-              
-            print 'Dev Accuracy is ',accu
-            print 'Dev Neg LogLikelihood is ',neg_ll
-            if nnet:
-                print 'NN Dev Accuracy is ',accu_nn
-                print 'NN Dev Neg LogLikelihood is ',neg_ll_nn
-            print 'Dev Prior is ',np.sum(Ydev==0)/float(len(Ydev))
-            atwv_tst = babel_dev_score.GetATWV(prob_dev[:,1])
-            print 'Testing ATWV',atwv_tst
-            sys_name_dev = './data/dev.'+''.join(feat_list)+'.xml'
-            sys_name_dev_nn = './data/dev.'+''.join(feat_list)+'.NN.xml'
-            baseline_name_dev = './data/dev.rawscore.xml'
-            babel_dev_score.DumpScoresXML(sys_name_dev,prob_dev[:,1])
-            if nnet:
-                babel_dev_score.DumpScoresXML(sys_name_dev_nn,prob_dev_nn[:,1])
-            babel_dev_score.DumpScoresXML(baseline_name_dev,np.asarray(Xp_dev_score_local[:,0]).squeeze())
-            
-            plot_roc=False
-            if plot_roc:
-                roc_1 = []
+                roc_3 = []
                 for i in range(len(Ydev)):
-                    roc_1.append((Ydev[i],prob_dev[i,1]))
-                roc_2 = []
-                for i in range(len(Ydev)):
-                    roc_2.append((Ydev[i],Xp_dev_score_local[i,0]))
-                if nnet:
-                    roc_3 = []
-                    for i in range(len(Ydev)):
-                        roc_3.append((Ydev[i],prob_dev_nn[i,1]))
-                r1 = pyroc.ROCData(roc_1)
-                r2 = pyroc.ROCData(roc_2)
-                lista = [r1,r2]
-                if nnet:
-                    r3 = pyroc.ROCData(roc_3)
-                    lista = [r1,r2,r3]
-                    pyroc.plot_multiple_roc(lista,'Multiple ROC Curves',labels=['system','baseline','nnet'],include_baseline=True)
-                else:
-                    pyroc.plot_multiple_roc(lista,'Multiple ROC Curves',labels=['system','baseline'],include_baseline=True)
-            
-            print 'Dev ATWV system:',kws_scorer.get_score_dev(sys_name_dev)
-            atwv=kws_scorer.get_score_woth_dev(sys_name_dev)
-            if atwv>best_atwv:
-                best_a = a
-                best_atwv=atwv
-            print 'Dev ATWV no threshold system:',atwv
-            print 'Debug Dev ATWV no threshold system:',atwv_tst
+                    roc_3.append((Ydev[i],prob_dev_nn[i,1]))
+            r1 = pyroc.ROCData(roc_1)
+            r2 = pyroc.ROCData(roc_2)
+            lista = [r1,r2]
             if nnet:
-                print 'NN Dev ATWV system:',kws_scorer.get_score_dev(sys_name_dev_nn)
-                print 'NN Dev ATWV no threshold system:',kws_scorer.get_score_woth_dev(sys_name_dev_nn)
-            print 'Dev ATWV baseline:',kws_scorer.get_score_dev(baseline_name_dev)
-    
-    #lr_classifier.w[0,0]=-best_a
-    #lr_classifier.w[0,1]=best_a
+                r3 = pyroc.ROCData(roc_3)
+                lista = [r1,r2,r3]
+                pyroc.plot_multiple_roc(lista,'Multiple ROC Curves',labels=['system','baseline','nnet'],include_baseline=True)
+            else:
+                pyroc.plot_multiple_roc(lista,'Multiple ROC Curves',labels=['system','baseline'],include_baseline=True)
+        
+        print 'Dev ATWV system:',babel_dev_score.GetATWV(prob_dev[:,1], compute_th=True)
+        print 'Dev ATWV no threshold system:',babel_dev_score.GetATWV(prob_dev[:,1])
+        if nnet:
+            print 'NN Dev ATWV system:',babel_dev_score.GetATWV(prob_dev_nn[:,1], compute_th=True)
+            print 'NN Dev ATWV no threshold system:',babel_dev_score.GetATWV(prob_dev_nn[:,1])
+        print 'Dev ATWV baseline:',babel_dev_score.GetATWV(np.asarray(Xp_dev_score_local[:,0]).squeeze(),compute_th=True)
         
     logging.info('Running Test...')
     accu = lr_classifier.Accuracy(Xtest_dict, Ytest, special_bias=Xtest_special_bias)
@@ -519,21 +498,12 @@ def run():
         print 'NN Test Neg LogLikelihood is ',neg_ll_nn
     print 'Test Prior is ',np.sum(Ytest==0)/float(len(Ytest))
     
-    sys_name = './data/eval.'+''.join(feat_list)+'.xml'
-    sys_name_nn = './data/eval.'+''.join(feat_list)+'.NN.xml'
-    baseline_name = './data/eval.rawscore.xml'
-    
-    babel_eval_score.DumpScoresXML(sys_name,prob[:,1])
+    print 'ATWV system:',babel_eval_score.GetATWV(prob[:,1], compute_th=True)
+    print 'ATWV no threshold system',babel_eval_score.GetATWV(prob[:,1])
     if nnet:
-        babel_eval_score.DumpScoresXML(sys_name_nn,prob_nn[:,1])
-    babel_eval_score.DumpScoresXML(baseline_name,np.asarray(Xp_eval_score_local[:,0]).squeeze())
-    
-    print 'ATWV system:',kws_scorer.get_score(sys_name)
-    print 'ATWV no threshold system',kws_scorer.get_score_woth(sys_name)
-    if nnet:
-        print 'NN ATWV system:',kws_scorer.get_score(sys_name_nn)
-        print 'NN ATWV no threshold system',kws_scorer.get_score_woth(sys_name_nn)
-    print 'ATWV baseline:',kws_scorer.get_score(baseline_name)
+        print 'NN ATWV system:',babel_eval_score.GetATWV(prob_nn[:,1], compute_th=True)
+        print 'NN ATWV no threshold system',babel_eval_score.GetATWV(prob_nn[:,1])
+    print 'ATWV baseline:',babel_eval_score.GetATWV(np.asarray(Xp_eval_score_local[:,0]).squeeze(),compute_th=True)
     
 if __name__ == '__main__':
     gflags.FLAGS(sys.argv)
