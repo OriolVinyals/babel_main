@@ -414,14 +414,16 @@ def run():
     Xdev_special_bias=None
     Xtest_special_bias=None
     lr_classifier.Train(feat_list=feat_list,type='logreg_atwv',gamma=0.0, domeanstd=False, special_bias=Xtrain_special_bias, add_bias=True, 
-                        class_instance=babel_dev_score, factor=10.0, cv_class_instance=babel_eval_score, cv_feats=Xtest_dict, cv_special_bias=Xtest_special_bias)
+                        class_instance=babel_dev_score, factor=10.0, 
+                        cv_class_instance=babel_eval_score, cv_feats=Xtest_dict, cv_special_bias=Xtest_special_bias)
     try:
         print lr_classifier.b,lr_classifier.w
     except:
         pass
     if nnet:
         nn_classifier.Train(feat_list=feat_list,type='nn_atwv',gamma=0.0, domeanstd=False, special_bias=Xtrain_special_bias, add_bias=True, 
-                            class_instance=babel_dev_score, arch=[80], factor=10.0)
+                            class_instance=babel_dev_score, arch=[80], factor=10.0,
+                            cv_class_instance=babel_eval_score, cv_feats=Xtest_dict, cv_special_bias=Xtest_special_bias)
 
     accu = lr_classifier.Accuracy(Xtrain_dict, Ytrain, special_bias=Xtrain_special_bias)
     neg_ll = lr_classifier.loss_multiclass_logreg(Xtrain_dict, Ytrain, special_bias=Xtrain_special_bias)
