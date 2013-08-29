@@ -414,7 +414,7 @@ def run():
     Xdev_special_bias=None
     Xtest_special_bias=None
     lr_classifier.Train(feat_list=feat_list,type='logreg_atwv',gamma=0.0, domeanstd=False, special_bias=Xtrain_special_bias, add_bias=True, 
-                        class_instance=babel_dev_score, factor=10.0)
+                        class_instance=babel_dev_score, factor=10.0, cv_class_instance=babel_eval_score, cv_feats=Xtest_dict, cv_special_bias=Xtest_special_bias)
     try:
         print lr_classifier.b,lr_classifier.w
     except:

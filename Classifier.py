@@ -13,7 +13,8 @@ class Classifier:
         self._Ytrain=Ytrain
         self.features=Xtrain.keys()
         
-    def Train(self,feat_list=None,type='logreg',gamma=0.0,domeanstd=True,special_bias=None,add_bias=True, weight=None, class_instance=None, method='sigmoid',factor=10.0,arch=[10]):
+    def Train(self,feat_list=None,type='logreg',gamma=0.0,domeanstd=True,special_bias=None,add_bias=True, weight=None, class_instance=None, method='sigmoid',factor=10.0,arch=[10],
+              cv_feats=None, cv_special_bias=None,cv_class_instance=None):
         if feat_list==None:
             feat_list=self.features
         self.feat_list=feat_list
@@ -30,6 +31,13 @@ class Classifier:
         Xtrain_feats /= self.std
         if special_bias != None:
             Xtrain_feats = np.ascontiguousarray(np.hstack((Xtrain_feats, special_bias)))
+        #CV
+        if cv_feats!=None:
+            cv_feats = np.ascontiguousarray(np.hstack((cv_feats[feat] for feat in feat_list)))
+            cv_feats -= self.m
+            cv_feats /= self.std
+            if special_bias != None:
+                cv_feats = np.ascontiguousarray(np.hstack((cv_feats, cv_special_bias)))
         '''Classifier stage'''
         if type=='linsvm':
             self.w, self.b = classifier.svm_onevsall(Xtrain_feats, self._Ytrain, self._gamma, weight = weight, special_bias=special_bias, add_bias=add_bias)
@@ -39,7 +47,7 @@ class Classifier:
             return (self.w,self.b)
         elif type=='logreg_atwv':
             self.w, self.b = Train_atwv(Xtrain_feats,class_instance=class_instance,weight=weight,special_bias=special_bias, add_bias=add_bias, method=method, 
-                                        factor=factor, gamma=self._gamma)
+                                        factor=factor, gamma=self._gamma, cv_class_instance=cv_class_instance, cv_feats=cv_feats)
         elif type=='nn_atwv':
             self._arch = arch
             self._weights_nn = Train_atwv_nn(Xtrain_feats,class_instance=class_instance,weight=weight,special_bias=special_bias, add_bias=add_bias, 
@@ -228,7 +236,8 @@ def get_predictions_nn(X, weights,arch):
     else:
         return np.zeros((0)),np.zeros((0))
     
-def Train_atwv(Xtrain_feats,class_instance=None,weight=None,special_bias=None,add_bias=True,method='sigmoid',factor=10.0,gamma=0.0):
+def Train_atwv(Xtrain_feats,class_instance=None,weight=None,special_bias=None,add_bias=True,method='sigmoid',factor=10.0,gamma=0.0,
+               cv_feats=None,cv_class_instance=None):
     K=2
     dim=Xtrain_feats.shape[1]
     if weight==None:
@@ -249,7 +258,10 @@ def Train_atwv(Xtrain_feats,class_instance=None,weight=None,special_bias=None,ad
                         lambda x: f_atwv(x, Xtrain_feats,class_instance,special_bias,add_bias,method,factor,0,gamma)[1],
                         weight)
     #weight = sgd(f_atwv,weight,args=(Xtrain_feats,class_instance,special_bias,add_bias,method,factor,10),disp=True)[0]
-    callback_f = lambda x: sys.stdout.write('Error ' + repr(f_atwv(x, Xtrain_feats,class_instance,special_bias,add_bias,'exact',0,0,0)[0]))
+    if cv_feats != None:
+        callback_f = lambda x: sys.stdout.write('CV ATWV ' + repr(f_atwv(x, cv_feats,cv_class_instance,special_bias,add_bias,'exact',0,0,0)[0]))
+    else:
+        callback_f = lambda x: sys.stdout.write('Train ATWV ' + repr(f_atwv(x, Xtrain_feats,class_instance,special_bias,add_bias,'exact',0,0,0)[0]))
     #callback_f = lambda x: sys.stdout.write('Error ' + repr(0.0))
     weight = optimize.fmin_l_bfgs_b(f_atwv,weight,args=(Xtrain_feats,class_instance,special_bias,add_bias,method,factor,0,gamma),disp=True,callback=callback_f)[0]
     w = weight[: K * dim].reshape(dim, K)
