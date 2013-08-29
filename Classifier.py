@@ -42,6 +42,8 @@ class Classifier:
             self._arch = arch
             self._weights_nn = Train_atwv_nn(Xtrain_feats,class_instance=class_instance,weight=weight,special_bias=special_bias, add_bias=add_bias, 
                                              arch=self._arch, method=method, factor=factor)
+            self._weights_nn = Train_atwv_nn(Xtrain_feats,class_instance=class_instance,weight=self._weights_nn,special_bias=special_bias, add_bias=add_bias, 
+                                             arch=self._arch, method=method, factor=factor*10.0)
         elif type=='nn_debug':
             if mpi.COMM.Get_size() > 1:
                 print 'Warning!!! Running NN training with MPI with more than one Node!'
@@ -289,9 +291,12 @@ def Train_atwv_nn(Xtrain_feats,class_instance=None,weight=None,special_bias=None
     if weight==None:
         params = []
         w_h = np.random.randn(dim,n_hid)
-        np.random.randn
+        interval = 4.0*np.sqrt(6.0/(dim+n_hid))
+        w_h = np.random.uniform(low=-interval,high=interval,size=(dim,n_hid))
         b_h = np.zeros((1,n_hid))
         w_s = np.random.randn(n_hid,K)
+        interval = 4.0*np.sqrt(6.0/(n_hid+K))
+        w_s = np.random.uniform(low=-interval,high=interval,size=(n_hid,K))
         b_s = np.zeros((1,K))
         params.append(w_h)
         params.append(b_h)
