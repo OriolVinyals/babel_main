@@ -159,7 +159,7 @@ def run():
         #feat_type_local_score=['raw_log_odd','raw','kw_length','kw_freq','kw_freq_fine','kw_true_freq','kw_true_ratio']
         #feat_type_local_score=['raw']
         feat_type_local_score=['raw_log_odd','kw_n_est_log_odd']
-        feat_type_local_score=['raw_log_odd','raw','kw_length','kw_freq','kw_freq_fine','kw_n_est_log_odd']
+        #feat_type_local_score=['raw_log_odd','raw','kw_length','kw_freq','kw_freq_fine','kw_n_est_log_odd']
         babel_score.GetLocalFeatures(feat_type=feat_type_local_score)
         babel_score.GetGlobalFeatures(feat_type=['avg'])
         babel_score.GetUtteranceFeatures(feat_type=['avg','min','max'])
@@ -167,8 +167,8 @@ def run():
         Xp_score_glob=np.asmatrix(babel_score._glob_features)
         Xp_score_utt=np.asmatrix(babel_score._utt_features)
         Xtrain_dict['Score_Local'] = Xp_score_local
-        Xtrain_dict['Score_Utt'] = Xp_score_utt
-        Xtrain_dict['Score_Glob'] = Xp_score_glob
+        #Xtrain_dict['Score_Utt'] = Xp_score_utt
+        #Xtrain_dict['Score_Glob'] = Xp_score_glob
         feat_type_special_bias=['kw_n_est_log_odd']
         #feat_type_special_bias=['threshold']
         babel_score.GetLocalFeatures(feat_type=feat_type_special_bias)
@@ -413,15 +413,14 @@ def run():
     Xtrain_special_bias=None
     Xdev_special_bias=None
     Xtest_special_bias=None
-    lr_classifier.Train(feat_list=feat_list,type='logreg_atwv',gamma=0.0, domeanstd=False, special_bias=Xtrain_special_bias, add_bias=True, class_instance=babel_dev_score)
-    #lr_classifier.Train(feat_list=feat_list,type='logreg_atwv',gamma=0.0, domeanstd=False, special_bias=Xtrain_special_bias, add_bias=False, 
-    #                    class_instance=babel_dev_score,weight=(lr_classifier.w,lr_classifier.b))
+    lr_classifier.Train(feat_list=feat_list,type='logreg_atwv',gamma=0.0, domeanstd=False, special_bias=Xtrain_special_bias, add_bias=True, 
+                        class_instance=babel_dev_score, factor=10.0)
     try:
         print lr_classifier.b,lr_classifier.w
     except:
         pass
     if nnet:
-        nn_classifier.Train(feat_list=feat_list,type='nn_debug',gamma=0.0)
+        nn_classifier.Train(feat_list=feat_list,type='nn_atwv',gamma=0.0, domeanstd=False, special_bias=Xtrain_special_bias, add_bias=True, class_instance=babel_dev_score)
 
     accu = lr_classifier.Accuracy(Xtrain_dict, Ytrain, special_bias=Xtrain_special_bias)
     neg_ll = lr_classifier.loss_multiclass_logreg(Xtrain_dict, Ytrain, special_bias=Xtrain_special_bias)

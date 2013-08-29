@@ -378,7 +378,7 @@ class BabelDataset(datasets.ImageSet):
                         atwv -= float(self.beta)/(float(self.T) - float(self._map_kw_counts[kw_id]))
         return atwv/len(self._map_kw_counts)
     
-    def GetATWVsmooth(self,scores,ths=None,compute_th=False):
+    def GetATWVsmooth(self,scores,ths=None,compute_th=False,method='sigmoid',factor=5.0):
         if compute_th:
             S = {}
             for i in range(len(self._keyword)):
@@ -405,7 +405,7 @@ class BabelDataset(datasets.ImageSet):
         if ths==None:
             ths = 0.5
         
-        loss,dloss = self.Loss01smooth(scores-ths)
+        loss,dloss = self.Loss01smooth(scores-ths,method=method,factor=factor)
         atwv = np.dot(loss, weight)/len(self._map_kw_counts)
         gatwv = dloss*weight/len(self._map_kw_counts)
         return atwv, gatwv
