@@ -379,7 +379,7 @@ def f_atwv_nn(weights, X,class_instance,special_bias,add_bias,arch,method,factor
     #g_w_s_0 = np.dot(hidden.T, gpred*scores[:,1]*(-scores[:,0]))
     ##g_w_s_0 = np.dot(hidden.T, 0*gpred*scores[:,1]*(-scores[:,0]))
     g_w_s_1 = np.dot(hidden.T, gpred*scores[:,1]*(1-scores[:,1]))
-    g_w_s_0 = np.zeros(gw_s_1.shape)
+    g_w_s_0 = np.zeros(g_w_s_1.shape)
     g_w_s = np.hstack((g_w_s_0[:,np.newaxis],g_w_s_1[:,np.newaxis]))
     #g_b_s_0 = np.sum(gpred*scores[:,1]*(-scores[:,0]))
     ##g_b_s_0 = np.sum(0*gpred*scores[:,1]*(-scores[:,0]))
