@@ -160,6 +160,7 @@ def run():
         #feat_type_local_score=['raw']
         feat_type_local_score=['raw_log_odd','kw_n_est_log_odd']
         feat_type_local_score=['raw_log_odd','raw','kw_length','kw_freq','kw_freq_fine','kw_n_est_log_odd']
+        feat_type_local_score=['raw_log_odd','raw','kw_length','kw_freq','kw_freq_fine','kw_n_est_log_odd','threshold','kw_n_est','duration']
         babel_score.GetLocalFeatures(feat_type=feat_type_local_score)
         babel_score.GetGlobalFeatures(feat_type=['avg'])
         babel_score.GetUtteranceFeatures(feat_type=['avg','min','max'])
@@ -406,7 +407,7 @@ def run():
 
     print 'Classifier Stage'
     lr_classifier = Classifier.Classifier(Xtrain_dict, Ytrain)
-    nnet=True
+    nnet=False
     if nnet:
         nn_classifier = Classifier.Classifier(Xtrain_dict, Ytrain)
     '''Classifier stage'''
