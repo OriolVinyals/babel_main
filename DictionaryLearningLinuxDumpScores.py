@@ -84,7 +84,7 @@ def run():
         Xp_acoustic = conv.process_dataset(babel, as_2d = True)
         Xtrain_dict['Acoustic'] = Xp_acoustic
         
-    lattice=False
+    lattice=True
     if(lattice):
         logging.info('****Lattice Training****')
         list_file = './data/lat.list'
@@ -94,7 +94,7 @@ def run():
         posting_sampler = babel_lat.posting_sampler
         #Xtrain_dict['Lattice'] = 0
     
-    posterior=False
+    posterior=True
     if(posterior):
         logging.info('****Posterior Training****')
         list_file = './data/20130307.dev.post.untightened.scp'
@@ -407,7 +407,7 @@ def run():
 
     print 'Classifier Stage'
     lr_classifier = Classifier.Classifier(Xtrain_dict, Ytrain)
-    nnet=False
+    nnet=True
     if nnet:
         nn_classifier = Classifier.Classifier(Xtrain_dict, Ytrain)
     '''Classifier stage'''
@@ -422,7 +422,7 @@ def run():
     except:
         pass
     if nnet:
-        nn_classifier.Train(feat_list=feat_list,type='nn_atwv',gamma=0.0, domeanstd=False, special_bias=Xtrain_special_bias, add_bias=True, 
+        nn_classifier.Train(feat_list=feat_list,type='nn_atwv',gamma=0.001, domeanstd=True, special_bias=Xtrain_special_bias, add_bias=True, 
                             class_instance=babel_dev_score, arch=[80], factor=10.0,
                             cv_class_instance=babel_eval_score, cv_feats=Xtest_dict, cv_special_bias=Xtest_special_bias)
 
