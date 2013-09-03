@@ -49,7 +49,7 @@ def run():
     min_count = 0.0
     max_count= 1000000.0
     
-    acoustic=False
+    acoustic=True
     if(acoustic):
         logging.info('****Acoustic Training****')
         list_file = './data/20130307.dev.untightened.scp'
@@ -66,7 +66,7 @@ def run():
                     trainer = pipeline.ZcaTrainer({'reg': 0.1})), # Does whitening
                     pipeline.ThresholdEncoder({'alpha': 0.25, 'twoside': True},
                         trainer = pipeline.OMPTrainer(
-                                {'k': 500, 'max_iter':100})), # does encoding
+                                {'k': 50, 'max_iter':100})), # does encoding
                     pipeline.SpatialPooler({'grid': (1,1), 'method': 'ave'})
                     ])
         normalizer = True
@@ -422,8 +422,8 @@ def run():
     except:
         pass
     if nnet:
-        nn_classifier.Train(feat_list=feat_list,type='nn_atwv',gamma=0.001, domeanstd=True, special_bias=Xtrain_special_bias, add_bias=True, 
-                            class_instance=babel_dev_score, arch=[80], factor=10.0,
+        nn_classifier.Train(feat_list=feat_list,type='nn_atwv',gamma=0.00001, domeanstd=True, special_bias=Xtrain_special_bias, add_bias=True, 
+                            class_instance=babel_dev_score, arch=[40], factor=10.0,
                             cv_class_instance=babel_eval_score, cv_feats=Xtest_dict, cv_special_bias=Xtest_special_bias)
 
     accu = lr_classifier.Accuracy(Xtrain_dict, Ytrain, special_bias=Xtrain_special_bias)
