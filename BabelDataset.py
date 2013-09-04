@@ -202,7 +202,30 @@ class BabelDataset(datasets.ImageSet):
                     if feat_range==None:
                         elem = self._data[i]
                     else:
-                        elem = self._data[i][feat_range]
+                        elem = [self._data[i][j] for j in feat_range]
+                    if isinstance(elem,list):
+                        vector_return.extend(elem)
+                    else:
+                        vector_return.append(elem)
+                if feat_type[j] == 'raw_odd':
+                    if feat_range==None:
+                        aux = np.minimum(0.999,self._data[i])
+                    else:
+                        aux = np.minimum(0.999,[self._data[i][j] for j in feat_range])
+                    elem = aux / (1.0 - aux) 
+                    elem = elem.tolist()       
+                    if isinstance(elem,list):
+                        vector_return.extend(elem)
+                    else:
+                        vector_return.append(elem)
+                if feat_type[j] == 'raw_log_odd':
+                    if feat_range==None:
+                        aux = np.minimum(0.999,self._data[i])
+                    else:
+                        aux = np.minimum(0.999,[self._data[i][j] for j in feat_range])
+                    elem = aux / (1.0 - aux)
+                    elem = np.log(elem)
+                    elem = elem.tolist()
                     if isinstance(elem,list):
                         vector_return.extend(elem)
                     else:
@@ -245,21 +268,6 @@ class BabelDataset(datasets.ImageSet):
                         vector_return.append(elem)
                 if feat_type[j] == 'kw_id':
                     elem = self.map_keyword_feat['id'][self._keyword[i]]
-                    if isinstance(elem,list):
-                        vector_return.extend(elem)
-                    else:
-                        vector_return.append(elem)
-                if feat_type[j] == 'raw_odd':
-                    aux = np.min((0.999,self._data[i]))
-                    elem = aux / (1.0 - aux)        
-                    if isinstance(elem,list):
-                        vector_return.extend(elem)
-                    else:
-                        vector_return.append(elem)
-                if feat_type[j] == 'raw_log_odd':
-                    aux = np.min((0.999,self._data[i]))
-                    elem = aux / (1.0 - aux)
-                    elem = np.log(elem)    
                     if isinstance(elem,list):
                         vector_return.extend(elem)
                     else:
@@ -515,9 +523,9 @@ class BabelDataset(datasets.ImageSet):
             self.map_keyword_feat['n_est'] = {}
             for i in range(len(self._data)):
                 if self.map_keyword_feat['n_est'].has_key(self._keyword[i]):
-                    self.map_keyword_feat['n_est'][self._keyword[i]] += self._data[i]
+                    self.map_keyword_feat['n_est'][self._keyword[i]] += self._data[i][0]
                 else:
-                    self.map_keyword_feat['n_est'][self._keyword[i]] = self._data[i]
+                    self.map_keyword_feat['n_est'][self._keyword[i]] = self._data[i][0]
         self.map_keyword_feat['n_true'] = true_keyword_count
         print 'Set of kyeword features computed'
 
@@ -529,9 +537,9 @@ class BabelDataset(datasets.ImageSet):
             self.map_keyword_feat['n_est'] = {}
             for i in range(len(self._data)):
                 if self.map_keyword_feat['n_est'].has_key(self._keyword[i]):
-                    self.map_keyword_feat['n_est'][self._keyword[i]] += self._data[i]
+                    self.map_keyword_feat['n_est'][self._keyword[i]] += self._data[i][0]
                 else:
-                    self.map_keyword_feat['n_est'][self._keyword[i]] = self._data[i]
+                    self.map_keyword_feat['n_est'][self._keyword[i]] = self._data[i][0]
             
 if __name__ == '__main__':
     feat_range = [0,1,2,5,6,7,69,74]

@@ -49,7 +49,7 @@ def run():
     min_count = 0.0
     max_count= 1000000.0
     
-    acoustic=True
+    acoustic=False
     if(acoustic):
         logging.info('****Acoustic Training****')
         list_file = './data/20130307.dev.untightened.scp'
@@ -84,7 +84,7 @@ def run():
         Xp_acoustic = conv.process_dataset(babel, as_2d = True)
         Xtrain_dict['Acoustic'] = Xp_acoustic
         
-    lattice=True
+    lattice=False
     if(lattice):
         logging.info('****Lattice Training****')
         list_file = './data/lat.list'
@@ -94,7 +94,7 @@ def run():
         posting_sampler = babel_lat.posting_sampler
         #Xtrain_dict['Lattice'] = 0
     
-    posterior=True
+    posterior=False
     if(posterior):
         logging.info('****Posterior Training****')
         list_file = './data/20130307.dev.post.untightened.scp'
@@ -113,7 +113,7 @@ def run():
         Xtrain_dict['Posterior_Global'] = Xp_post_glob
         Xtrain_dict['Posterior_Utt'] = Xp_post_utt
         
-    srate=True
+    srate=False
     if(srate):
         logging.info('****Srate Training****')
         list_file = './data/audio.list'
@@ -128,7 +128,7 @@ def run():
         Xtrain_dict['Srate_Global'] = Xp_srate_glob.T
         Xtrain_dict['Srate_Utt'] = Xp_srate_utt.T
         
-    snr=True
+    snr=False
     if(snr):
         logging.info('****SNR Training****')
         list_file = './data/audio.list'
@@ -161,7 +161,8 @@ def run():
         feat_type_local_score=['raw_log_odd','kw_n_est_log_odd']
         feat_type_local_score=['raw_log_odd','raw','kw_length','kw_freq','kw_freq_fine','kw_n_est_log_odd']
         feat_type_local_score=['raw_log_odd','raw','kw_length','kw_freq','kw_freq_fine','kw_n_est_log_odd','threshold','kw_n_est','duration']
-        babel_score.GetLocalFeatures(feat_type=feat_type_local_score)
+        #feat_type_local_score=['raw','threshold']
+        babel_score.GetLocalFeatures(feat_type=feat_type_local_score,feat_range=None)
         babel_score.GetGlobalFeatures(feat_type=['avg'])
         babel_score.GetUtteranceFeatures(feat_type=['avg','min','max'])
         Xp_score_local=np.asmatrix(babel_score._local_features)
@@ -407,14 +408,14 @@ def run():
 
     print 'Classifier Stage'
     lr_classifier = Classifier.Classifier(Xtrain_dict, Ytrain)
-    nnet=True
+    nnet=False
     if nnet:
         nn_classifier = Classifier.Classifier(Xtrain_dict, Ytrain)
     '''Classifier stage'''
     Xtrain_special_bias=None
     Xdev_special_bias=None
     Xtest_special_bias=None
-    lr_classifier.Train(feat_list=feat_list,type='logreg_atwv',gamma=0.01, domeanstd=False, special_bias=Xtrain_special_bias, add_bias=True, 
+    lr_classifier.Train(feat_list=feat_list,type='logreg_atwv',gamma=0.001, domeanstd=False, special_bias=Xtrain_special_bias, add_bias=True, 
                         class_instance=babel_dev_score, factor=10.0, 
                         cv_class_instance=babel_eval_score, cv_feats=Xtest_dict, cv_special_bias=Xtest_special_bias)
     try:

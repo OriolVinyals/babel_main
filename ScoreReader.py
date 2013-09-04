@@ -84,12 +84,16 @@ class ScoreReader:
                 #self.score_kw_utt_times_hash[key] = float(score)
         
     def GetKeywordData(self, utt_name, t_ini, t_end, kw=''):
+        vector_return = []
         ret = self.score_kw_utt_times_hash[utt_name][(t_ini,t_end)][kw]
         if ret == {}:
             print 'Error couldnt find key!'
             exit(0)
         else:
-            return ret
+            vector_return.append(ret) # raw score ALWAYS first
+            #vector_return.append(ret)
+            return vector_return
+            #return ret
     
     def GetGlobFeature(self, utt_name, feat_type=['avg']):
         if self.glob_feature.has_key(utt_name):
@@ -128,6 +132,11 @@ class ScoreReader:
                     vector_return.append(np.min(scores))
                 if feat_type[i] == 'max':
                     vector_return.append(np.max(scores))
+                if feat_type[i] == 'avg_log_odd':
+                    aux = np.minimum(0.999,scores)
+                    elem = aux / (1.0 - aux)
+                    elem = np.log(elem)  
+                    vector_return.append(np.average(elem))  
             self.utt_feature[utt_id_times] = vector_return
             return self.utt_feature[utt_id_times]
     

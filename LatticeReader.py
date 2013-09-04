@@ -26,6 +26,9 @@ class LatticeReader:
             utt_id_times = string.split(self.list_files[i],'/')[-1].split('.')[0]
             #TODO
             #np_data = lattice.Dag(htk_file=self.list_files[i])
+            #np_data.bestpath(lw=1.0, ip=1.0)
+            #np_data.forward(lw=1.0, ip=1.0)
+            #np_data.posterior(lw=1.0, ip=1.0)
             np_data = 0
             #ENDTODO
             self.lat_data.append(np_data)

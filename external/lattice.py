@@ -143,8 +143,8 @@ class Dag(list):
                     ascr = float(fields['a'])
                     lscr = float(fields['l'])
                     # FIXME: Not sure if this is a good idea
-                    if not (tofr,ascr) in nodes[int(fromnode)].exits:
-                        nodes[int(fromnode)].exits.append((tofr, ascr))
+                    if not (tofr,ascr,lscr,tonode) in nodes[int(fromnode)].exits:
+                        nodes[int(fromnode)].exits.append((tofr, ascr,lscr,tonode))
         # FIXME: Not sure if the first and last nodes are always the start and end?
         self.start = nodes[0]
         self.end = nodes[-1]
@@ -209,25 +209,26 @@ class Dag(list):
         @return: Tuple of (successor, exit-frame, acoustic-score, language-score)
         @rtype: (Dag.Node, int, int, int)
         """
-        for frame, score in node.exits:
-            for next in self[frame].itervalues():
-                if lm:
-                    # Build history for LM score if it exists
-                    if node.prev:
-                        syms = []
-                        prev = node.prev
-                        for i in range(2,lm.n):
-                            if prev == None:
-                                break
-                            syms.append(prev.sym)
-                            prev = prev.prev
-                        syms.reverse()
-                        syms.extend((node.sym, next.sym))
-                        yield next, frame, score, lm.score(*syms)
-                    else:
-                        yield next, frame, score, lm.score(node.sym, next.sym)
-                else:
-                    yield next, frame, score, 0
+        for frame, score, lmscore, tonode in node.exits:
+            yield self[frame]['Node'+repr(tonode)], frame, score, lmscore
+#             for next in self[frame].itervalues():
+#                 if lm:
+#                     # Build history for LM score if it exists
+#                     if node.prev:
+#                         syms = []
+#                         prev = node.prev
+#                         for i in range(2,lm.n):
+#                             if prev == None:
+#                                 break
+#                             syms.append(prev.sym)
+#                             prev = prev.prev
+#                         syms.reverse()
+#                         syms.extend((node.sym, next.sym))
+#                         yield next, frame, score, lm.score(*syms)
+#                     else:
+#                         yield next, frame, score, lm.score(node.sym, next.sym)
+#                 else:
+#                     yield next, frame, score, lmscore
 
     def n_nodes(self):
         """
@@ -478,10 +479,11 @@ class Dag(list):
         for u in self.nodes():
             u.prev = []
         for w in self.nodes():
-            for f, s in w.exits:
-                for u in self[f].itervalues():
-                    if w not in u.prev:
-                        u.prev.append(w)
+            for f, s, l_s, n in w.exits:
+                u = self[f]['Node'+repr(n)]
+                #for u in self[f].itervalues():
+                if w not in u.prev:
+                    u.prev.append(w)
 
     def traverse_depth(self, start=None):
         """Depth-first traversal of DAG nodes"""
@@ -554,9 +556,9 @@ class Dag(list):
         for frame in self:
             for node in frame.itervalues():
                 newexits = []
-                for ef, ascr in node.exits:
+                for ef, ascr, lscr, n in node.exits:
                     if len(self[ef]) > 0:
-                        newexits.append((ef, ascr))
+                        newexits.append((ef, ascr, lscr, n))
                 node.exits = newexits
 
     def forward(self, lm=None, lw=7.5, ip=0.7):
@@ -578,7 +580,7 @@ class Dag(list):
         for w in self.nodes():
             # For each outgoing arc from w
             for i,x in enumerate(w.exits):
-                wf, wascr = x
+                wf, wascr, lscr_t, n = x
                 # This is alpha_t(w)
                 alpha = LOGZERO
                 # If w has no predecessors the previous alpha is 1.0
@@ -590,15 +592,15 @@ class Dag(list):
                     if lm:
                         lscr = lm.score(v.sym, w.sym) + math.log(ip)
                     else:
-                        lscr = 0
+                        lscr = lscr_t + math.log(ip)
                     # Find the arc from v to w to get its alpha
-                    for vf, vs in v.exits:
-                        vascr, valpha, vbeta = vs
-                        if vf == w.entry:
+                    for vf, vs, vn in v.exits:
+                        vascr, vlscr, valpha, vbeta = vs
+                        if 'Node'+repr(vn) == w.sym:
                             # Accumulate alpha for this arc
-                            alpha = logadd(alpha, valpha + lscr + wascr / lw)
+                            alpha = logadd(alpha, valpha + vlscr + wascr / lw)
                 # Update the acoustic score to hold alpha and beta
-                w.exits[i] = (wf, (wascr, alpha, LOGZERO))
+                w.exits[i] = (wf, (wascr, lscr_t, alpha, LOGZERO), n)
 
     def backward(self, lm=None, lw=7.5, ip=0.7):
         """
@@ -626,16 +628,16 @@ class Dag(list):
                     else:
                         lscr = 0
                     # For each outgoing arc from w
-                    for wf, ws in w.exits:
-                        wascr, walpha, wbeta = ws
+                    for wf, ws, wn in w.exits:
+                        wascr, wlscr, walpha, wbeta = ws
                         # Accumulate beta for arc from v to w
-                        beta = logadd(beta, wbeta + lscr + wascr / lw)
+                        beta = logadd(beta, wbeta + wlscr + wascr / lw)
                 # Find the arc from v to w to update its beta
                 for i, arc in enumerate(v.exits):
-                    vf, vs = arc
-                    if vf == w.entry:
-                        vascr, valpha, vbeta = vs
-                        v.exits[i] = (vf, (vascr, valpha, logadd(vbeta, beta)))
+                    vf, vs, vn = arc
+                    if 'Node'+repr(vn) == w.sym:
+                        vascr, vlscr, valpha, vbeta = vs
+                        v.exits[i] = (vf, (vascr, vlscr, valpha, logadd(vbeta, beta)) , vn)
 
     def posterior(self, lm=None, lw=7.5, ip=0.7):
         """
@@ -649,22 +651,22 @@ class Dag(list):
         @type ip: float
         """
         # Run forward and backward if not already done
-        frame, ascr = self.start.exits[0]
+        frame, ascr, n = self.start.exits[0]
         if not isinstance(ascr, tuple):
             self.forward(lm, lw, ip)
-        frame, ascr = self.start.exits[0]
-        if ascr[2] == LOGZERO:
+        frame, ascr, n = self.start.exits[0]
+        if ascr[3] == LOGZERO:
             self.backward(lm, lw, ip)
         # Sum over alpha for arcs entering the end node to get normalizer
         norm = LOGZERO
         for v in self.end.prev:
-            for ef, ascr in v.exits:
-                if ef == self.end.entry:
-                    ascr, alpha, beta = ascr
+            for ef, ascr, n in v.exits:
+                if 'Node'+repr(n) == self.end.sym:
+                    ascr, lscr, alpha, beta = ascr
                     norm = logadd(norm, alpha)
         # Iterate over all arcs and normalize
         for w in self.nodes():
             for i, x in enumerate(w.exits):
-                ef, ascr = x
-                ascr, alpha, beta = ascr
-                w.exits[i] = (ef, (ascr, alpha, beta, alpha + beta - norm))
+                ef, ascr, n = x
+                ascr, lscr, alpha, beta = ascr
+                w.exits[i] = (ef, (ascr, lscr, alpha, beta, alpha + beta - norm),n)
