@@ -171,7 +171,7 @@ class SNRReader:
         return utt_times[np.nonzero(np.sum(time_ind<utt_times,axis=1)>0)[0][0]]          
 
 if __name__ == '__main__':
-    list_files = './data/audio.eval.list'
+    list_files = './data/audio.dev_bengali_flp.list'
     snr_reader = SNRReader(list_files,pickle_fname='./pickles/full.eval.snr.pickle')  
     snr_reader.ReadAllSNR()
     snr_reader.DumpAudioDiagnostics()
