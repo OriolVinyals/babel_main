@@ -25,8 +25,10 @@ gflags.DEFINE_string("list_lattice_train","./data/lat.list",
 #Audio list is used in the score reader as well to (solely) determine utterance boundaries / names.
 gflags.DEFINE_string("list_scp_feat_train","./data/20130307.dev.untightened.scp",
                      "List of SCP features (MFCC) of training data (typically the dev set in Babel)")
+#Utterance boundaries are bogus for this file (that is why the utt_reader.list_times_utt is replaced with the lattice one)
 gflags.DEFINE_string("list_scp_post_train","./data/20130307.dev.post.untightened.scp",
                      "List of SCP features (posteriors) of training data (typically the dev set in Babel)")
+#Utterance boundaries are bogus for this file (that is why the utt_reader.list_times_utt is replaced with the lattice one)
 gflags.DEFINE_string("list_rawscore_train","./data/word.kwlist.raw.xml",
                      "List of raw scores (from lattices) of training data (typically the dev set in Babel)")
 
