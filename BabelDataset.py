@@ -6,6 +6,7 @@ from iceberk import datasets, mpi
 import numpy as np
 import os
 import itertools
+import gflags
 import UtteranceReader
 import LatticeReader
 import SNRReader
@@ -13,6 +14,16 @@ import SrateReader
 import PostingParser
 import ScoreReader
 import Sampler
+
+#NIST scoring stuff
+gflags.DEFINE_float("T_eval", 18600.705,
+                     "Given by the NIST scoring total, and used in ATWV (for eval).")
+gflags.DEFINE_float("T_train", 36255.58,
+                     "Given by the NIST scoring total, and used in ATWV (for trainig).")
+gflags.DEFINE_float("beta", 999.9,
+                     "Given by the NIST scoring beta, and used in ATWV.")
+
+FLAGS = gflags.FLAGS
 
 class BabelDataset(datasets.ImageSet):
     """The Bable dataset
@@ -26,11 +37,11 @@ class BabelDataset(datasets.ImageSet):
         super(BabelDataset, self).__init__()
         if list_file.find('eval') >= 0:
             self.is_eval = True
-            self.T = 18600.705
+            self.T = FLAGS.T_eval
         else:
             self.is_eval = False
-            self.T = 36255.58
-        self.beta = 999.9
+            self.T = FLAGS.T_train
+        self.beta = FLAGS.beta
         self.reader_type = reader_type
         if reader_type=='lattice':
             self.is_lattice = True
