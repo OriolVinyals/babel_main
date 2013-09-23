@@ -86,14 +86,88 @@ class ScoreReader:
     def GetKeywordData(self, utt_name, t_ini, t_end, kw=''):
         vector_return = []
         ret = self.score_kw_utt_times_hash[utt_name][(t_ini,t_end)][kw]
-        if ret == {}:
-            print 'Error couldnt find key!'
-            exit(0)
+        #test code
+        if False:
+            traverse = -1
+            inside = 0
+            left_inc = 0
+            right_out = 0
+            competitors_tr = -ret
+            competitors_in = 0.0
+            competitors_le = 0.0
+            competitors_ri = 0.0
+            max_competitors_tr = 0.0
+            max_competitors_in = 0.0
+            max_competitors_le = 0.0
+            max_competitors_ri = 0.0
+            ret_score_count = 0
+            for times in self.score_kw_utt_times_hash[utt_name]:
+                if((times[0] <= t_ini) and (times[1] >= t_end)):
+                    for score in self.score_kw_utt_times_hash[utt_name][times].values():
+                        competitors_tr += score
+                        if score == ret:
+                            ret_score_count +=1
+                        if score > max_competitors_tr and score!=ret:
+                            max_competitors_tr = score
+                        traverse += 1
+                if((times[0] > t_ini) and (times[1] < t_end)):
+                    for score in self.score_kw_utt_times_hash[utt_name][times].values():
+                        competitors_in += score
+                        if score > max_competitors_in:
+                            max_competitors_in = score
+                        inside += 1
+                if((times[0] <= t_ini) and (times[1] < t_end) and (times[1] > t_ini)):
+                    for score in self.score_kw_utt_times_hash[utt_name][times].values():
+                        competitors_le += score
+                        if score > max_competitors_le:
+                            max_competitors_le = score
+                        left_inc += 1
+                if((times[0] > t_ini) and (times[0] < t_end) and (times[1] >= t_end)):
+                    for score in self.score_kw_utt_times_hash[utt_name][times].values():
+                        competitors_ri += score
+                        if score > max_competitors_ri:
+                            max_competitors_ri = score
+                        right_out += 1
+            #end test code
+            if traverse > 0:
+                competitors_tr /= traverse
+            if inside > 0:
+                competitors_in /= inside
+            if left_inc > 0:
+                competitors_le /= left_inc
+            if right_out > 0:
+                competitors_ri /= right_out
+            if ret_score_count > 1:
+                if ret > max_competitors_tr:
+                    max_competitors_tr = ret
+            #if ret > 0.5:
+            #    print ret, traverse, competitors_tr, max_competitors_tr, inside, competitors_in, max_competitors_in, left_inc, competitors_le, max_competitors_le, right_out, competitors_ri, max_competitors_ri
+            if ret == {}:
+                print 'Error couldnt find key!'
+                exit(0)
+            else:
+                vector_return.append(ret) # raw score ALWAYS first
+                vector_return.append(competitors_tr)
+                vector_return.append(competitors_in)
+                vector_return.append(competitors_le)
+                vector_return.append(competitors_ri)
+                vector_return.append(max_competitors_tr)
+                vector_return.append(max_competitors_in)
+                vector_return.append(max_competitors_le)
+                vector_return.append(max_competitors_ri)
+                vector_return.append(traverse)
+                vector_return.append(inside)
+                vector_return.append(left_inc)
+                vector_return.append(right_out)
+                return vector_return
         else:
-            vector_return.append(ret) # raw score ALWAYS first
-            #vector_return.append(ret)
-            return vector_return
-            #return ret
+            if ret == {}:
+                print 'Error couldnt find key!'
+                exit(0)
+            else:
+                vector_return.append(ret) # raw score ALWAYS first
+                return vector_return
+                
     
     def GetGlobFeature(self, utt_name, feat_type=['avg']):
         if self.glob_feature.has_key(utt_name):

@@ -219,10 +219,12 @@ class BabelDataset(datasets.ImageSet):
                     else:
                         vector_return.append(elem)
                 if feat_type[j] == 'raw_log_odd':
-                    if feat_range==None:
+                    #feat_range_t = [0,1,2,3,4,5,6,7,8]
+                    feat_range_t = [0] #Only get first, which is original score
+                    if feat_range_t==None:
                         aux = np.minimum(0.999,self._data[i])
                     else:
-                        aux = np.minimum(0.999,[self._data[i][j] for j in feat_range])
+                        aux = np.minimum(0.999,[self._data[i][j] for j in feat_range_t])
                     elem = aux / (1.0 - aux)
                     elem = np.log(elem)
                     elem = elem.tolist()
@@ -272,7 +274,7 @@ class BabelDataset(datasets.ImageSet):
                         vector_return.extend(elem)
                     else:
                         vector_return.append(elem)
-                if feat_type[j] == 'threshold':
+                if feat_type[j] == 'kw_threshold':
                     S = float(self.map_keyword_feat['n_est'][self._keyword[i]])
                     elem = (S)/(float(self.T)/float(self.beta) + S)
                     if isinstance(elem,list):

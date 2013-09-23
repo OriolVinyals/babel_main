@@ -12,6 +12,38 @@ from external import pyroc
 
 gflags.DEFINE_float("perc_pos", 0.0,
                      "Percentage of positive examples to keep.")
+
+gflags.DEFINE_string("posting_train","./data/word.kwlist.alignment.csv",
+                     "Posting list of training data (typically the dev set in Babel)")
+gflags.DEFINE_string("list_audio_train","./data/audio.list",
+                     "List of audio data of training data (typically the dev set in Babel)")
+gflags.DEFINE_string("list_lattice_train","./data/lat.list",
+                     "List of lattice data of training data (typically the dev set in Babel)")
+#Note about audio / lattice: lattice list contains accurate utterance boundaries and correspondent lattices. 
+#Thus, audio list is just  copying the name of utterance file (with the boundaries), with the correct audio diroctories,
+#and the class deals with removing / recording boundaries (as some audio features are utterance based) and changing extension to .sph
+#Audio list is used in the score reader as well to (solely) determine utterance boundaries / names.
+gflags.DEFINE_string("list_scp_feat_train","./data/20130307.dev.untightened.scp",
+                     "List of SCP features (MFCC) of training data (typically the dev set in Babel)")
+gflags.DEFINE_string("list_scp_post_train","./data/20130307.dev.post.untightened.scp",
+                     "List of SCP features (posteriors) of training data (typically the dev set in Babel)")
+gflags.DEFINE_string("list_rawscore_train","./data/word.kwlist.raw.xml",
+                     "List of raw scores (from lattices) of training data (typically the dev set in Babel)")
+
+
+gflags.DEFINE_string("posting_eval","./data/word.cut_down_evalpart1.decision.kwlist.alignment.csv",
+                     "Posting list of eval data (typically the eval set in Babel)")
+gflags.DEFINE_string("list_audio_eval","./data/audio.eval.list",
+                     "List of audio data of eval data (typically the eval set in Babel)")
+gflags.DEFINE_string("list_lattice_eval","./data/lat.eval.list",
+                     "List of lattice data of eval data (typically the eval set in Babel)")
+gflags.DEFINE_string("list_scp_feat_eval","./data/20130307.eval.untightened.scp",
+                     "List of SCP features (MFCC) of eval data (typically the eval set in Babel)")
+gflags.DEFINE_string("list_scp_post_eval","./data/20130307.eval.post.untightened.scp",
+                     "List of SCP features (posteriors) of eval data (typically the eval set in Babel)")
+gflags.DEFINE_string("list_rawscore_eval","./data/word.cut_down_evalpart1.kwlist.raw.xml",
+                     "List of raw scores (from lattices) of eval data (typically the eval set in Babel)")
+
 FLAGS = gflags.FLAGS
 
 
@@ -52,9 +84,9 @@ def run():
     acoustic=False
     if(acoustic):
         logging.info('****Acoustic Training****')
-        list_file = './data/20130307.dev.untightened.scp'
+        list_file = FLAGS.list_scp_feat_train
         feat_range = None
-        posting_file = './data/word.kwlist.alignment.csv'
+        posting_file = FLAGS.posting_train
         babel = BabelDataset.BabelDataset(list_file, feat_range, posting_file, perc_pos,min_dur=min_dur, posting_sampler=posting_sampler,
                                           reader_type='utterance', min_count=min_count, max_count=max_count)
         posting_sampler = babel.posting_sampler
@@ -87,8 +119,8 @@ def run():
     lattice=False
     if(lattice):
         logging.info('****Lattice Training****')
-        list_file = './data/lat.list'
-        posting_file = './data/word.kwlist.alignment.csv'
+        list_file = FLAGS.list_lattice_train
+        posting_file = FLAGS.posting_train
         babel_lat = BabelDataset.BabelDataset(list_file, feat_range, posting_file, perc_pos, keep_full_utt=True, 
                                           posting_sampler=posting_sampler,min_dur=min_dur,reader_type='lattice',min_count=min_count, max_count=max_count)
         posting_sampler = babel_lat.posting_sampler
@@ -97,8 +129,8 @@ def run():
     posterior=False
     if(posterior):
         logging.info('****Posterior Training****')
-        list_file = './data/20130307.dev.post.untightened.scp'
-        posting_file = './data/word.kwlist.alignment.csv'
+        list_file = FLAGS.list_scp_post_train
+        posting_file = FLAGS.posting_train
         feat_range = None
         babel_post = BabelDataset.BabelDataset(list_file, feat_range, posting_file, perc_pos, keep_full_utt=True,reader_type='utterance', 
                                                posting_sampler=posting_sampler,min_dur=min_dur,min_count=min_count, max_count=max_count)
@@ -113,11 +145,11 @@ def run():
         Xtrain_dict['Posterior_Global'] = Xp_post_glob
         Xtrain_dict['Posterior_Utt'] = Xp_post_utt
         
-    srate=False
+    srate=True
     if(srate):
         logging.info('****Srate Training****')
-        list_file = './data/audio.list'
-        posting_file = './data/word.kwlist.alignment.csv'
+        list_file = FLAGS.list_audio_train
+        posting_file = FLAGS.posting_train
         babel_srate = BabelDataset.BabelDataset(list_file, None, posting_file, perc_pos, keep_full_utt=True, reader_type='srate',pickle_fname='./pickles/full.srate.pickle',
                                    posting_sampler=posting_sampler,min_dur=min_dur,min_count=min_count, max_count=max_count)
         posting_sampler = babel_srate.posting_sampler
@@ -128,11 +160,11 @@ def run():
         Xtrain_dict['Srate_Global'] = Xp_srate_glob.T
         Xtrain_dict['Srate_Utt'] = Xp_srate_utt.T
         
-    snr=False
+    snr=True
     if(snr):
         logging.info('****SNR Training****')
-        list_file = './data/audio.list'
-        posting_file = './data/word.kwlist.alignment.csv'
+        list_file = FLAGS.list_audio_train
+        posting_file = FLAGS.posting_train
         babel_snr = BabelDataset.BabelDataset(list_file, None, posting_file, perc_pos, keep_full_utt=True, reader_type='snr',pickle_fname='./pickles/full.snr.pickle',
                                  posting_sampler=posting_sampler,min_dur=min_dur,min_count=min_count, max_count=max_count)
         posting_sampler = babel_snr.posting_sampler
@@ -146,9 +178,9 @@ def run():
     score=True
     if(score):
         logging.info('****Score Training****')
-        list_file = './data/word.kwlist.raw.xml'
-        list_file_sph = './data/audio.list'
-        posting_file = './data/word.kwlist.alignment.csv'
+        list_file = FLAGS.list_rawscore_train
+        list_file_sph = FLAGS.list_audio_train
+        posting_file = FLAGS.posting_train
         babel_score = BabelDataset.BabelDataset(list_file, None, posting_file, perc_pos, keep_full_utt=True, reader_type='score',
                                  posting_sampler=posting_sampler,min_dur=min_dur,list_file_sph=list_file_sph, 
                                  kw_feat=kw_feat,min_count=min_count, max_count=max_count)
@@ -160,8 +192,8 @@ def run():
         #feat_type_local_score=['raw']
         feat_type_local_score=['raw_log_odd','kw_n_est_log_odd']
         feat_type_local_score=['raw_log_odd','raw','kw_length','kw_freq','kw_freq_fine','kw_n_est_log_odd']
-        feat_type_local_score=['raw_log_odd','raw','kw_length','kw_freq','kw_freq_fine','kw_n_est_log_odd','threshold','kw_n_est','duration']
-        #feat_type_local_score=['raw','threshold']
+        feat_type_local_score=['raw_log_odd','raw','kw_length','kw_freq','kw_freq_fine','kw_n_est_log_odd','kw_threshold','kw_n_est','duration']
+        #feat_type_local_score=['raw','kw_threshold']
         babel_score.GetLocalFeatures(feat_type=feat_type_local_score,feat_range=None)
         babel_score.GetGlobalFeatures(feat_type=['avg'])
         babel_score.GetUtteranceFeatures(feat_type=['avg','min','max'])
@@ -217,10 +249,10 @@ def run():
 
     eval=True
     if(eval):
-        posting_file = './data/word.cut_down_evalpart1.decision.kwlist.alignment.csv'
+        posting_file = FLAGS.posting_eval
         if(acoustic):
             logging.info('****Acoustic Testing****')
-            list_file = './data/20130307.eval.untightened.scp'
+            list_file = FLAGS.list_scp_feat_eval
             feat_range = None
             babel_eval = BabelDataset.BabelDataset(list_file, feat_range, posting_file, perc_pos,min_dur=min_dur, posting_sampler=posting_sampler)
             posting_sampler = babel_eval.posting_sampler
@@ -230,7 +262,7 @@ def run():
             
         if(lattice):
             logging.info('****Lattice Testing****')
-            list_file = './data/lat.eval.list'
+            list_file = FLAGS.list_lattice_eval
             babel_eval_lat = BabelDataset.BabelDataset(list_file, feat_range, posting_file, perc_pos, keep_full_utt=True, 
                                               posting_sampler=posting_sampler,min_dur=min_dur,reader_type='lattice')
             posting_sampler = babel_eval_lat.posting_sampler
@@ -238,7 +270,7 @@ def run():
         
         if(posterior):
             logging.info('****Posterior Testing****')
-            list_file = './data/20130307.eval.post.untightened.scp'
+            list_file = FLAGS.list_scp_post_eval
             feat_range = None
             babel_eval_post = BabelDataset.BabelDataset(list_file, feat_range, posting_file, perc_pos, keep_full_utt=True, posting_sampler=posting_sampler,min_dur=min_dur)
             posting_sampler = babel_eval_post.posting_sampler
@@ -254,7 +286,7 @@ def run():
             
         if(srate):
             logging.info('****Srate Testing****')
-            list_file = './data/audio.eval.list'
+            list_file = FLAGS.list_audio_eval
             babel_eval_srate = BabelDataset.BabelDataset(list_file, None, posting_file, perc_pos, keep_full_utt=True, reader_type='srate',
                                        pickle_fname='./pickles/full.eval.srate.pickle', posting_sampler=posting_sampler,min_dur=min_dur)
             posting_sampler = babel_eval_srate.posting_sampler
@@ -267,7 +299,7 @@ def run():
             
         if(snr):
             logging.info('****SNR Testing****')
-            list_file = './data/audio.eval.list'
+            list_file = FLAGS.list_audio_eval
             babel_eval_snr = BabelDataset.BabelDataset(list_file, None, posting_file, perc_pos, keep_full_utt=True, reader_type='snr',
                                      pickle_fname='./pickles/full.eval.snr.pickle', posting_sampler=posting_sampler,min_dur=min_dur)
             posting_sampler = babel_eval_snr.posting_sampler
@@ -280,8 +312,8 @@ def run():
             
         if(score):
             logging.info('****Score Testing****')
-            list_file = './data/word.cut_down_evalpart1.kwlist.raw.xml'
-            list_file_sph = './data/audio.eval.list'
+            list_file = FLAGS.list_rawscore_eval
+            list_file_sph = FLAGS.list_audio_eval
             babel_eval_score = BabelDataset.BabelDataset(list_file, None, posting_file, perc_pos, keep_full_utt=True, reader_type='score',
                                      posting_sampler=posting_sampler,min_dur=min_dur,list_file_sph=list_file_sph,
                                      kw_feat=kw_feat)
@@ -317,10 +349,10 @@ def run():
 
     dev=True
     if(dev):
-        posting_file = './data/word.kwlist.alignment.csv'
+        posting_file = FLAGS.posting_train
         if(acoustic):
             logging.info('****Acoustic Dev****')
-            list_file = './data/20130307.dev.untightened.scp'
+            list_file = FLAGS.list_scp_feat_train
             feat_range = None
             babel_dev = BabelDataset.BabelDataset(list_file, feat_range, posting_file, perc_pos,min_dur=min_dur, posting_sampler=posting_sampler)
             posting_sampler = babel_dev.posting_sampler
@@ -330,7 +362,7 @@ def run():
             
         if(lattice):
             logging.info('****Lattice Dev****')
-            list_file = './data/lat.list'
+            list_file = FLAGS.list_lattice_train
             babel_dev_lat = BabelDataset.BabelDataset(list_file, feat_range, posting_file, perc_pos, keep_full_utt=True, 
                                               posting_sampler=posting_sampler,min_dur=min_dur,reader_type='lattice')
             posting_sampler = babel_dev_lat.posting_sampler
@@ -338,7 +370,7 @@ def run():
         
         if(posterior):
             logging.info('****Posterior Dev****')
-            list_file = './data/20130307.dev.post.untightened.scp'
+            list_file = FLAGS.list_scp_post_train
             feat_range = None
             babel_dev_post = BabelDataset.BabelDataset(list_file, feat_range, posting_file, perc_pos, keep_full_utt=True, posting_sampler=posting_sampler,min_dur=min_dur)
             posting_sampler = babel_dev_post.posting_sampler
@@ -354,7 +386,7 @@ def run():
             
         if(srate):
             logging.info('****Srate Dev****')
-            list_file = './data/audio.list'
+            list_file = FLAGS.list_audio_train
             babel_dev_srate = BabelDataset.BabelDataset(list_file, None, posting_file, perc_pos, keep_full_utt=True, reader_type='srate',
                                        pickle_fname='./pickles/full.srate.pickle', posting_sampler=posting_sampler,min_dur=min_dur)
             posting_sampler = babel_dev_srate.posting_sampler
@@ -367,7 +399,7 @@ def run():
             
         if(snr):
             logging.info('****SNR Dev****')
-            list_file = './data/audio.list'
+            list_file = FLAGS.list_audio_train
             babel_dev_snr = BabelDataset.BabelDataset(list_file, None, posting_file, perc_pos, keep_full_utt=True, reader_type='snr',
                                      pickle_fname='./pickles/full.snr.pickle', posting_sampler=posting_sampler,min_dur=min_dur)
             posting_sampler = babel_dev_snr.posting_sampler
@@ -380,8 +412,8 @@ def run():
             
         if(score):
             logging.info('****Score Dev****')
-            list_file = './data/word.kwlist.raw.xml'
-            list_file_sph = './data/audio.list'
+            list_file = FLAGS.list_rawscore_train
+            list_file_sph = FLAGS.list_audio_train
             babel_dev_score = BabelDataset.BabelDataset(list_file, None, posting_file, perc_pos, keep_full_utt=True, reader_type='score',
                                      posting_sampler=posting_sampler,min_dur=min_dur,list_file_sph=list_file_sph,
                                      kw_feat=kw_feat)
