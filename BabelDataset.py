@@ -22,6 +22,8 @@ gflags.DEFINE_float("T_train", 36255.58,
                      "Given by the NIST scoring total, and used in ATWV (for trainig).")
 gflags.DEFINE_float("beta", 999.9,
                      "Given by the NIST scoring beta, and used in ATWV.")
+gflags.DEFINE_string("hescii_file", "./data/hescii_babel104b-v0.4bY_conv-eval.kwlist2.xml",
+                     "Hescii file that we derive some keyword features from.")
 
 FLAGS = gflags.FLAGS
 
@@ -131,7 +133,7 @@ class BabelDataset(datasets.ImageSet):
                 else:
                     pass
             
-            print 'I skipped ',skipped,' entries'
+            print 'I skipped ',skipped,' entries out of ',(len(self.posting_sampler.negative_data)+len(self.posting_sampler.positive_data))
             
             self._label = np.array(self._label)
         else:
@@ -185,7 +187,7 @@ class BabelDataset(datasets.ImageSet):
                 kw_feat.has_key('length')
                 self.CopyKeywordMaps(kw_feat)
             except:
-                self.LoadMappingHescii('./data/hescii_babel104b-v0.4bY_conv-eval.kwlist2.xml')
+                self.LoadMappingHescii(FLAGS.hescii_file)
                 self.ComputeKeywordMaps()
                 
         

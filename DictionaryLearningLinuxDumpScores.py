@@ -12,6 +12,8 @@ from external import pyroc
 
 gflags.DEFINE_float("perc_pos", 0.0,
                      "Percentage of positive examples to keep.")
+gflags.DEFINE_float("min_dur", 0.2,
+                     "Minimum duration under which we don't consider the utterance.")
 
 gflags.DEFINE_string("posting_train","./data/word.kwlist.alignment.csv",
                      "Posting list of training data (typically the dev set in Babel)")
@@ -73,7 +75,7 @@ def run():
 ########### TRAIN ###########
     
     perc_pos = FLAGS.perc_pos
-    min_dur = 0.2
+    min_dur = FLAGS.min_dur
     posting_sampler = None
     kw_feat = 1
     feat_range = None
@@ -147,7 +149,7 @@ def run():
         Xtrain_dict['Posterior_Global'] = Xp_post_glob
         Xtrain_dict['Posterior_Utt'] = Xp_post_utt
         
-    srate=True
+    srate=False
     if(srate):
         logging.info('****Srate Training****')
         list_file = FLAGS.list_audio_train
@@ -162,7 +164,7 @@ def run():
         Xtrain_dict['Srate_Global'] = Xp_srate_glob.T
         Xtrain_dict['Srate_Utt'] = Xp_srate_utt.T
         
-    snr=True
+    snr=False
     if(snr):
         logging.info('****SNR Training****')
         list_file = FLAGS.list_audio_train
@@ -193,8 +195,9 @@ def run():
         #feat_type_local_score=['raw_log_odd','raw','kw_length','kw_freq','kw_freq_fine','kw_true_freq','kw_true_ratio']
         #feat_type_local_score=['raw']
         feat_type_local_score=['raw_log_odd','kw_n_est_log_odd']
-        feat_type_local_score=['raw_log_odd','raw','kw_length','kw_freq','kw_freq_fine','kw_n_est_log_odd']
-        feat_type_local_score=['raw_log_odd','raw','kw_length','kw_freq','kw_freq_fine','kw_n_est_log_odd','kw_threshold','kw_n_est','duration']
+        #feat_type_local_score=['raw_log_odd','raw','kw_length','kw_freq','kw_freq_fine','kw_n_est_log_odd']
+        #feat_type_local_score=['raw_log_odd','raw','kw_length','kw_freq','kw_freq_fine','kw_n_est_log_odd','kw_threshold','kw_n_est','duration']
+        #feat_type_local_score=['raw','raw_log_odd','kw_length','kw_freq','kw_n_est_log_odd','kw_threshold','kw_n_est','duration']
         #feat_type_local_score=['raw','kw_threshold']
         babel_score.GetLocalFeatures(feat_type=feat_type_local_score,feat_range=None)
         babel_score.GetGlobalFeatures(feat_type=['avg'])
@@ -203,8 +206,8 @@ def run():
         Xp_score_glob=np.asmatrix(babel_score._glob_features)
         Xp_score_utt=np.asmatrix(babel_score._utt_features)
         Xtrain_dict['Score_Local'] = Xp_score_local
-        Xtrain_dict['Score_Utt'] = Xp_score_utt
-        Xtrain_dict['Score_Glob'] = Xp_score_glob
+        #Xtrain_dict['Score_Utt'] = Xp_score_utt
+        #Xtrain_dict['Score_Glob'] = Xp_score_glob
         feat_type_special_bias=['kw_n_est_log_odd']
         #feat_type_special_bias=['threshold']
         babel_score.GetLocalFeatures(feat_type=feat_type_special_bias)
@@ -243,7 +246,7 @@ def run():
 ########### EVAL ###########
 
     perc_pos = 0.0
-    min_dur = 0.2
+    min_dur = FLAGS.min_dur
     posting_sampler = None
     feat_range = None
     Xtest_dict = {}
@@ -343,7 +346,7 @@ def run():
 ########### DEV ###########
 
     perc_pos = 0.0
-    min_dur = 0.2
+    min_dur = FLAGS.min_dur
     posting_sampler = None
     feat_range = None
     Xdev_dict = {}
