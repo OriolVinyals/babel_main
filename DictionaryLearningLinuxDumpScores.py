@@ -82,6 +82,9 @@ def run():
     Xtrain_dict = {}
     feat_list = None
     Xtrain_special_bias = None
+    merge_score_list = None
+    merge_score_list_eval = None
+    merge_score_list_dev = None
     min_count = 0.0
     max_count= 1000000.0
     
@@ -185,9 +188,12 @@ def run():
         list_file = FLAGS.list_rawscore_train
         list_file_sph = FLAGS.list_audio_train
         posting_file = FLAGS.posting_train
+        merge_score_list = ['./data/vietnamese_raw_baseline.xml', './data/vietnamese_raw_adambday.xml']
+        merge_score_list_eval = ['./data/vietnamese_raw_baseline.xml', './data/vietnamese_raw_adambday.xml'] #super hack
+        merge_score_list_dev = ['./data/vietnamese_raw_baseline.xml', './data/vietnamese_raw_adambday.xml'] #super hack
         babel_score = BabelDataset.BabelDataset(list_file, None, posting_file, perc_pos, keep_full_utt=True, reader_type='score',
                                  posting_sampler=posting_sampler,min_dur=min_dur,list_file_sph=list_file_sph, 
-                                 kw_feat=kw_feat,min_count=min_count, max_count=max_count)
+                                 kw_feat=kw_feat,min_count=min_count, max_count=max_count, merge_score_files=merge_score_list)
         kw_feat = babel_score.map_keyword_feat
         posting_sampler = babel_score.posting_sampler
         #feat_type_local_score=['raw','kw_length','kw_freq','kw_freq_fine']
@@ -319,9 +325,10 @@ def run():
             logging.info('****Score Testing****')
             list_file = FLAGS.list_rawscore_eval
             list_file_sph = FLAGS.list_audio_eval
+            #merge_score_list_eval = ['./data/vietnamese_raw_baseline.xml', './data/vietnamese_raw_adambday.xml']
             babel_eval_score = BabelDataset.BabelDataset(list_file, None, posting_file, perc_pos, keep_full_utt=True, reader_type='score',
                                      posting_sampler=posting_sampler,min_dur=min_dur,list_file_sph=list_file_sph,
-                                     kw_feat=kw_feat)
+                                     kw_feat=kw_feat, merge_score_files=merge_score_list_eval)
             posting_sampler = babel_eval_score.posting_sampler
             babel_eval_score.GetLocalFeatures(feat_type=feat_type_local_score)
             babel_eval_score.GetGlobalFeatures(feat_type=['avg'])
@@ -421,7 +428,7 @@ def run():
             list_file_sph = FLAGS.list_audio_train
             babel_dev_score = BabelDataset.BabelDataset(list_file, None, posting_file, perc_pos, keep_full_utt=True, reader_type='score',
                                      posting_sampler=posting_sampler,min_dur=min_dur,list_file_sph=list_file_sph,
-                                     kw_feat=kw_feat)
+                                     kw_feat=kw_feat, merge_score_files=merge_score_list_dev)
             posting_sampler = babel_dev_score.posting_sampler
             babel_dev_score.GetLocalFeatures(feat_type=feat_type_local_score)
             babel_dev_score.GetGlobalFeatures(feat_type=['avg'])

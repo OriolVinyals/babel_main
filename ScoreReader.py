@@ -26,12 +26,20 @@ class AutoVivification(dict):
             return value
 
 class ScoreReader:
-    def __init__(self,score_file,pickle_fname=None,list_file_sph=None):
+    def __init__(self,score_file,pickle_fname=None,list_file_sph=None,merge_score_files=None):
         self.score_file = score_file
         self.map_utt_idx = {}
         self.pickle_fname = pickle_fname
         self.ParseListScp(list_file_sph)
         self.GetScoresXML(score_file)
+        self.n_systems = 1
+        self.feat_range_log = [0] #what makes sense to compute logs
+        if merge_score_files != None:
+            self.utt_kw_times_score_hash_list = []
+            self.n_systems = len(merge_score_files)
+            for i in range(len(merge_score_files)):
+                self.utt_kw_times_score_hash_list.append(self.GetScoresXML_hash(merge_score_files[i]))
+                
         self.utt_feature = {}
         self.glob_feature = {}
         #self.num_utt = len(self.list_files)
@@ -82,6 +90,26 @@ class ScoreReader:
                 self.map_utt_idx[utterance]=1
                 #key = keyword + '_' + utterance + '_' + repr(times)
                 #self.score_kw_utt_times_hash[key] = float(score)
+                
+    def GetScoresXML_hash(self,fname):
+        # We get every single entry so that we can pickle and load (since this is quite slow)
+        # TODO: Pickle it!
+        ret = AutoVivification()
+        import xml.etree.cElementTree as ET
+        tree = ET.parse(fname)
+        root = tree.getroot()
+        
+        for i in range(len(root)):
+            keyword = root[i].attrib['kwid']
+            for j in range(len(root[i])):
+                utterance = root[i][j].attrib['file']
+                tbeg = root[i][j].attrib['tbeg']
+                dur = root[i][j].attrib['dur']
+                times = (round(float(tbeg),2),round(float(tbeg)+float(dur),2))
+                score = root[i][j].attrib['score']
+                #recursive dictionary
+                ret[utterance][keyword][times] = float(score)
+        return ret
         
     def GetKeywordData(self, utt_name, t_ini, t_end, kw=''):
         vector_return = []

@@ -34,7 +34,7 @@ class BabelDataset(datasets.ImageSet):
     
     #def __init__(self, utt_reader,posting_sampler):
     def __init__(self, list_file, feat_range, posting_file, perc_pos, keep_full_utt=False, posting_sampler=None, min_dur=0.2, min_count=0.0, max_count=10000000.0, reader_type='utterance', 
-                 pickle_fname=None, list_file_sph=None, kw_feat=None):
+                 pickle_fname=None, list_file_sph=None, kw_feat=None, merge_score_files=None):
         '''TODO: Read pieces of utterance from the CSV file instead to save memory. It would be nice to index thse by utt_id (by now I do a map).'''
         super(BabelDataset, self).__init__()
         if list_file.find('eval') >= 0:
@@ -63,7 +63,7 @@ class BabelDataset(datasets.ImageSet):
             utt_reader.ReadAllSrate()
         elif reader_type=='score':
             self.is_lattice = False
-            utt_reader = ScoreReader.ScoreReader(list_file,list_file_sph=list_file_sph,pickle_fname=pickle_fname)
+            utt_reader = ScoreReader.ScoreReader(list_file,list_file_sph=list_file_sph,pickle_fname=pickle_fname, merge_score_files=merge_score_files)
         else:
             print 'Reader not implemented!'
             exit(0)
@@ -234,6 +234,8 @@ class BabelDataset(datasets.ImageSet):
                 if feat_type[j] == 'raw_log_odd':
                     #feat_range_t = [0,1,2,3,4,5,6,7,8]
                     feat_range_t = [0] #Only get first, which is original score
+                    if self.reader_type=='score':
+                        feat_range_t = self.utt_reader.feat_range_log
                     if feat_range_t==None:
                         aux = np.minimum(0.999,self._data[i])
                     else:
