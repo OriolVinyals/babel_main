@@ -545,6 +545,7 @@ def run():
         print 'NN ATWV system:',babel_eval_score.GetATWV(prob_nn[:,1], compute_th=True)
         print 'NN ATWV no threshold system',babel_eval_score.GetATWV(prob_nn[:,1])
     print 'ATWV baseline:',babel_eval_score.GetATWV(np.asarray(Xp_eval_score_local[:,0]).squeeze(),compute_th=True)
+    print 'ATWV baseline no th:',babel_eval_score.GetATWV(np.asarray(Xp_eval_score_local[:,0]).squeeze(),compute_th=False)
     
 if __name__ == '__main__':
     gflags.FLAGS(sys.argv)
