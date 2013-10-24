@@ -38,8 +38,8 @@ class ScoreReader:
             self.utt_kw_times_score_hash_list = []
             self.n_systems = len(merge_score_files)
             for i in range(len(merge_score_files)):
+                self.feat_range_log.append(i+1)
                 self.utt_kw_times_score_hash_list.append(self.GetScoresXML_hash(merge_score_files[i]))
-                
         self.utt_feature = {}
         self.glob_feature = {}
         #self.num_utt = len(self.list_files)
@@ -194,6 +194,15 @@ class ScoreReader:
                 exit(0)
             else:
                 vector_return.append(ret) # raw score ALWAYS first
+                if self.n_systems > 1:
+                    for i in range(self.n_systems):
+                        max_system_score_in = 1e-6
+                        for times in self.utt_kw_times_score_hash_list[i][utt_name][kw]:
+                            if((times[0] >= t_ini) and (times[1] <= t_end)):
+                                if self.utt_kw_times_score_hash_list[i][utt_name][kw][times] > max_system_score_in:
+                                    max_system_score_in = self.utt_kw_times_score_hash_list[i][utt_name][kw][times]
+                        vector_return.append(max_system_score_in)
+                    vector_return.append(np.max(vector_return[1:]))
                 return vector_return
                 
     

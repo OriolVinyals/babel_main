@@ -87,6 +87,7 @@ def run():
     merge_score_list_dev = None
     min_count = 0.0
     max_count= 1000000.0
+    K_factor = 10.0
     
     acoustic=False
     if(acoustic):
@@ -202,10 +203,12 @@ def run():
         #feat_type_local_score=['raw']
         feat_type_local_score=['raw_log_odd','kw_n_est_log_odd']
         #feat_type_local_score=['raw_log_odd','raw','kw_length','kw_freq','kw_freq_fine','kw_n_est_log_odd']
-        #feat_type_local_score=['raw_log_odd','raw','kw_length','kw_freq','kw_freq_fine','kw_n_est_log_odd','kw_threshold','kw_n_est','duration']
-        #feat_type_local_score=['raw','raw_log_odd','kw_length','kw_freq','kw_n_est_log_odd','kw_threshold','kw_n_est','duration']
+        feat_type_local_score=['raw_log_odd','raw','kw_length','kw_freq','kw_threshold','kw_n_est','duration','kw_n_est_log_odd']
+        feat_type_local_score=['raw','kw_length','kw_freq','kw_n_est','duration','kw_threshold']
         #feat_type_local_score=['raw','kw_threshold']
-        babel_score.GetLocalFeatures(feat_type=feat_type_local_score,feat_range=None)
+        K_factor = 2000.0 #Gotta do this if we don't use logs
+        feat_range_score=[1,2]
+        babel_score.GetLocalFeatures(feat_type=feat_type_local_score,feat_range=feat_range_score)
         babel_score.GetGlobalFeatures(feat_type=['avg'])
         babel_score.GetUtteranceFeatures(feat_type=['avg','min','max'])
         Xp_score_local=np.asmatrix(babel_score._local_features)
@@ -330,7 +333,7 @@ def run():
                                      posting_sampler=posting_sampler,min_dur=min_dur,list_file_sph=list_file_sph,
                                      kw_feat=kw_feat, merge_score_files=merge_score_list_eval)
             posting_sampler = babel_eval_score.posting_sampler
-            babel_eval_score.GetLocalFeatures(feat_type=feat_type_local_score)
+            babel_eval_score.GetLocalFeatures(feat_type=feat_type_local_score,feat_range=feat_range_score)
             babel_eval_score.GetGlobalFeatures(feat_type=['avg'])
             babel_eval_score.GetUtteranceFeatures(feat_type=['avg','min','max'])
             Xp_eval_score_local=np.asmatrix(babel_eval_score._local_features)
@@ -430,7 +433,7 @@ def run():
                                      posting_sampler=posting_sampler,min_dur=min_dur,list_file_sph=list_file_sph,
                                      kw_feat=kw_feat, merge_score_files=merge_score_list_dev)
             posting_sampler = babel_dev_score.posting_sampler
-            babel_dev_score.GetLocalFeatures(feat_type=feat_type_local_score)
+            babel_dev_score.GetLocalFeatures(feat_type=feat_type_local_score,feat_range=feat_range_score)
             babel_dev_score.GetGlobalFeatures(feat_type=['avg'])
             babel_dev_score.GetUtteranceFeatures(feat_type=['avg','min','max'])
             Xp_dev_score_local=np.asmatrix(babel_dev_score._local_features)
@@ -459,16 +462,16 @@ def run():
     Xtrain_special_bias=None
     Xdev_special_bias=None
     Xtest_special_bias=None
-    lr_classifier.Train(feat_list=feat_list,type='logreg_atwv',gamma=0.001, domeanstd=False, special_bias=Xtrain_special_bias, add_bias=True, 
-                        class_instance=babel_dev_score, factor=10.0, 
+    lr_classifier.Train(feat_list=feat_list,type='logreg_atwv',gamma=0.000, domeanstd=False, special_bias=Xtrain_special_bias, add_bias=True, 
+                        class_instance=babel_dev_score, factor=K_factor, 
                         cv_class_instance=babel_eval_score, cv_feats=Xtest_dict, cv_special_bias=Xtest_special_bias)
     try:
         print lr_classifier.b,lr_classifier.w
     except:
         pass
     if nnet:
-        nn_classifier.Train(feat_list=feat_list,type='nn_atwv',gamma=0.001, domeanstd=True, special_bias=Xtrain_special_bias, add_bias=True, 
-                            class_instance=babel_dev_score, arch=[40], factor=10.0,
+        nn_classifier.Train(feat_list=feat_list,type='nn_atwv',gamma=0.000, domeanstd=True, special_bias=Xtrain_special_bias, add_bias=True, 
+                            class_instance=babel_dev_score, arch=[40], factor=K_factor,
                             cv_class_instance=babel_eval_score, cv_feats=Xtest_dict, cv_special_bias=Xtest_special_bias)
 
     accu = lr_classifier.Accuracy(Xtrain_dict, Ytrain, special_bias=Xtrain_special_bias)

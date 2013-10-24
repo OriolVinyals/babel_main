@@ -215,7 +215,7 @@ class BabelDataset(datasets.ImageSet):
                     if feat_range==None:
                         elem = self._data[i]
                     else:
-                        elem = [self._data[i][j] for j in feat_range]
+                        elem = [self._data[i][jj] for jj in feat_range]
                     if isinstance(elem,list):
                         vector_return.extend(elem)
                     else:
@@ -224,7 +224,7 @@ class BabelDataset(datasets.ImageSet):
                     if feat_range==None:
                         aux = np.minimum(0.999,self._data[i])
                     else:
-                        aux = np.minimum(0.999,[self._data[i][j] for j in feat_range])
+                        aux = np.minimum(0.999,[self._data[i][jj] for jj in feat_range])
                     elem = aux / (1.0 - aux) 
                     elem = elem.tolist()       
                     if isinstance(elem,list):
@@ -236,10 +236,12 @@ class BabelDataset(datasets.ImageSet):
                     feat_range_t = [0] #Only get first, which is original score
                     if self.reader_type=='score':
                         feat_range_t = self.utt_reader.feat_range_log
+                    if feat_range !=None:
+                        feat_range_t = feat_range
                     if feat_range_t==None:
                         aux = np.minimum(0.999,self._data[i])
                     else:
-                        aux = np.minimum(0.999,[self._data[i][j] for j in feat_range_t])
+                        aux = np.minimum(0.999,[self._data[i][jj] for jj in feat_range_t])
                     elem = aux / (1.0 - aux)
                     elem = np.log(elem)
                     elem = elem.tolist()

@@ -254,6 +254,10 @@ def Train_atwv(Xtrain_feats,class_instance=None,weight=None,special_bias=None,ad
             w[0,1]=0.09
             w[-1,0]=-1
             w[-1,1]=1
+            w[0,0]=-1
+            w[0,1]=1
+            w[-1,0]=1
+            w[-1,1]=-1
         params.append(w)
         params.append(b)
         weight = np.hstack((p.flatten() for p in params))
@@ -271,6 +275,9 @@ def Train_atwv(Xtrain_feats,class_instance=None,weight=None,special_bias=None,ad
         callback_f = lambda x: sys.stdout.write('Train ATWV ' + repr(-f_atwv(x, Xtrain_feats,class_instance,special_bias,add_bias,'exact',0,0,0)[0]))
     #callback_f = lambda x: sys.stdout.write('Dummy CB')
     callback_f(weight)
+    print '\nInitial value K/10',f_atwv(weight,Xtrain_feats,class_instance,special_bias,add_bias,method,factor/10,0,gamma)[0]
+    print 'Initial value',f_atwv(weight,Xtrain_feats,class_instance,special_bias,add_bias,method,factor,0,gamma)[0]
+    print 'Initial value K*10',f_atwv(weight,Xtrain_feats,class_instance,special_bias,add_bias,method,factor*10,0,gamma)[0]
     weight = optimize.fmin_l_bfgs_b(f_atwv,weight,args=(Xtrain_feats,class_instance,special_bias,add_bias,method,factor,0,gamma),disp=True,callback=callback_f)[0]
     w = weight[: K * dim].reshape(dim, K)
     b = weight[K * dim :]
