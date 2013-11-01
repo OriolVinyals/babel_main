@@ -85,6 +85,7 @@ def run():
     merge_score_list = None
     merge_score_list_eval = None
     merge_score_list_dev = None
+    feat_range_score = None
     min_count = 0.0
     max_count= 1000000.0
     K_factor = 10.0
@@ -189,9 +190,9 @@ def run():
         list_file = FLAGS.list_rawscore_train
         list_file_sph = FLAGS.list_audio_train
         posting_file = FLAGS.posting_train
-        merge_score_list = ['./data/vietnamese_raw_baseline.xml', './data/vietnamese_raw_adambday.xml']
-        merge_score_list_eval = ['./data/vietnamese_raw_baseline.xml', './data/vietnamese_raw_adambday.xml'] #super hack
-        merge_score_list_dev = ['./data/vietnamese_raw_baseline.xml', './data/vietnamese_raw_adambday.xml'] #super hack
+        #merge_score_list = ['./data/vietnamese_raw_baseline.xml', './data/vietnamese_raw_adambday.xml']
+        #merge_score_list_eval = ['./data/vietnamese_raw_baseline.xml', './data/vietnamese_raw_adambday.xml'] #super hack
+        #merge_score_list_dev = ['./data/vietnamese_raw_baseline.xml', './data/vietnamese_raw_adambday.xml'] #super hack
         babel_score = BabelDataset.BabelDataset(list_file, None, posting_file, perc_pos, keep_full_utt=True, reader_type='score',
                                  posting_sampler=posting_sampler,min_dur=min_dur,list_file_sph=list_file_sph, 
                                  kw_feat=kw_feat,min_count=min_count, max_count=max_count, merge_score_files=merge_score_list)
@@ -203,11 +204,11 @@ def run():
         #feat_type_local_score=['raw']
         feat_type_local_score=['raw_log_odd','kw_n_est_log_odd']
         #feat_type_local_score=['raw_log_odd','raw','kw_length','kw_freq','kw_freq_fine','kw_n_est_log_odd']
-        feat_type_local_score=['raw_log_odd','raw','kw_length','kw_freq','kw_threshold','kw_n_est','duration','kw_n_est_log_odd']
-        feat_type_local_score=['raw','kw_length','kw_freq','kw_n_est','duration','kw_threshold']
+        #feat_type_local_score=['raw_log_odd','raw','kw_length','kw_freq','kw_threshold','kw_n_est','duration','kw_n_est_log_odd']
+        #feat_type_local_score=['raw','kw_length','kw_freq','kw_n_est','duration','kw_threshold']
         #feat_type_local_score=['raw','kw_threshold']
-        K_factor = 2000.0 #Gotta do this if we don't use logs
-        feat_range_score=[1,2]
+        #K_factor = 2000.0 #Gotta do this if we don't use logs
+        #feat_range_score=[1,2]
         babel_score.GetLocalFeatures(feat_type=feat_type_local_score,feat_range=feat_range_score)
         babel_score.GetGlobalFeatures(feat_type=['avg'])
         babel_score.GetUtteranceFeatures(feat_type=['avg','min','max'])
