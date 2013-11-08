@@ -18,7 +18,7 @@ gflags.DEFINE_float("K_factor", 10.0,
                      "Smoothing factor in objective function. 10 works well for logodds, but raw scores requires higher factors (>100).")
 gflags.DEFINE_float("gamma", 0.000,
                      "L2 regularization parameter.")
-gflags.DEFINE_string("dump_xml_name", "c:\mujatest",
+gflags.DEFINE_string("dump_xml_name", "",
                      "I non-empty string, will dump {dump_xml}.{dev,eval}.xml (DEV is just the same as train, but without any pruning of samples (min_dur or perc_pos potentially prune samples). Note that dump_xml_name can be a full path.")
 
 gflags.DEFINE_string("features","score_raw_log_odd,score_kw_n_est_log_odd",
