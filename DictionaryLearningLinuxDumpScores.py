@@ -40,6 +40,14 @@ gflags.DEFINE_string("features","score_raw_log_odd,score_kw_n_est_log_odd",
 #    'score_kw_n_est_log_odd'"    
 #cheating "Uses Labels as features. For debugging and for days you feel frustrated : )"
 
+gflags.DEFINE_string("merge_score_list","",
+                     "List of files (separated by commas) with raw scores to merge for training (if empty, merging won't happen)")
+gflags.DEFINE_string("merge_score_list_dev","",
+                     "List of files (separated by commas) with raw scores to merge for dev")
+gflags.DEFINE_string("merge_score_list_eval","",
+                     "List of files (separated by commas) with raw scores to merge for eval")
+
+
 gflags.DEFINE_string("posting_train","./data/word.kwlist.alignment.csv",
                      "Posting list of training data (typically the dev set in Babel)")
 gflags.DEFINE_string("list_audio_train","./data/audio.list",
@@ -110,6 +118,10 @@ def run():
     merge_score_list = None
     merge_score_list_eval = None
     merge_score_list_dev = None
+    if FLAGS.merge_score_list != "":
+        merge_score_list = FLAGS.merge_score_list
+        merge_score_list_eval = FLAGS.merge_score_list_eval
+        merge_score_list_dev = FLAGS.merge_score_list_dev
     feat_range_score = None
     min_count = 0.0
     max_count= 1000000.0
