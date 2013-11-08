@@ -14,6 +14,31 @@ gflags.DEFINE_float("perc_pos", 0.0,
                      "Percentage of positive examples to keep.")
 gflags.DEFINE_float("min_dur", 0.2,
                      "Minimum duration under which we don't consider the utterance.")
+gflags.DEFINE_float("K_factor", 10.0,
+                     "Smoothing factor in objective function. 10 works well for logodds, but raw scores requires higher factors (>100).")
+gflags.DEFINE_float("gamma", 0.000,
+                     "L2 regularization parameter.")
+gflags.DEFINE_string("dump_xml_name", "c:\mujatest",
+                     "I non-empty string, will dump {dump_xml}.{dev,eval}.xml (DEV is just the same as train, but without any pruning of samples (min_dur or perc_pos potentially prune samples). Note that dump_xml_name can be a full path.")
+
+gflags.DEFINE_string("features","score_raw_log_odd,score_kw_n_est_log_odd",
+                     "List of csv features. See comment in code to see what each feature does.")
+#acoustic "Does the acoustic sparse coding, parameters are hard coded in code (didn't work too well)"
+#lattice "Extract some basic lattice features, largely unimplemented"
+#posterior "Extract posterior features, although you need to provide a file with the forward pass of the net computed (which you can strip with an SRS profile)"
+#srate "Extracts srate from the audio files. May take a couple of hours"
+#snr "Extracts snr, will take a significant amount of time since this calls Matlab every time."
+#score "Keyword and score level features"
+#    "Egs (see BabelDataset.py for more details):
+#    'score_raw_log_odd',
+#    'score_raw',
+#    'score_kw_length',
+#    'score_kw_freq',
+#    'score_kw_threshold',
+#    'score_kw_n_est',
+#    'score_duration',
+#    'score_kw_n_est_log_odd'"    
+#cheating "Uses Labels as features. For debugging and for days you feel frustrated : )"
 
 gflags.DEFINE_string("posting_train","./data/word.kwlist.alignment.csv",
                      "Posting list of training data (typically the dev set in Babel)")
@@ -88,9 +113,39 @@ def run():
     feat_range_score = None
     min_count = 0.0
     max_count= 1000000.0
-    K_factor = 10.0
-    
+    K_factor = FLAGS.K_factor
+    gamma = FLAGS.gamma
+    dump_xml_name = FLAGS.dump_xml_name
     acoustic=False
+    lattice=False
+    posterior=False     
+    srate=False
+    snr=False
+    score=False
+    cheating=False
+    
+    feature_list = FLAGS.features.split(',')
+    
+    #Painful feature parsing
+    if any('acoustic' in s for s in feature_list):
+        acoustic=True
+    if any('lattice' in s for s in feature_list):
+        lattice=True
+    if any('posterior' in s for s in feature_list):
+        posterior=True
+    if any('srate' in s for s in feature_list):
+         srate=True
+    if any('snr' in s for s in feature_list):
+        snr=True
+    if any('score' in s for s in feature_list):
+        score=True
+        feature_score_list = []
+        for s in feature_list:
+            if s.find('score') >= 0:
+                feature_score_list.append(s.replace('score_',''))
+    if any('cheating' in s for s in feature_list):
+        cheating=True
+    
     if(acoustic):
         logging.info('****Acoustic Training****')
         list_file = FLAGS.list_scp_feat_train
@@ -125,7 +180,6 @@ def run():
         Xp_acoustic = conv.process_dataset(babel, as_2d = True)
         Xtrain_dict['Acoustic'] = Xp_acoustic
         
-    lattice=False
     if(lattice):
         logging.info('****Lattice Training****')
         list_file = FLAGS.list_lattice_train
@@ -135,7 +189,6 @@ def run():
         posting_sampler = babel_lat.posting_sampler
         #Xtrain_dict['Lattice'] = 0
     
-    posterior=False
     if(posterior):
         logging.info('****Posterior Training****')
         list_file = FLAGS.list_scp_post_train
@@ -153,8 +206,7 @@ def run():
         Xp_post_utt = np.asmatrix(babel_post._utt_features)
         Xtrain_dict['Posterior_Global'] = Xp_post_glob
         Xtrain_dict['Posterior_Utt'] = Xp_post_utt
-        
-    srate=False
+
     if(srate):
         logging.info('****Srate Training****')
         list_file = FLAGS.list_audio_train
@@ -169,7 +221,6 @@ def run():
         Xtrain_dict['Srate_Global'] = Xp_srate_glob.T
         Xtrain_dict['Srate_Utt'] = Xp_srate_utt.T
         
-    snr=False
     if(snr):
         logging.info('****SNR Training****')
         list_file = FLAGS.list_audio_train
@@ -184,7 +235,6 @@ def run():
         Xtrain_dict['SNR_Global'] = Xp_snr_glob.T
         Xtrain_dict['SNR_Utt'] = Xp_snr_utt.T
         
-    score=True
     if(score):
         logging.info('****Score Training****')
         list_file = FLAGS.list_rawscore_train
@@ -202,7 +252,7 @@ def run():
         #feat_type_local_score=['raw','kw_length','kw_freq','kw_freq_fine','kw_true_freq','kw_true_ratio']
         #feat_type_local_score=['raw_log_odd','raw','kw_length','kw_freq','kw_freq_fine','kw_true_freq','kw_true_ratio']
         #feat_type_local_score=['raw']
-        feat_type_local_score=['raw_log_odd','kw_n_est_log_odd']
+        feat_type_local_score=feature_score_list
         #feat_type_local_score=['raw_log_odd','raw','kw_length','kw_freq','kw_freq_fine','kw_n_est_log_odd']
         #feat_type_local_score=['raw_log_odd','raw','kw_length','kw_freq','kw_threshold','kw_n_est','duration','kw_n_est_log_odd']
         #feat_type_local_score=['raw','kw_length','kw_freq','kw_n_est','duration','kw_threshold']
@@ -216,8 +266,8 @@ def run():
         Xp_score_glob=np.asmatrix(babel_score._glob_features)
         Xp_score_utt=np.asmatrix(babel_score._utt_features)
         Xtrain_dict['Score_Local'] = Xp_score_local
-        #Xtrain_dict['Score_Utt'] = Xp_score_utt
-        #Xtrain_dict['Score_Glob'] = Xp_score_glob
+        Xtrain_dict['Score_Utt'] = Xp_score_utt
+        Xtrain_dict['Score_Glob'] = Xp_score_glob
         #feat_type_special_bias=['kw_n_est_log_odd']
         #feat_type_special_bias=['threshold']
         #babel_score.GetLocalFeatures(feat_type=feat_type_special_bias)
@@ -226,7 +276,6 @@ def run():
         #Xtrain_weight = 1.0 / np.asarray(babel_score._local_features)
         #Xtrain_weight = np.hstack((Xtrain_weight,Xtrain_weight))
         
-    cheating=False
     if(cheating):
         logging.info('****Labels (cheating) Training****')
         Xtrain_dict['Cheating'] = np.asmatrix(babel_score.labels().astype(np.int)).T
@@ -463,7 +512,7 @@ def run():
     Xtrain_special_bias=None
     Xdev_special_bias=None
     Xtest_special_bias=None
-    lr_classifier.Train(feat_list=feat_list,type='logreg_atwv',gamma=0.000, domeanstd=False, special_bias=Xtrain_special_bias, add_bias=True, 
+    lr_classifier.Train(feat_list=feat_list,type='logreg_atwv',gamma=gamma, domeanstd=False, special_bias=Xtrain_special_bias, add_bias=True, 
                         class_instance=babel_dev_score, factor=K_factor, 
                         cv_class_instance=babel_eval_score, cv_feats=Xtest_dict, cv_special_bias=Xtest_special_bias)
     try:
@@ -471,7 +520,7 @@ def run():
     except:
         pass
     if nnet:
-        nn_classifier.Train(feat_list=feat_list,type='nn_atwv',gamma=0.000, domeanstd=True, special_bias=Xtrain_special_bias, add_bias=True, 
+        nn_classifier.Train(feat_list=feat_list,type='nn_atwv',gamma=gamma, domeanstd=True, special_bias=Xtrain_special_bias, add_bias=True, 
                             class_instance=babel_dev_score, arch=[40], factor=K_factor,
                             cv_class_instance=babel_eval_score, cv_feats=Xtest_dict, cv_special_bias=Xtest_special_bias)
 
@@ -529,6 +578,8 @@ def run():
         
         print 'Dev ATWV system:',babel_dev_score.GetATWV(prob_dev[:,1], compute_th=True)
         print 'Dev ATWV no threshold system:',babel_dev_score.GetATWV(prob_dev[:,1])
+        if dump_xml_name != "":
+            babel_dev_score.DumpScoresXML(dump_xml_name + '.dev.xml', prob_dev[:,1])
         if nnet:
             print 'NN Dev ATWV system:',babel_dev_score.GetATWV(prob_dev_nn[:,1], compute_th=True)
             print 'NN Dev ATWV no threshold system:',babel_dev_score.GetATWV(prob_dev_nn[:,1])
@@ -552,6 +603,8 @@ def run():
     
     print 'ATWV system:',babel_eval_score.GetATWV(prob[:,1], compute_th=True)
     print 'ATWV no threshold system',babel_eval_score.GetATWV(prob[:,1])
+    if dump_xml_name != "":
+        babel_eval_score.DumpScoresXML(dump_xml_name + '.eval.xml', prob[:,1])
     if nnet:
         print 'NN ATWV system:',babel_eval_score.GetATWV(prob_nn[:,1], compute_th=True)
         print 'NN ATWV no threshold system',babel_eval_score.GetATWV(prob_nn[:,1])
